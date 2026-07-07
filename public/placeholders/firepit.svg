@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="night" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1e1b4b"/>
+      <stop offset="1" stop-color="#312e81"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#night)"/>
+  <g fill="#ffffff">
+    <circle cx="100" cy="80" r="2"/><circle cx="220" cy="140" r="1.5"/><circle cx="340" cy="60" r="2"/>
+    <circle cx="470" cy="110" r="1.5"/><circle cx="590" cy="70" r="2"/><circle cx="700" cy="150" r="1.5"/>
+    <circle cx="160" cy="220" r="1.5"/><circle cx="420" cy="190" r="1.5"/><circle cx="650" cy="230" r="2"/>
+    <circle cx="80" cy="300" r="1.5"/><circle cx="740" cy="90" r="2"/><circle cx="520" cy="40" r="1.5"/>
+  </g>
+  <path d="M0 460 L800 430 L800 600 L0 600 Z" fill="#1c1917"/>
+  <g>
+    <circle cx="400" cy="470" r="46" fill="#44403c"/>
+    <path d="M400 400 C420 425 425 440 400 462 C375 440 380 425 400 400 Z" fill="#f59e0b"/>
+    <path d="M400 420 C412 436 414 446 400 460 C386 446 388 436 400 420 Z" fill="#fbbf24"/>
+  </g>
+  <text x="400" y="560" text-anchor="middle" font-family="Georgia, serif" font-size="26" fill="#e7e5e4">Photo coming soon — fire pit &amp; night sky</text>
+</svg>

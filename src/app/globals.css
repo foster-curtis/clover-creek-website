@@ -1,0 +1,31 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #faf7f0;
+  --color-moss: #4d7c0f;
+  --color-moss-dark: #3f6212;
+  --color-hay: #d9c58a;
+  --font-serif: var(--font-lora), Georgia, serif;
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+}
+
+body {
+  background: var(--color-cream);
+  color: #292524;
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-serif);
+}
+
+/* Simple typography for admin-authored markdown (blog posts) */
+.prose-simple h2 { font-size: 1.4rem; font-weight: 700; margin: 1.5em 0 0.5em; }
+.prose-simple h3 { font-size: 1.15rem; font-weight: 700; margin: 1.25em 0 0.5em; }
+.prose-simple p { margin: 0.75em 0; line-height: 1.7; }
+.prose-simple ul, .prose-simple ol { margin: 0.75em 0; padding-left: 1.5em; line-height: 1.7; }
+.prose-simple ul { list-style: disc; }
+.prose-simple ol { list-style: decimal; }
+.prose-simple a { color: var(--color-moss); text-decoration: underline; }
+.prose-simple blockquote { border-left: 3px solid var(--color-hay); padding-left: 1em; color: #57534e; margin: 1em 0; }
+.prose-simple img { border-radius: 0.5rem; margin: 1em 0; }

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#f5f0e6"/>
+  <rect x="0" y="420" width="800" height="180" fill="#d6c3a1"/>
+  <rect x="180" y="260" width="440" height="200" rx="12" fill="#ffffff" stroke="#d6d3d1" stroke-width="4"/>
+  <rect x="180" y="200" width="440" height="80" rx="12" fill="#8b5a3c"/>
+  <rect x="220" y="290" width="140" height="60" rx="14" fill="#e7e5e4"/>
+  <rect x="440" y="290" width="140" height="60" rx="14" fill="#e7e5e4"/>
+  <rect x="180" y="360" width="440" height="100" rx="8" fill="#a3b18a"/>
+  <text x="400" y="550" text-anchor="middle" font-family="Georgia, serif" font-size="26" fill="#78716c">Photo coming soon — king bedroom</text>
+</svg>

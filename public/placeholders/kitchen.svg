@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600">
+  <rect width="800" height="600" fill="#faf7f0"/>
+  <rect x="0" y="380" width="800" height="60" fill="#8b5a3c"/>
+  <rect x="0" y="440" width="800" height="160" fill="#d6c3a1"/>
+  <rect x="60" y="180" width="180" height="150" rx="8" fill="#a3b18a"/>
+  <rect x="280" y="180" width="180" height="150" rx="8" fill="#a3b18a"/>
+  <rect x="520" y="120" width="200" height="260" fill="#e7e5e4" rx="8"/>
+  <rect x="545" y="150" width="150" height="90" fill="#a8c8e0" rx="4"/>
+  <circle cx="150" cy="410" r="16" fill="#44403c"/>
+  <circle cx="360" cy="410" r="16" fill="#44403c"/>
+  <text x="400" y="550" text-anchor="middle" font-family="Georgia, serif" font-size="26" fill="#78716c">Photo coming soon — full kitchen</text>
+</svg>
