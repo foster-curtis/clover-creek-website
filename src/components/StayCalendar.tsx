@@ -4,10 +4,11 @@
 // range that would span one resets the selection to a new check-in.
 
 import { useMemo, useState } from "react";
-import { addDays, parseISODate, stayNights, toISODate } from "@/lib/pricing";
+import { addDays, isWeekendNight, parseISODate, stayNights, toISODate } from "@/lib/pricing";
 
 interface Props {
   unavailable: string[]; // night dates that cannot be booked
+  holidays: Map<string, string>; // ISO date -> holiday name
   checkIn: string | null;
   checkOut: string | null;
   onChange: (checkIn: string | null, checkOut: string | null) => void;
@@ -19,7 +20,7 @@ function monthLabel(year: number, month: number): string {
   return new Date(year, month, 1).toLocaleDateString("en-US", { month: "long", year: "numeric" });
 }
 
-export default function StayCalendar({ unavailable, checkIn, checkOut, onChange }: Props) {
+export default function StayCalendar({ unavailable, holidays, checkIn, checkOut, onChange }: Props) {
   const today = toISODate(new Date());
   const unavailableSet = useMemo(() => new Set(unavailable), [unavailable]);
   const [viewYear, setViewYear] = useState(() => new Date().getFullYear());
@@ -77,23 +78,40 @@ export default function StayCalendar({ unavailable, checkIn, checkOut, onChange 
               checkIn && checkOut ? date >= checkIn && date < checkOut : false;
             const isStart = date === checkIn;
             const isEnd = checkOut ? date === checkOut : false;
+            const selected = isStart || isEnd;
+
+            // Weekend/holiday nights are priced higher; flag them so the price
+            // shown later never surprises the guest. Mirrors the pricing engine.
+            const { weekend, holiday } = isWeekendNight(date, holidays);
+            const rateLabel = holiday ? `${holiday} · holiday rate` : weekend ? "Weekend rate" : null;
+            const showRate = Boolean(rateLabel) && !disabled;
+
             return (
               <button
                 key={date}
                 type="button"
                 disabled={disabled}
                 onClick={() => selectDay(date)}
-                aria-label={date}
+                title={rateLabel ?? undefined}
+                aria-label={rateLabel ? `${date}, ${rateLabel}` : date}
                 className={[
-                  "rounded py-1.5 text-sm",
+                  "relative rounded py-1.5 text-sm",
                   disabled
                     ? "cursor-not-allowed text-stone-300 line-through"
                     : "hover:bg-moss/20",
-                  isStart || isEnd ? "bg-moss font-bold text-white hover:bg-moss" : "",
+                  selected ? "bg-moss font-bold text-white hover:bg-moss" : "",
                   inRange && !isStart ? "bg-moss/15 text-moss-dark" : "",
                 ].join(" ")}
               >
                 {Number(date.slice(8))}
+                {showRate && (
+                  <span
+                    aria-hidden="true"
+                    className={`pointer-events-none absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full ${
+                      selected ? "bg-white/80" : "bg-amber-500"
+                    }`}
+                  />
+                )}
               </button>
             );
           })}
@@ -135,6 +153,10 @@ export default function StayCalendar({ unavailable, checkIn, checkOut, onChange 
         {renderMonth(viewYear, viewMonth)}
         {renderMonth(next.getFullYear(), next.getMonth())}
       </div>
+      <p className="mt-3 flex items-center gap-1.5 text-xs text-stone-500">
+        <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
+        Weekend &amp; holiday nights are priced a little higher — hover a date to see which.
+      </p>
       {checkIn && (
         <button
           type="button"

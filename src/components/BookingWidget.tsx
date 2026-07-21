@@ -95,6 +95,7 @@ export default function BookingWidget({ pricing, unavailable, holidays, prefill 
       <div className="rounded-xl border border-stone-200 bg-white p-4 sm:p-6">
         <StayCalendar
           unavailable={unavailable}
+          holidays={holidayMap}
           checkIn={checkIn}
           checkOut={checkOut}
           onChange={(ci, co) => {
