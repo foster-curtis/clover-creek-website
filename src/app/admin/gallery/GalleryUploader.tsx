@@ -1,17 +1,28 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase/client";
+
+const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export default function GalleryUploader() {
   const router = useRouter();
+  const inputRef = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
+  const [dragging, setDragging] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
-  async function onFiles(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []);
-    if (files.length === 0) return;
+  async function uploadFiles(fileList: File[]) {
+    const files = fileList.filter((f) => ACCEPTED_TYPES.includes(f.type));
+    const skipped = fileList.length - files.length;
+    if (files.length === 0) {
+      setStatus(
+        skipped > 0 ? "Those files aren't JPEG, PNG or WebP images." : null
+      );
+      return;
+    }
+
     setBusy(true);
     const supabase = supabaseBrowser();
     let uploaded = 0;
@@ -41,28 +52,71 @@ export default function GalleryUploader() {
       uploaded++;
     }
 
-    setStatus(`Uploaded ${uploaded} photo${uploaded === 1 ? "" : "s"}.`);
+    const skippedNote = skipped > 0 ? ` (${skipped} non-image file${skipped === 1 ? "" : "s"} skipped)` : "";
+    setStatus(`Uploaded ${uploaded} photo${uploaded === 1 ? "" : "s"}.${skippedNote}`);
     setBusy(false);
-    e.target.value = "";
     router.refresh();
   }
 
+  async function onInputChange(e: React.ChangeEvent<HTMLInputElement>) {
+    await uploadFiles(Array.from(e.target.files ?? []));
+    e.target.value = "";
+  }
+
+  function onDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    if (!busy) setDragging(true);
+  }
+
+  function onDragLeave(e: React.DragEvent) {
+    // Ignore leaves into child elements; only reset when leaving the zone itself.
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setDragging(false);
+  }
+
+  async function onDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragging(false);
+    if (busy) return;
+    await uploadFiles(Array.from(e.dataTransfer.files ?? []));
+  }
+
   return (
-    <div className="rounded-xl border-2 border-dashed border-stone-300 bg-white p-6 text-center">
-      <label className="cursor-pointer">
-        <span className="rounded-full bg-moss px-5 py-2.5 font-semibold text-white hover:bg-moss-dark">
-          {busy ? "Uploading…" : "Choose photos to upload"}
-        </span>
-        <input
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          multiple
-          disabled={busy}
-          onChange={onFiles}
-          className="hidden"
-        />
-      </label>
-      <p className="mt-3 text-xs text-stone-500">JPEG, PNG or WebP. You can select several at once.</p>
+    <div
+      onDragOver={onDragOver}
+      onDragEnter={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+      onClick={() => !busy && inputRef.current?.click()}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if ((e.key === "Enter" || e.key === " ") && !busy) {
+          e.preventDefault();
+          inputRef.current?.click();
+        }
+      }}
+      className={`cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
+        dragging ? "border-moss bg-moss/10" : "border-stone-300 bg-white hover:border-moss/60"
+      } ${busy ? "cursor-wait opacity-80" : ""}`}
+    >
+      <span className="inline-block rounded-full bg-moss px-5 py-2.5 font-semibold text-white hover:bg-moss-dark">
+        {busy ? "Uploading…" : "Choose photos to upload"}
+      </span>
+      <input
+        ref={inputRef}
+        type="file"
+        accept={ACCEPTED_TYPES.join(",")}
+        multiple
+        disabled={busy}
+        onChange={onInputChange}
+        className="hidden"
+      />
+      <p className="mt-3 text-xs text-stone-500">
+        {dragging
+          ? "Drop your photos to upload"
+          : "Drag photos here, or click to choose. JPEG, PNG or WebP — several at once is fine."}
+      </p>
       {status && <p className="mt-2 text-sm text-stone-600">{status}</p>}
     </div>
   );

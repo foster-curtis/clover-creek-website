@@ -32,12 +32,17 @@ export default async function Header() {
               My Stays
             </Link>
           ) : (
-            <Link
-              href="/book"
-              className="rounded-full bg-moss px-4 py-1.5 text-white hover:bg-moss-dark"
-            >
-              Book a Stay
-            </Link>
+            <>
+              <Link href="/login" className="text-stone-600 hover:text-moss">
+                Sign In
+              </Link>
+              <Link
+                href="/book"
+                className="rounded-full bg-moss px-4 py-1.5 text-white hover:bg-moss-dark"
+              >
+                Book a Stay
+              </Link>
+            </>
           )}
         </nav>
         <MobileNav

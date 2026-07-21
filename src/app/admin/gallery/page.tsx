@@ -83,8 +83,7 @@ export default async function AdminGalleryPage() {
         ))}
         {(images ?? []).length === 0 && (
           <p className="text-sm text-stone-500 sm:col-span-2 lg:col-span-3">
-            No photos yet — upload the house photos from Google Drive above. The site shows
-            placeholder art until then.
+            No photos yet. The site shows placeholder art until photos are added.
           </p>
         )}
       </div>
