@@ -95,7 +95,10 @@ export function validateStay(
     return "Please choose valid dates.";
   }
   if (req.checkOut <= req.checkIn) return "Check-out must be after check-in.";
-  if (today && req.checkIn < today) return "Check-in can't be in the past.";
+  if (today) {
+    if (req.checkIn < today) return "Check-in can't be in the past.";
+    if (req.checkIn === today) return "Check-in must be at least one day in advance.";
+  }
   const nights = stayNights(req.checkIn, req.checkOut).length;
   if (nights < config.minStayNights)
     return `Minimum stay is ${config.minStayNights} night${config.minStayNights > 1 ? "s" : ""}.`;

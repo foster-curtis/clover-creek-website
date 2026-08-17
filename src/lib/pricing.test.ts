@@ -31,6 +31,16 @@ describe("validateStay", () => {
     ).toMatch(/past/);
   });
 
+  it("rejects same-day check-in", () => {
+    expect(
+      validateStay(
+        { checkIn: "2026-02-01", checkOut: "2026-02-02", guests: 2, pets: 0 },
+        DEFAULT_PRICING,
+        "2026-02-01"
+      )
+    ).toMatch(/advance/);
+  });
+
   it("accepts a valid stay", () => {
     expect(
       validateStay({ checkIn: "2026-01-05", checkOut: "2026-01-08", guests: 4, pets: 1 })

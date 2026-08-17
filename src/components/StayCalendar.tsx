@@ -23,11 +23,18 @@ function monthLabel(year: number, month: number): string {
 export default function StayCalendar({ unavailable, holidays, checkIn, checkOut, onChange }: Props) {
   const today = toISODate(new Date());
   const unavailableSet = useMemo(() => new Set(unavailable), [unavailable]);
-  const [viewYear, setViewYear] = useState(() => new Date().getFullYear());
-  const [viewMonth, setViewMonth] = useState(() => new Date().getMonth());
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth();
+  const [viewYear, setViewYear] = useState(currentYear);
+  const [viewMonth, setViewMonth] = useState(currentMonth);
+  const atCurrentMonth = viewYear === currentYear && viewMonth === currentMonth;
 
   function shiftMonth(delta: number) {
     const d = new Date(viewYear, viewMonth + delta, 1);
+    // Never let the visible range go earlier than the current month.
+    if (d.getFullYear() < currentYear || (d.getFullYear() === currentYear && d.getMonth() < currentMonth)) {
+      return;
+    }
     setViewYear(d.getFullYear());
     setViewMonth(d.getMonth());
   }
@@ -68,7 +75,7 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
           ))}
           {cells.map((date, i) => {
             if (!date) return <div key={`e${i}`} />;
-            const isPast = date < today;
+            const isPast = date <= today; // no same-day booking
             // A date is selectable as check-out even if its own night is
             // unavailable (the guest leaves that morning).
             const nightUnavailable = unavailableSet.has(date);
@@ -128,7 +135,11 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
         <button
           type="button"
           onClick={() => shiftMonth(-1)}
-          className="rounded px-3 py-1 text-stone-600 hover:bg-stone-100"
+          disabled={atCurrentMonth}
+          className={[
+            "rounded px-3 py-1",
+            atCurrentMonth ? "cursor-not-allowed text-stone-300" : "text-stone-600 hover:bg-stone-100",
+          ].join(" ")}
           aria-label="Previous month"
         >
           ←
