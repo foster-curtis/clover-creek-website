@@ -98,6 +98,11 @@ export function validateStay(
   if (today) {
     if (req.checkIn < today) return "Check-in can't be in the past.";
     if (req.checkIn === today) return "Check-in must be at least one day in advance.";
+    const t = parseISODate(today);
+    // Bookable through the end of the month one year from now.
+    const maxNight = toISODate(new Date(t.getFullYear() + 1, t.getMonth() + 1, 0));
+    const lastNight = addDays(req.checkOut, -1);
+    if (lastNight > maxNight) return "Bookings can only be made up to one year in advance.";
   }
   const nights = stayNights(req.checkIn, req.checkOut).length;
   if (nights < config.minStayNights)

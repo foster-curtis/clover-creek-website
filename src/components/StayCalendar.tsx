@@ -25,14 +25,24 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
   const unavailableSet = useMemo(() => new Set(unavailable), [unavailable]);
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
+  // Bookable through the end of the month one year from now.
+  const maxDate = toISODate(new Date(currentYear + 1, currentMonth + 1, 0));
+  const maxCheckOutDate = addDays(maxDate, 1); // departure morning after the last bookable night
+  const maxYear = currentYear + 1;
+  const maxMonth = currentMonth;
   const [viewYear, setViewYear] = useState(currentYear);
   const [viewMonth, setViewMonth] = useState(currentMonth);
   const atCurrentMonth = viewYear === currentYear && viewMonth === currentMonth;
+  const atMaxMonth = viewYear === maxYear && viewMonth === maxMonth;
 
   function shiftMonth(delta: number) {
     const d = new Date(viewYear, viewMonth + delta, 1);
-    // Never let the visible range go earlier than the current month.
+    // Never let the visible range go earlier than the current month or
+    // later than the max month.
     if (d.getFullYear() < currentYear || (d.getFullYear() === currentYear && d.getMonth() < currentMonth)) {
+      return;
+    }
+    if (d.getFullYear() > maxYear || (d.getFullYear() === maxYear && d.getMonth() > maxMonth)) {
       return;
     }
     setViewYear(d.getFullYear());
@@ -80,7 +90,10 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
             // unavailable (the guest leaves that morning).
             const nightUnavailable = unavailableSet.has(date);
             const selectingCheckout = Boolean(checkIn && !checkOut);
-            const disabled = isPast || (nightUnavailable && !selectingCheckout);
+            // No bookings more than a year out — check-out may land one day
+            // past maxDate (the morning after the last bookable night).
+            const beyondMax = selectingCheckout ? date > maxCheckOutDate : date > maxDate;
+            const disabled = isPast || beyondMax || (nightUnavailable && !selectingCheckout);
             const inRange =
               checkIn && checkOut ? date >= checkIn && date < checkOut : false;
             const isStart = date === checkIn;
@@ -154,7 +167,11 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
         <button
           type="button"
           onClick={() => shiftMonth(1)}
-          className="rounded px-3 py-1 text-stone-600 hover:bg-stone-100"
+          disabled={atMaxMonth}
+          className={[
+            "rounded px-3 py-1",
+            atMaxMonth ? "cursor-not-allowed text-stone-300" : "text-stone-600 hover:bg-stone-100",
+          ].join(" ")}
           aria-label="Next month"
         >
           →

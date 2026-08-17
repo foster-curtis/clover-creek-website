@@ -41,6 +41,24 @@ describe("validateStay", () => {
     ).toMatch(/advance/);
   });
 
+  it("rejects check-in more than a year out, bookable through end of that month", () => {
+    // today is 2026-08-17 → bookable through 2027-08-31.
+    expect(
+      validateStay(
+        { checkIn: "2027-08-30", checkOut: "2027-08-31", guests: 2, pets: 0 },
+        DEFAULT_PRICING,
+        "2026-08-17"
+      )
+    ).toBeNull();
+    expect(
+      validateStay(
+        { checkIn: "2027-09-01", checkOut: "2027-09-02", guests: 2, pets: 0 },
+        DEFAULT_PRICING,
+        "2026-08-17"
+      )
+    ).toMatch(/advance/);
+  });
+
   it("accepts a valid stay", () => {
     expect(
       validateStay({ checkIn: "2026-01-05", checkOut: "2026-01-08", guests: 4, pets: 1 })
