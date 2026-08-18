@@ -5,7 +5,7 @@ import MobileNav from "./MobileNav";
 
 export default async function Header() {
   const user = await currentUser();
-  const admin = user ? await isAdminUser() : false;
+  const admin = await isAdminUser(user);
 
   return (
     <header className="sticky top-0 z-40 border-b border-stone-200 bg-cream/95 backdrop-blur">

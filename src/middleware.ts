@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { AUTH_DEADLINE_MS, withDeadline } from "@/lib/supabase/deadline";
 
 export async function middleware(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -21,21 +22,28 @@ export async function middleware(request: NextRequest) {
   });
 
   // Refresh the auth session (required for server components to see it).
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims() verifies the JWT locally against cached JWKS when the project
+  // uses asymmetric signing keys, saving a round-trip; it falls back to a
+  // network call for legacy HS256 tokens. The deadline caps what an unreachable
+  // Supabase can cost either way — better to bounce to /login than to hang.
+  const claims = await withDeadline<{ sub?: string } | null>(
+    supabase.auth.getClaims().then(({ data }) => data?.claims ?? null),
+    AUTH_DEADLINE_MS,
+    null
+  );
 
-  const path = request.nextUrl.pathname;
-  const needsAuth = path.startsWith("/admin") || path.startsWith("/account");
-  if (needsAuth && !user) {
+  if (!claims?.sub) {
     const login = request.nextUrl.clone();
     login.pathname = "/login";
-    login.searchParams.set("next", path);
+    login.searchParams.set("next", request.nextUrl.pathname);
     return NextResponse.redirect(login);
   }
   return response;
 }
 
+// Only the routes that actually gate on auth. This previously matched every
+// path, so each Next.js prefetch of a public page paid for its own auth
+// round-trip — ruinous when Supabase is slow or down.
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|placeholders|.*\\.(?:svg|png|jpg|jpeg|webp|ico)$).*)"],
+  matcher: ["/admin/:path*", "/account/:path*"],
 };
