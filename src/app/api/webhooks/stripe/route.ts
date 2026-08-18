@@ -5,13 +5,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import type Stripe from "stripe";
 import { sendBookingConfirmation, notifyOwnerNewBooking } from "@/lib/email";
 import { getSiteContent } from "@/lib/content";
-import type { Quote } from "@/lib/pricing";
+import { parseStay, type Quote } from "@/lib/pricing";
 import { hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
-
-function parseStay(stay: string): { checkIn: string; checkOut: string } {
-  const m = /^[\[(]([\d-]+),([\d-]+)[)\]]$/.exec(stay);
-  return { checkIn: m?.[1] ?? "", checkOut: m?.[2] ?? "" };
-}
 
 export async function POST(request: NextRequest) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;

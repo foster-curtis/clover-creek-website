@@ -2,16 +2,11 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import BookingChat from "@/components/BookingChat";
 import { fullRefundDeadline, propertyToday, refundFor } from "@/lib/cancellation";
-import { formatUSD, type Quote } from "@/lib/pricing";
+import { formatUSD, parseStay, type Quote } from "@/lib/pricing";
 import { SITE } from "@/lib/site";
 import { currentUser, supabaseServer } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
-
-function parseStay(stay: string): { checkIn: string; checkOut: string } {
-  const m = /^[\[(]([\d-]+),([\d-]+)[)\]]$/.exec(stay);
-  return { checkIn: m?.[1] ?? "", checkOut: m?.[2] ?? "" };
-}
 
 export default async function BookingDetailPage({
   params,

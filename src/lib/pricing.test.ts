@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { holidayMap } from "./holidays";
-import { DEFAULT_PRICING, quoteStay, validateStay } from "./pricing";
+import { DEFAULT_PRICING, parseStay, quoteStay, validateStay } from "./pricing";
 
 // 2026 reference dates: 2026-01-05 is a Monday; 2026-01-09 is a Friday.
 const holidays = holidayMap(2026, 2027, [{ day: "2026-07-24", label: "Pioneer Day" }]);
@@ -163,5 +163,26 @@ describe("quoteStay", () => {
     expect(() =>
       quoteStay({ checkIn: "2026-01-05", checkOut: "2026-01-05", guests: 2, pets: 0 }, holidays)
     ).toThrow();
+  });
+});
+
+describe("parseStay", () => {
+  it("reads the half-open range Postgres returns", () => {
+    expect(parseStay("[2026-08-17,2026-08-20)")).toEqual({
+      checkIn: "2026-08-17",
+      checkOut: "2026-08-20",
+    });
+  });
+
+  it("accepts either bracket style", () => {
+    expect(parseStay("(2026-01-01,2026-01-02]")).toEqual({
+      checkIn: "2026-01-01",
+      checkOut: "2026-01-02",
+    });
+  });
+
+  it("yields empty strings rather than throwing on junk", () => {
+    expect(parseStay("")).toEqual({ checkIn: "", checkOut: "" });
+    expect(parseStay("not a range")).toEqual({ checkIn: "", checkOut: "" });
   });
 });

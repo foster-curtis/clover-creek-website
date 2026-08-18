@@ -7,13 +7,8 @@ import { revalidatePath } from "next/cache";
 import { propertyToday, refundFor } from "@/lib/cancellation";
 import { getHolidays, getPricing } from "@/lib/data";
 import { notifyOwnerCancellation, sendCancellationConfirmation } from "@/lib/email";
-import { formatUSD, quoteStay, validateStay } from "@/lib/pricing";
+import { formatUSD, parseStay, quoteStay, validateStay } from "@/lib/pricing";
 import { isAdminUser, supabaseAdmin } from "@/lib/supabase/server";
-
-function parseStay(stay: string): { checkIn: string; checkOut: string } {
-  const m = /^[\[(]([\d-]+),([\d-]+)[)\]]$/.exec(stay);
-  return { checkIn: m?.[1] ?? "", checkOut: m?.[2] ?? "" };
-}
 
 async function requireAdmin() {
   if (!(await isAdminUser())) throw new Error("Not authorized");

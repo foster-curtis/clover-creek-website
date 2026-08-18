@@ -1,13 +1,8 @@
 import Link from "next/link";
-import { formatUSD } from "@/lib/pricing";
+import { formatUSD, parseStay } from "@/lib/pricing";
 import { supabaseAdmin, hasServiceRole } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
-
-function parseStay(stay: string): { checkIn: string; checkOut: string } {
-  const m = /^[\[(]([\d-]+),([\d-]+)[)\]]$/.exec(stay);
-  return { checkIn: m?.[1] ?? "", checkOut: m?.[2] ?? "" };
-}
 
 export default async function AdminDashboard() {
   if (!hasServiceRole()) {

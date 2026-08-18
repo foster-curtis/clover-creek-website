@@ -1,5 +1,5 @@
 import { propertyToday, refundFor } from "@/lib/cancellation";
-import { formatUSD } from "@/lib/pricing";
+import { formatUSD, parseStay } from "@/lib/pricing";
 import { SITE } from "@/lib/site";
 import { hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
 import {
@@ -11,11 +11,6 @@ import {
 } from "../actions";
 
 export const dynamic = "force-dynamic";
-
-function parseStay(stay: string): { checkIn: string; checkOut: string } {
-  const m = /^[\[(]([\d-]+),([\d-]+)[)\]]$/.exec(stay);
-  return { checkIn: m?.[1] ?? "", checkOut: m?.[2] ?? "" };
-}
 
 const inputCls =
   "rounded border border-stone-300 bg-white px-3 py-1.5 text-sm focus:border-moss focus:outline-none";

@@ -1,13 +1,9 @@
 import Link from "next/link";
+import { parseStay } from "@/lib/pricing";
 import { hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
 import { archiveInquiry } from "../actions";
 
 export const dynamic = "force-dynamic";
-
-function parseStay(stay: string): { checkIn: string; checkOut: string } {
-  const m = /^[\[(]([\d-]+),([\d-]+)[)\]]$/.exec(stay);
-  return { checkIn: m?.[1] ?? "", checkOut: m?.[2] ?? "" };
-}
 
 export default async function AdminMessagesPage() {
   if (!hasServiceRole()) {

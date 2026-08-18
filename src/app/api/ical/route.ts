@@ -6,15 +6,11 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { buildIcs } from "@/lib/ical";
+import { parseStay } from "@/lib/pricing";
 import { SITE } from "@/lib/site";
 import { hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
-
-function parseStay(stay: string): { from: string; to: string } {
-  const m = /^[\[(]([\d-]+),([\d-]+)[)\]]$/.exec(stay);
-  return { from: m?.[1] ?? "", to: m?.[2] ?? "" };
-}
 
 export async function GET(request: NextRequest) {
   if (!hasServiceRole()) {
@@ -37,7 +33,7 @@ export async function GET(request: NextRequest) {
 
   const events = [
     ...(bookings ?? []).map((b) => {
-      const { from, to } = parseStay(b.stay);
+      const { checkIn: from, checkOut: to } = parseStay(b.stay);
       return {
         uid: `booking-${b.id}`,
         start: from,
@@ -48,7 +44,7 @@ export async function GET(request: NextRequest) {
       };
     }),
     ...(blocks ?? []).map((b) => {
-      const { from, to } = parseStay(b.span);
+      const { checkIn: from, checkOut: to } = parseStay(b.span);
       return {
         uid: `block-${b.id}`,
         start: from,

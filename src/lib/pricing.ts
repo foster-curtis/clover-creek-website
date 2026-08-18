@@ -73,6 +73,16 @@ export function addDays(isoDate: string, days: number): string {
   return toISODate(d);
 }
 
+/**
+ * Parse a Postgres daterange literal ("[2026-08-17,2026-08-20)") into its two
+ * endpoints — the shape `bookings.stay` and `blocked_dates.span` come back in.
+ * Check-out is exclusive, matching the half-open range stored in the database.
+ */
+export function parseStay(stay: string): { checkIn: string; checkOut: string } {
+  const m = /^[\[(]([\d-]+),([\d-]+)[)\]]$/.exec(stay);
+  return { checkIn: m?.[1] ?? "", checkOut: m?.[2] ?? "" };
+}
+
 /** Every night of a stay: [checkIn, checkOut) */
 export function stayNights(checkIn: string, checkOut: string): string[] {
   const nights: string[] = [];

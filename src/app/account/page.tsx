@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { formatUSD } from "@/lib/pricing";
+import { formatUSD, parseStay } from "@/lib/pricing";
 import {
   currentUser,
   hasServiceRole,
@@ -17,11 +17,6 @@ const STATUS_STYLES: Record<string, string> = {
   completed: "bg-stone-100 text-stone-600",
   cancelled: "bg-red-50 text-red-700",
 };
-
-function parseStay(stay: string): { checkIn: string; checkOut: string } {
-  const m = /^[\[(]([\d-]+),([\d-]+)[)\]]$/.exec(stay);
-  return { checkIn: m?.[1] ?? "", checkOut: m?.[2] ?? "" };
-}
 
 export default async function AccountPage() {
   const user = await currentUser();

@@ -1,15 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import BookingChat from "@/components/BookingChat";
+import { parseStay } from "@/lib/pricing";
 import { currentUser, hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
 import { markMessagesRead } from "../../actions";
 
 export const dynamic = "force-dynamic";
-
-function parseStay(stay: string): { checkIn: string; checkOut: string } {
-  const m = /^[\[(]([\d-]+),([\d-]+)[)\]]$/.exec(stay);
-  return { checkIn: m?.[1] ?? "", checkOut: m?.[2] ?? "" };
-}
 
 export default async function AdminChatPage({
   params,
