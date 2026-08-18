@@ -57,6 +57,14 @@ describe("validateStay", () => {
         "2026-08-17"
       )
     ).toMatch(/advance/);
+    // Check-out itself can't land past the cutoff, even one extra day.
+    expect(
+      validateStay(
+        { checkIn: "2027-08-31", checkOut: "2027-09-01", guests: 2, pets: 0 },
+        DEFAULT_PRICING,
+        "2026-08-17"
+      )
+    ).toMatch(/advance/);
   });
 
   it("accepts a valid stay", () => {

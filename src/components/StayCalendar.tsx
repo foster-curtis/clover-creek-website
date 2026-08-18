@@ -27,7 +27,6 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
   const currentMonth = new Date().getMonth();
   // Bookable through the end of the month one year from now.
   const maxDate = toISODate(new Date(currentYear + 1, currentMonth + 1, 0));
-  const maxCheckOutDate = addDays(maxDate, 1); // departure morning after the last bookable night
   const maxYear = currentYear + 1;
   const maxMonth = currentMonth;
   const [viewYear, setViewYear] = useState(currentYear);
@@ -90,9 +89,7 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
             // unavailable (the guest leaves that morning).
             const nightUnavailable = unavailableSet.has(date);
             const selectingCheckout = Boolean(checkIn && !checkOut);
-            // No bookings more than a year out — check-out may land one day
-            // past maxDate (the morning after the last bookable night).
-            const beyondMax = selectingCheckout ? date > maxCheckOutDate : date > maxDate;
+            const beyondMax = date > maxDate; // no bookings more than a year out
             const disabled = isPast || beyondMax || (nightUnavailable && !selectingCheckout);
             const inRange =
               checkIn && checkOut ? date >= checkIn && date < checkOut : false;
