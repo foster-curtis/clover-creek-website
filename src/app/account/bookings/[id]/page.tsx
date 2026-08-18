@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import BookingChat from "@/components/BookingChat";
+import { fullRefundDeadline, propertyToday, refundFor } from "@/lib/cancellation";
 import { formatUSD, type Quote } from "@/lib/pricing";
 import { SITE } from "@/lib/site";
 import { currentUser, supabaseServer } from "@/lib/supabase/server";
@@ -32,6 +33,12 @@ export default async function BookingDetailPage({
 
   const { checkIn, checkOut } = parseStay(booking.stay);
   const quote = booking.quote as Quote | null;
+
+  // What this booking is worth back if the guest cancels today.
+  const today = propertyToday();
+  const refund = refundFor(checkIn, today, booking.total_cents);
+  const fullUntil = fullRefundDeadline(checkIn);
+  const cancellable = booking.status === "pending" || booking.status === "confirmed";
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
@@ -85,9 +92,33 @@ export default async function BookingDetailPage({
               </Link>
             </li>
           </ul>
-          <p className="mt-4 text-xs text-stone-500">
-            Need to change or cancel? Send a message and we&apos;ll sort it out.
-          </p>
+          {cancellable && (
+            <>
+              <h2 className="mt-6 font-bold text-stone-800">If you need to cancel</h2>
+              <p className="mt-2 text-stone-600">
+                {refund.refundCents > 0 ? (
+                  <>
+                    Cancel today and you&apos;d be refunded{" "}
+                    <strong>{formatUSD(refund.refundCents / 100)}</strong> ({refund.percent}% of{" "}
+                    {formatUSD(booking.total_cents / 100)}).
+                  </>
+                ) : (
+                  <>
+                    Check-in is {refund.daysBefore < 0 ? "past" : "less than a week away"}, so a
+                    cancellation now wouldn&apos;t be refunded under our policy.
+                  </>
+                )}
+                {refund.percent === 100 && <> A full refund applies through {fullUntil}.</>}
+              </p>
+              <p className="mt-2 text-xs text-stone-500">
+                Send a message below to cancel, or see the full{" "}
+                <Link href="/faq" className="text-moss underline">
+                  cancellation policy
+                </Link>
+                .
+              </p>
+            </>
+          )}
         </div>
 
         <div>

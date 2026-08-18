@@ -4,9 +4,16 @@
 // before touching data with the service-role client.
 
 import { revalidatePath } from "next/cache";
+import { propertyToday, refundFor } from "@/lib/cancellation";
 import { getHolidays, getPricing } from "@/lib/data";
-import { quoteStay, validateStay } from "@/lib/pricing";
+import { notifyOwnerCancellation, sendCancellationConfirmation } from "@/lib/email";
+import { formatUSD, quoteStay, validateStay } from "@/lib/pricing";
 import { isAdminUser, supabaseAdmin } from "@/lib/supabase/server";
+
+function parseStay(stay: string): { checkIn: string; checkOut: string } {
+  const m = /^[\[(]([\d-]+),([\d-]+)[)\]]$/.exec(stay);
+  return { checkIn: m?.[1] ?? "", checkOut: m?.[2] ?? "" };
+}
 
 async function requireAdmin() {
   if (!(await isAdminUser())) throw new Error("Not authorized");
@@ -136,25 +143,65 @@ export async function setBookingStatus(formData: FormData) {
   revalidatePath("/book");
 }
 
+/**
+ * Cancel a booking and refund per the published policy (see @/lib/cancellation).
+ * An "override" amount in dollars lets the owner waive the policy for a guest;
+ * without it the tier for today's date decides. Stripe's processing fee is not
+ * returned on a refund — that cost sits with the owner.
+ */
 export async function refundBooking(formData: FormData) {
   const db = await requireAdmin();
   const id = String(formData.get("id"));
   const { data: booking } = await db
     .from("bookings")
-    .select("stripe_payment_intent")
+    .select("stay, guest_name, guest_email, total_cents, stripe_payment_intent")
     .eq("id", id)
     .single();
+  if (!booking) throw new Error("Booking not found");
 
-  if (booking?.stripe_payment_intent && process.env.STRIPE_SECRET_KEY) {
+  const { checkIn } = parseStay(booking.stay);
+  const cancelledOn = propertyToday();
+  const outcome = refundFor(checkIn, cancelledOn, booking.total_cents);
+
+  const overrideRaw = String(formData.get("override") ?? "").trim();
+  const overrideCents = overrideRaw ? Math.round(Number(overrideRaw) * 100) : null;
+  if (overrideCents !== null && (!Number.isFinite(overrideCents) || overrideCents < 0))
+    throw new Error("Invalid refund override");
+  if (overrideCents !== null && overrideCents > booking.total_cents)
+    throw new Error("Refund can't exceed the amount paid");
+
+  const refundCents = overrideCents ?? outcome.refundCents;
+  const overridden = overrideCents !== null && overrideCents !== outcome.refundCents;
+
+  if (refundCents > 0 && booking.stripe_payment_intent && process.env.STRIPE_SECRET_KEY) {
     const { default: Stripe } = await import("stripe");
     const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-    await stripe.refunds.create({ payment_intent: booking.stripe_payment_intent });
+    await stripe.refunds.create({
+      payment_intent: booking.stripe_payment_intent,
+      amount: refundCents,
+    });
   }
-  await db
-    .from("bookings")
-    .update({ status: "cancelled", notes: "cancelled & refunded" })
-    .eq("id", id);
+
+  const note = overridden
+    ? `cancelled · refunded ${formatUSD(refundCents / 100)} (override; policy said ${outcome.percent}%)`
+    : `cancelled · ${outcome.percent}% refund ${formatUSD(refundCents / 100)} (${outcome.tier.label} before check-in)`;
+  await db.from("bookings").update({ status: "cancelled", notes: note }).eq("id", id);
+
+  // Matches the booking flow: the guest gets a confirmation, the owner a record.
+  const emailInfo = {
+    guestName: booking.guest_name,
+    guestEmail: booking.guest_email,
+    checkIn,
+    totalCents: booking.total_cents,
+    refundCents,
+    percent: overridden ? null : outcome.percent,
+    tierLabel: outcome.tier.label,
+  };
+  if (booking.guest_email) await sendCancellationConfirmation(emailInfo);
+  await notifyOwnerCancellation(emailInfo);
+
   revalidatePath("/admin/calendar");
+  revalidatePath("/account");
   revalidatePath("/book");
 }
 

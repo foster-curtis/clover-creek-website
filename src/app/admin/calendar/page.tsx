@@ -1,3 +1,4 @@
+import { propertyToday, refundFor } from "@/lib/cancellation";
 import { formatUSD } from "@/lib/pricing";
 import { SITE } from "@/lib/site";
 import { hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
@@ -42,6 +43,7 @@ export default async function AdminCalendarPage() {
   ]);
 
   const icalToken = process.env.ICAL_FEED_TOKEN;
+  const today = propertyToday();
 
   return (
     <div>
@@ -155,6 +157,7 @@ export default async function AdminCalendarPage() {
           <tbody>
             {(bookings ?? []).map((b) => {
               const { checkIn, checkOut } = parseStay(b.stay);
+              const refund = refundFor(checkIn, today, b.total_cents);
               return (
                 <tr key={b.id} className="border-t border-stone-100 align-top">
                   <td className="px-3 py-2 whitespace-nowrap">{checkIn} → {checkOut}</td>
@@ -195,11 +198,24 @@ export default async function AdminCalendarPage() {
                       )}
                       {(b.status === "pending" || b.status === "confirmed") &&
                         (b.stripe_payment_intent ? (
-                          <form action={refundBooking}>
+                          <form action={refundBooking} className="flex flex-col gap-1">
                             <input type="hidden" name="id" value={b.id} />
                             <button type="submit" className={smallBtnCls + " text-red-600"}>
-                              Cancel &amp; refund
+                              Cancel &amp; refund {formatUSD(refund.refundCents / 100)}
                             </button>
+                            <span className="text-[11px] text-stone-400">
+                              {refund.percent}% · {refund.tier.label} out
+                            </span>
+                            <input
+                              type="number"
+                              name="override"
+                              step="0.01"
+                              min={0}
+                              max={b.total_cents / 100}
+                              placeholder="override $"
+                              title="Refund a different amount instead of the policy amount"
+                              className="w-24 rounded border border-stone-200 px-1 py-0.5 text-[11px]"
+                            />
                           </form>
                         ) : (
                           <form action={setBookingStatus}>

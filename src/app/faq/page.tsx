@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { describeRefund, REFUND_TIERS } from "@/lib/cancellation";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -37,7 +38,7 @@ const FAQS: Array<{ q: string; a: React.ReactNode }> = [
   },
   {
     q: "Is there Wi-Fi and cell service?",
-    a: "Rush Valley is rural, so coverage varies by carrier. Ask us about current Wi-Fi availability when you book.",
+    a: "Yes to both. Wi-Fi is available at the guest house — the network name and password are posted inside. Cell service in the area is reliable on essentially every carrier.",
   },
   {
     q: "How far is the house from Salt Lake City?",
@@ -51,11 +52,21 @@ const FAQS: Array<{ q: string; a: React.ReactNode }> = [
     q: "Can I cancel my booking?",
     a: (
       <>
-        Contact us as soon as your plans change — reach out via your{" "}
-        <Link href="/account" className="text-moss underline">
-          booking page
-        </Link>{" "}
-        or email and we&apos;ll work with you on a refund per our cancellation policy.
+        Yes — the refund depends on how far ahead of your check-in date you cancel:
+        <ul className="mt-3 space-y-2">
+          {REFUND_TIERS.map((tier) => (
+            <li key={tier.label}>
+              • <strong>{tier.label}</strong> before check-in — {describeRefund(tier.percent)}.
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3">
+          Please contact us as soon as your plans change — reach out via your{" "}
+          <Link href="/account" className="text-moss underline">
+            booking page
+          </Link>{" "}
+          or by email and we&apos;ll take care of the refund.
+        </p>
       </>
     ),
   },

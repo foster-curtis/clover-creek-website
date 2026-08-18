@@ -102,14 +102,9 @@ Without this, bookings still work — the site just logs emails instead of sendi
 
 These are written into the site loosely and should be firmed up:
 
-1. **Cancellation policy** — currently the site says "contact us"; refunds are issued
-   manually from Admin → Calendar (one click, via Stripe). Decide real terms and update
-   [src/app/terms/page.tsx](src/app/terms/page.tsx) and the FAQ.
-2. **Minimum stay** — currently 1 night; change in Admin → Pricing.
-3. **Utah taxes** — prices include tax, so the owner must be registered to remit Utah
+1. **Minimum stay** — currently 1 night; change in Admin → Pricing.
+2. **Utah taxes** — prices include tax, so the owner must be registered to remit Utah
    sales + transient room tax on lodging revenue. Worth a quick check with an accountant.
-4. **Wi-Fi/cell answer for the FAQ** — see the placeholder in
-   [src/app/faq/page.tsx](src/app/faq/page.tsx).
 
 ---
 
@@ -118,7 +113,7 @@ These are written into the site loosely and should be firmed up:
 ```bash
 npm install
 npm run dev    # http://localhost:3000
-npm test       # pricing engine unit tests
+npm test       # pricing engine + cancellation policy unit tests
 npm run build  # production build (what Vercel runs)
 ```
 
@@ -127,6 +122,13 @@ npm run build  # production build (what Vercel runs)
 - **Pricing engine** — [src/lib/pricing.ts](src/lib/pricing.ts), one pure function used by
   the live quote, the checkout API, and emails. Unit-tested in
   [src/lib/pricing.test.ts](src/lib/pricing.test.ts).
+- **Cancellation policy** — [src/lib/cancellation.ts](src/lib/cancellation.ts) holds the
+  refund tiers (6+ weeks 100%, 4–6 weeks 75%, 2–4 weeks 50%, 1–2 weeks 25%, under a week
+  0%), applied as a percentage of the booking total. The FAQ, the terms page, the guest's
+  booking page, the admin refund button and the cancellation email all read that one
+  table, so editing `REFUND_TIERS` changes the published policy and the money refunded
+  together. Admin → Calendar shows the policy amount on the refund button, with an
+  override box to waive it. Stripe's processing fee is not returned on a refund.
 - **Double-booking protection** — a Postgres exclusion constraint on the bookings table;
   even two simultaneous checkouts can't overlap. Pending bookings hold dates for 30
   minutes, then auto-release if payment doesn't complete.

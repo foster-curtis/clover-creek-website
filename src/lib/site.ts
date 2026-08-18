@@ -15,6 +15,7 @@ export const SITE = {
     region: "Utah",
     postalCode: "84069",
     country: "US",
+    timezone: "America/Denver",
     lat: 40.3627,
     lng: -112.4544,
   },

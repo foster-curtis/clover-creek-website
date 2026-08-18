@@ -115,3 +115,59 @@ export async function notifyNewMessage(
   `);
   await sendEmail(to, `New message — ${SITE.name}`, html);
 }
+
+export interface CancellationEmailInfo {
+  guestName: string;
+  guestEmail: string;
+  checkIn: string;
+  totalCents: number;
+  refundCents: number;
+  /** null when the owner overrode the policy — we don't quote a tier we didn't apply. */
+  percent: number | null;
+  tierLabel: string;
+}
+
+export async function sendCancellationConfirmation(info: CancellationEmailInfo): Promise<void> {
+  const refund = formatUSD(info.refundCents / 100);
+  const paid = formatUSD(info.totalCents / 100);
+  const basis =
+    info.percent === null
+      ? `We've refunded <strong>${refund}</strong> of the ${paid} paid.`
+      : info.percent === 0
+        ? `Because the cancellation falls within ${info.tierLabel.toLowerCase()} of check-in, our
+           cancellation policy does not provide a refund, so no money has been returned.`
+        : `Cancelling ${info.tierLabel.toLowerCase()} before check-in earns a
+           <strong>${info.percent}% refund</strong> under our cancellation policy, so
+           <strong>${refund}</strong> of the ${paid} paid is on its way back to you.`;
+
+  const html = layout(`
+    <p>Hi ${info.guestName},</p>
+    <p>Your stay at ${SITE.name} beginning ${info.checkIn} has been cancelled.</p>
+    <p>${basis}</p>
+    ${
+      info.refundCents > 0
+        ? `<p>Refunds return to your original payment method and usually appear within
+           5–10 business days, depending on your bank.</p>`
+        : ""
+    }
+    <p>The full policy is on our website:
+      <a href="${SITE.url}/faq">${SITE.url}/faq</a>.
+      If something about this doesn't look right, just reply to this email.</p>
+    <p>We're sorry to miss you, and we hope to host you another time.</p>
+  `);
+  await sendEmail(info.guestEmail, `Booking cancelled — ${SITE.name}`, html);
+}
+
+export async function notifyOwnerCancellation(info: CancellationEmailInfo): Promise<void> {
+  const html = layout(`
+    <p><strong>Booking cancelled</strong></p>
+    <p>${info.guestName} (${info.guestEmail})<br/>
+    Check-in was ${info.checkIn}<br/>
+    Paid: ${formatUSD(info.totalCents / 100)} ·
+    Refunded: <strong>${formatUSD(info.refundCents / 100)}</strong>
+    ${info.percent === null ? "(manual override)" : `(${info.percent}% — ${info.tierLabel})`}</p>
+    <p>Stripe's processing fee on the original charge is not returned.</p>
+    <p><a href="${SITE.url}/admin/calendar">Open the booking calendar</a></p>
+  `);
+  await sendEmail(SITE.ownerEmail, `Cancelled: ${info.checkIn} (${info.guestName})`, html);
+}

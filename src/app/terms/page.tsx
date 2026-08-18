@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { describeRefund, REFUND_TIERS } from "@/lib/cancellation";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = { title: "Terms of Service" };
@@ -8,7 +9,7 @@ export default function TermsPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 leading-relaxed text-stone-600">
       <h1 className="text-3xl font-bold text-stone-800">Terms of Service</h1>
-      <p className="mt-2 text-sm text-stone-400">Last updated: July 2026</p>
+      <p className="mt-2 text-sm text-stone-400">Last updated: August 2026</p>
 
       <h2 className="mt-8 text-xl font-bold text-stone-800">Booking &amp; payment</h2>
       <p className="mt-2">
@@ -19,10 +20,22 @@ export default function TermsPage() {
 
       <h2 className="mt-8 text-xl font-bold text-stone-800">Cancellations</h2>
       <p className="mt-2">
-        Contact us as early as possible if your plans change. Refunds are issued per the
-        cancellation policy communicated at booking. To request a cancellation, use your{" "}
+        Refunds are calculated from the date the cancellation is received, as a percentage of the
+        booking total (which includes the cleaning fee and taxes):
+      </p>
+      <ul className="mt-4 space-y-2 text-stone-600">
+        {REFUND_TIERS.map((tier) => (
+          <li key={tier.label}>
+            • <strong>{tier.label}</strong> before check-in — {describeRefund(tier.percent)}.
+          </li>
+        ))}
+      </ul>
+      <p className="mt-4">
+        Contact us as early as possible if your plans change — use your{" "}
         <Link href="/account" className="text-moss underline">booking page</Link> or email{" "}
         <a href={`mailto:${SITE.ownerEmail}`} className="text-moss underline">{SITE.ownerEmail}</a>.
+        Refunds are returned to the original payment method and typically appear within 5–10
+        business days.
       </p>
 
       <h2 className="mt-8 text-xl font-bold text-stone-800">House rules &amp; liability</h2>
