@@ -4,8 +4,8 @@
 export const SITE = {
   name: "Clover Creek Guest House",
   tagline: "A quiet, serene farmhouse cottage in Rush Valley, Utah",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://clovercreekguesthouse.com",
-  ownerEmail: process.env.OWNER_EMAIL ?? "clovercreek@gmail.com",
+  url: process.env.NEXT_PUBLIC_SITE_URL || "https://clovercreekguesthouse.com",
+  ownerEmail: process.env.OWNER_EMAIL || "clovercreek@gmail.com",
   phoneDisplay: process.env.NEXT_PUBLIC_PHONE ?? "", // optional, shown in footer if set
   checkInTime: "3:00 PM",
   checkOutTime: "11:00 AM",
