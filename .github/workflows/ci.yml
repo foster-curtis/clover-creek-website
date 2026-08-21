@@ -62,7 +62,13 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Check Vercel credentials
+      - name: Install Vercel CLI
+        run: npm install --global "vercel@$VERCEL_CLI_VERSION"
+
+      # "Cannot load project settings" from vercel pull is really an HTTP 403
+      # (vercel/vercel#10874). Name the account and scope up front so a
+      # permissions problem does not masquerade as a missing directory.
+      - name: Verify Vercel access
         run: |
           missing=""
           [ -n "$VERCEL_TOKEN" ] || missing="$missing VERCEL_TOKEN"
@@ -72,14 +78,20 @@ jobs:
             echo "::error::Missing GitHub secret(s):$missing - add them under Settings > Secrets and variables > Actions."
             exit 1
           fi
-
-      - name: Install Vercel CLI
-        run: npm install --global "vercel@$VERCEL_CLI_VERSION"
+          echo "Token belongs to: $(vercel whoami --token="$VERCEL_TOKEN" 2>&1 || echo "<token rejected>")"
+          echo "Target scope:     $VERCEL_ORG_ID"
+          echo "Target project:   $VERCEL_PROJECT_ID"
+          echo "Teams visible to this token:"
+          vercel teams ls --token="$VERCEL_TOKEN" 2>&1 | sed "s/^/  /" || true
 
       # Pulls this project's Preview environment variables from Vercel, so the
       # build sees the same values production does. Nothing is written back.
       - name: Pull Vercel environment
-        run: vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
+        run: |
+          if ! vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"; then
+            echo "::error::vercel pull failed. If it reported \"Cannot load project settings\", that is an HTTP 403 - this token cannot reach project $VERCEL_PROJECT_ID in scope $VERCEL_ORG_ID. Mint the token from the Vercel account that belongs to that team; removing .vercel does not help here."
+            exit 1
+          fi
 
       - name: Build
         run: vercel build --token="$VERCEL_TOKEN"
@@ -134,7 +146,13 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Check Vercel credentials
+      - name: Install Vercel CLI
+        run: npm install --global "vercel@$VERCEL_CLI_VERSION"
+
+      # "Cannot load project settings" from vercel pull is really an HTTP 403
+      # (vercel/vercel#10874). Name the account and scope up front so a
+      # permissions problem does not masquerade as a missing directory.
+      - name: Verify Vercel access
         run: |
           missing=""
           [ -n "$VERCEL_TOKEN" ] || missing="$missing VERCEL_TOKEN"
@@ -144,12 +162,18 @@ jobs:
             echo "::error::Missing GitHub secret(s):$missing - add them under Settings > Secrets and variables > Actions."
             exit 1
           fi
-
-      - name: Install Vercel CLI
-        run: npm install --global "vercel@$VERCEL_CLI_VERSION"
+          echo "Token belongs to: $(vercel whoami --token="$VERCEL_TOKEN" 2>&1 || echo "<token rejected>")"
+          echo "Target scope:     $VERCEL_ORG_ID"
+          echo "Target project:   $VERCEL_PROJECT_ID"
+          echo "Teams visible to this token:"
+          vercel teams ls --token="$VERCEL_TOKEN" 2>&1 | sed "s/^/  /" || true
 
       - name: Pull Vercel environment
-        run: vercel pull --yes --environment=production --token="$VERCEL_TOKEN"
+        run: |
+          if ! vercel pull --yes --environment=production --token="$VERCEL_TOKEN"; then
+            echo "::error::vercel pull failed. If it reported \"Cannot load project settings\", that is an HTTP 403 - this token cannot reach project $VERCEL_PROJECT_ID in scope $VERCEL_ORG_ID. Mint the token from the Vercel account that belongs to that team; removing .vercel does not help here."
+            exit 1
+          fi
 
       - name: Build
         run: vercel build --prod --token="$VERCEL_TOKEN"
