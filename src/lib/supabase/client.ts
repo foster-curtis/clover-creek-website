@@ -2,21 +2,19 @@
 
 import { createBrowserClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { getSupabaseEnv } from "./env";
 
 let client: SupabaseClient | null = null;
 
 export function hasSupabaseClient(): boolean {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
+  return getSupabaseEnv() !== null;
 }
 
 export function supabaseBrowser(): SupabaseClient {
   if (!client) {
-    client = createBrowserClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const env = getSupabaseEnv();
+    if (!env) throw new Error("supabaseBrowser() called without checking hasSupabaseClient() first");
+    client = createBrowserClient(env.url, env.anonKey);
   }
   return client;
 }

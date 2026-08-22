@@ -3,11 +3,10 @@ import { createClient, type SupabaseClient, type User } from "@supabase/supabase
 import { cookies } from "next/headers";
 import { cache } from "react";
 import { AUTH_DEADLINE_MS, withDeadline } from "./deadline";
+import { getSupabaseEnv } from "./env";
 
 export function hasSupabase(): boolean {
-  return Boolean(
-    process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
+  return getSupabaseEnv() !== null;
 }
 
 export function hasServiceRole(): boolean {
@@ -16,34 +15,35 @@ export function hasServiceRole(): boolean {
 
 /** Request-scoped client that acts as the signed-in user (RLS enforced). */
 export async function supabaseServer(): Promise<SupabaseClient> {
+  const env = getSupabaseEnv();
+  if (!env) throw new Error("supabaseServer() called without checking hasSupabase() first");
   const cookieStore = await cookies();
-  return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: (cookiesToSet) => {
-          try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
-          } catch {
-            // Called from a Server Component — middleware handles session refresh.
-          }
-        },
+  return createServerClient(env.url, env.anonKey, {
+    cookies: {
+      getAll: () => cookieStore.getAll(),
+      setAll: (cookiesToSet) => {
+        try {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            cookieStore.set(name, value, options)
+          );
+        } catch {
+          // Called from a Server Component — middleware handles session refresh.
+        }
       },
-    }
-  );
+    },
+  });
 }
 
 /** Service-role client for trusted server-side operations (bypasses RLS). */
 export function supabaseAdmin(): SupabaseClient {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false, autoRefreshToken: false } }
-  );
+  const env = getSupabaseEnv();
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!env || !serviceRoleKey) {
+    throw new Error("supabaseAdmin() called without checking hasServiceRole() first");
+  }
+  return createClient(env.url, serviceRoleKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
 
 /**
