@@ -27,15 +27,14 @@ export const SITE = {
   phoneDisplay: process.env.NEXT_PUBLIC_PHONE ?? "", // optional, shown in footer if set
   checkInTime: "3:00 PM",
   checkOutTime: "11:00 AM",
-  // TODO(owner): replace with the exact property coordinates & address line.
   location: {
     town: "Rush Valley",
     region: "Utah",
     postalCode: "84069",
     country: "US",
     timezone: "America/Denver",
-    lat: 40.3627,
-    lng: -112.4544,
+    lat: 40.3376757,
+    lng: -112.4813979,
   },
 } as const;
 
