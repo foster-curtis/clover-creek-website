@@ -94,7 +94,7 @@ Without this, bookings still work — the site just logs emails instead of sendi
 | Service | Env var | What it adds |
 |---|---|---|
 | [HERE Maps](https://platform.here.com) (free tier) | `NEXT_PUBLIC_HERE_API_KEY` | Interactive HERE map (site shows OpenStreetMap until then) |
-| [PostHog](https://posthog.com) (free tier) | `NEXT_PUBLIC_POSTHOG_KEY` | Visits, unique visitors, booking funnel — linked from the admin dashboard |
+| [Vercel Web Analytics](https://vercel.com/docs/analytics) | — | Enable in the project's Vercel dashboard → Analytics tab; visits and top pages are tracked automatically (no env var needed), linked from the admin dashboard |
 | [Google Search Console](https://search.google.com/search-console) | — | Submit `https://clovercreekguesthouse.com/sitemap.xml` after launch |
 | Google Business Profile | — | Show up on Google Maps searches |
 
