@@ -22,7 +22,7 @@ on Vercel.
   editable site copy, pricing & holidays, review moderation, blog authoring, inquiries
 - iCal feeds for the owner's Google Calendar and Airbnb/VRBO availability sync
 - Booking confirmation / notification emails (Resend), SEO (structured data, sitemap),
-  HERE map with OpenStreetMap fallback, optional PostHog analytics
+  HERE map with OpenStreetMap fallback, Vercel Web Analytics
 
 ## Development
 
