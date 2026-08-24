@@ -104,8 +104,8 @@ Build the booking calendar **in-app** (single source of truth in Supabase) rathe
 
 ### 2.6 Analytics
 
-- **PostHog (free tier)** or **Vercel Web Analytics** — both are cookieless-capable and avoid Google Analytics' consent-banner burden. PostHog recommended: page views, unique visitors, booking-funnel conversion.
-- Surface a simple summary card in the admin dashboard (visits, uniques, top pages, bookings started vs. completed) via the PostHog API, so the owner never needs a second dashboard.
+- **Vercel Web Analytics** — cookieless, no consent-banner burden, and ships with the existing Vercel hosting: page views, unique visitors, top pages.
+- Surface a simple summary card in the admin dashboard linking to the Vercel Analytics dashboard, so the owner never needs to hunt for a second login.
 
 ### 2.7 Email & Notifications
 
@@ -175,7 +175,7 @@ All tables protected by row-level security: visitors see only their own bookings
 
 ### Phase 0 — Setup (est. a few days)
 - Register domain, set up DNS on Vercel; create clovercreek@gmail.com
-- Create Supabase project, Stripe account, Resend account, PostHog project, HERE API key
+- Create Supabase project, Stripe account, Resend account, HERE API key; enable Vercel Web Analytics
 - Scaffold Next.js + TypeScript app; CI (lint, typecheck, tests) via GitHub Actions; deploy skeleton to Vercel
 
 ### Phase 1 — Public site (MVP content)
@@ -220,7 +220,7 @@ All tables protected by row-level security: visitors see only their own bookings
 | Payments | Stripe Checkout | Per requirements (over Clover); hosted page = minimal compliance burden |
 | External calendar | Google Calendar push + iCal feeds | Owner visibility on her phone; iCal is the standard for cross-platform availability sync |
 | Chat | Supabase Realtime in-app | Already in the stack, history tied to bookings; WhatsApp link as cheap fallback |
-| Analytics | PostHog free tier | Cookieless option, generous free tier, API to embed stats in admin |
+| Analytics | Vercel Web Analytics | Cookieless, ships with existing Vercel hosting, no extra service to manage |
 | Email | Resend on own domain | Deliverability (SPF/DKIM) for booking confirmations; Gmail alone would land in spam |
 | Content editing | `site_content` table, slug-scoped | Satisfies "editable paragraphs but not titles/buttons" precisely, keeps pages static-renderable via ISR |
 | Maps | HERE Maps API | Per requirements; generous free tier |

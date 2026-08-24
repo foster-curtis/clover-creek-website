@@ -33,7 +33,6 @@ export default async function AdminDashboard() {
   ]);
 
   const totalRevenue = (revenue.data ?? []).reduce((s, b) => s + b.total_cents, 0) / 100;
-  const posthogUrl = process.env.NEXT_PUBLIC_POSTHOG_KEY ? "https://us.posthog.com" : null;
 
   const cards = [
     { label: "Unread guest messages", value: unread.count ?? 0, href: "/admin/messages" },
@@ -99,20 +98,18 @@ export default async function AdminDashboard() {
 
       <div className="mt-10 rounded-xl border border-stone-200 bg-white p-5 text-sm text-stone-600">
         <h2 className="font-bold text-stone-800">Site traffic</h2>
-        {posthogUrl ? (
-          <p className="mt-2">
-            Analytics are collected with PostHog.{" "}
-            <a href={posthogUrl} target="_blank" className="text-moss underline">
-              Open the PostHog dashboard
-            </a>{" "}
-            to see visits, unique visitors and booking-funnel conversion.
-          </p>
-        ) : (
-          <p className="mt-2">
-            Analytics aren&apos;t connected yet — add a NEXT_PUBLIC_POSTHOG_KEY (see SETUP.md) to
-            start tracking visits.
-          </p>
-        )}
+        <p className="mt-2">
+          Analytics are collected with Vercel Web Analytics.{" "}
+          <a
+            href="https://vercel.com/dashboard"
+            target="_blank"
+            className="text-moss underline"
+          >
+            Open the Vercel dashboard
+          </a>{" "}
+          and select this project&apos;s Analytics tab to see visits, unique visitors and top
+          pages.
+        </p>
       </div>
     </div>
   );
