@@ -4,6 +4,7 @@
 // before touching data with the service-role client.
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { propertyToday, refundFor } from "@/lib/cancellation";
 import { getHolidays, getPricing } from "@/lib/data";
 import { notifyOwnerCancellation, sendCancellationConfirmation } from "@/lib/email";
@@ -301,6 +302,7 @@ export async function savePost(formData: FormData) {
   revalidatePath("/blog");
   revalidatePath(`/blog/${slug}`);
   revalidatePath("/admin/blog");
+  redirect("/admin/blog");
 }
 
 export async function deletePost(formData: FormData) {
