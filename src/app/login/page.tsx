@@ -38,10 +38,14 @@ function LoginForm() {
     setStatus("sending");
     setError("");
     const supabase = supabaseBrowser();
+    // Supabase's redirect allow-list is an exact match, so "next" can't ride
+    // along as a query string on emailRedirectTo — it's stashed in a cookie
+    // instead and read back by /auth/callback.
+    document.cookie = `sb-auth-next=${encodeURIComponent(next)}; path=/; max-age=600; samesite=lax`;
     const { error: err } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     });
     if (err) {

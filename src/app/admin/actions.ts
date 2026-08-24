@@ -16,7 +16,7 @@ async function requireAdmin() {
 }
 
 function revalidatePublic() {
-  for (const path of ["/", "/gallery", "/book", "/reviews", "/blog", "/house-rules"]) {
+  for (const path of ["/", "/gallery", "/book", "/reviews", "/blog", "/house-rules", "/faq"]) {
     revalidatePath(path);
   }
 }
