@@ -12,6 +12,9 @@ export async function GET(request: NextRequest) {
     if (!error) {
       return NextResponse.redirect(`${origin}${next.startsWith("/") ? next : "/account"}`);
     }
+    console.error("auth/callback: exchangeCodeForSession failed:", error.message);
+  } else if (!code) {
+    console.error("auth/callback: no ?code param on request URL:", request.url);
   }
   return NextResponse.redirect(`${origin}/login`);
 }
