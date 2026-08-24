@@ -1,6 +1,8 @@
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
 import { Inter, Lora } from "next/font/google";
+import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
 import { SITE } from "@/lib/site";
