@@ -1,6 +1,7 @@
 import Stars from "@/components/Stars";
 import { hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
-import { deleteReview, importReview, setReviewApproval, updateReview } from "../actions";
+import { deleteReview, importReview, setReviewApproval, setReviewFeatured } from "../actions";
+import EditReviewForm from "./EditReviewForm";
 
 export const dynamic = "force-dynamic";
 
@@ -16,8 +17,9 @@ export default async function AdminReviewsPage() {
   const db = supabaseAdmin();
   const { data: reviews } = await db
     .from("reviews")
-    .select("id, author_name, rating, body, verified, approved, stayed_on, created_at, user_id")
+    .select("id, author_name, rating, body, verified, approved, featured, stayed_on, created_at, user_id")
     .order("approved")
+    .order("featured", { ascending: false })
     .order("created_at", { ascending: false });
 
   const pending = (reviews ?? []).filter((r) => !r.approved);
@@ -42,6 +44,11 @@ export default async function AdminReviewsPage() {
                 Imported
               </span>
             )}
+            {r.featured && (
+              <span className="ml-2 rounded-full bg-hay/20 px-2 py-0.5 text-xs font-normal text-stone-600">
+                ★ Featured
+              </span>
+            )}
           </p>
           <Stars rating={r.rating} />
         </div>
@@ -54,40 +61,23 @@ export default async function AdminReviewsPage() {
               {r.approved ? "Hide from site" : "Approve & publish"}
             </button>
           </form>
+          <form action={setReviewFeatured}>
+            <input type="hidden" name="id" value={r.id} />
+            <input type="hidden" name="featured" value={r.featured ? "false" : "true"} />
+            <button type="submit" className={smallBtnCls}>
+              {r.featured ? "Unfeature" : "★ Feature"}
+            </button>
+          </form>
           {imported && (
-            <details className="group">
-              <summary className={smallBtnCls + " inline-block cursor-pointer list-none"}>Edit</summary>
-              <form action={updateReview} className="mt-3 space-y-3 rounded-lg border border-stone-200 p-3">
-                <input type="hidden" name="id" value={r.id} />
-                <div className="flex flex-wrap gap-3">
-                  <label className="text-xs text-stone-500">
-                    Guest name
-                    <input name="authorName" required defaultValue={r.author_name} className={inputCls} />
-                  </label>
-                  <label className="text-xs text-stone-500">
-                    Rating (1–5)
-                    <input
-                      type="number"
-                      name="rating"
-                      min={1}
-                      max={5}
-                      defaultValue={r.rating}
-                      required
-                      className={inputCls + " w-20"}
-                    />
-                  </label>
-                  <label className="text-xs text-stone-500">
-                    Stay date (optional)
-                    <input type="date" name="stayedOn" defaultValue={r.stayed_on ?? ""} className={inputCls} />
-                  </label>
-                </div>
-                <label className="block text-xs text-stone-500">
-                  Review text
-                  <textarea name="body" required rows={3} defaultValue={r.body} className={inputCls + " w-full"} />
-                </label>
-                <button type="submit" className={smallBtnCls}>Save changes</button>
-              </form>
-            </details>
+            <EditReviewForm
+              review={{
+                id: r.id,
+                author_name: r.author_name,
+                rating: r.rating,
+                stayed_on: r.stayed_on,
+                body: r.body,
+              }}
+            />
           )}
           <form action={deleteReview}>
             <input type="hidden" name="id" value={r.id} />

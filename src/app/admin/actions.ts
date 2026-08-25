@@ -239,6 +239,16 @@ export async function setReviewApproval(formData: FormData) {
   revalidatePath("/admin/reviews");
 }
 
+export async function setReviewFeatured(formData: FormData) {
+  const db = await requireAdmin();
+  await db
+    .from("reviews")
+    .update({ featured: formData.get("featured") === "true" })
+    .eq("id", String(formData.get("id")));
+  revalidatePublic();
+  revalidatePath("/admin/reviews");
+}
+
 export async function deleteReview(formData: FormData) {
   const db = await requireAdmin();
   await db.from("reviews").delete().eq("id", String(formData.get("id")));

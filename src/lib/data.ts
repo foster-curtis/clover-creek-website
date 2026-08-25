@@ -20,6 +20,7 @@ export interface Review {
   rating: number;
   body: string;
   verified: boolean;
+  featured: boolean;
   stayedOn: string | null;
   createdAt: string;
 }
@@ -172,19 +173,22 @@ const SAMPLE_REVIEWS: Review[] = [
     rating: 5,
     body: "Reviews from previous stays will appear here once imported.",
     verified: false,
+    featured: false,
     stayedOn: null,
     createdAt: new Date().toISOString(),
   },
 ];
 
+// Featured reviews (owner-picked standouts) sort first; the rest fall back to newest first.
 export async function getApprovedReviews(): Promise<Review[]> {
   if (!hasSupabase()) return SAMPLE_REVIEWS;
   try {
     const supabase = await supabaseServer();
     const { data } = await supabase
       .from("reviews")
-      .select("id, author_name, rating, body, verified, stayed_on, created_at")
+      .select("id, author_name, rating, body, verified, featured, stayed_on, created_at")
       .eq("approved", true)
+      .order("featured", { ascending: false })
       .order("created_at", { ascending: false });
     return (data ?? []).map((r) => ({
       id: r.id,
@@ -192,6 +196,7 @@ export async function getApprovedReviews(): Promise<Review[]> {
       rating: r.rating,
       body: r.body,
       verified: r.verified,
+      featured: r.featured,
       stayedOn: r.stayed_on,
       createdAt: r.created_at,
     }));
