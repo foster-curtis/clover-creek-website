@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import ReviewForm from "@/components/ReviewForm";
-import Stars from "@/components/Stars";
+import ReviewsBrowser from "@/components/ReviewsBrowser";
+import RatingSummary from "@/components/RatingSummary";
 import { getApprovedReviews } from "@/lib/data";
 import { currentUser } from "@/lib/supabase/server";
 
@@ -14,41 +15,37 @@ export const dynamic = "force-dynamic";
 export default async function ReviewsPage() {
   const [reviews, user] = await Promise.all([getApprovedReviews(), currentUser()]);
 
+  const avgRating =
+    reviews.length > 0 ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length : null;
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-3xl font-bold text-stone-800">Guest Reviews</h1>
-      <p className="mt-2 text-stone-600">
-        {reviews.length > 0
-          ? `${reviews.length} review${reviews.length === 1 ? "" : "s"} from our guests.`
-          : "Be the first to review your stay!"}
-      </p>
-
-      <div className="mt-8 space-y-4">
-        {reviews.map((r) => (
-          <article key={r.id} className="rounded-xl border border-stone-200 bg-white p-5">
-            <div className="flex items-center justify-between">
-              <Stars rating={r.rating} />
-              <time className="text-xs text-stone-400">
-                {new Date(r.stayedOn ?? r.createdAt).toLocaleDateString("en-US", {
-                  month: "long",
-                  year: "numeric",
-                })}
-              </time>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-stone-800">Guest Reviews</h1>
+          {avgRating !== null ? (
+            <div className="mt-2">
+              <RatingSummary average={avgRating} count={reviews.length} />
             </div>
-            <p className="mt-3 leading-relaxed text-stone-600">{r.body}</p>
-            <footer className="mt-3 text-sm font-semibold text-stone-700">
-              {r.authorName}
-              {r.verified && (
-                <span className="ml-2 rounded-full bg-moss/10 px-2 py-0.5 text-xs font-normal text-moss-dark">
-                  ✓ Verified stay
-                </span>
-              )}
-            </footer>
-          </article>
-        ))}
+          ) : (
+            <p className="mt-2 text-stone-600">Be the first to review your stay!</p>
+          )}
+        </div>
+        <a
+          href="#leave-review"
+          className="rounded-full bg-moss px-5 py-2.5 text-sm font-semibold text-white hover:bg-moss-dark"
+        >
+          Leave a Review
+        </a>
       </div>
 
-      <h2 className="mt-12 text-xl font-bold text-stone-800">Leave a review</h2>
+      <div className="mt-8">
+        <ReviewsBrowser reviews={reviews} />
+      </div>
+
+      <h2 id="leave-review" className="mt-12 scroll-mt-24 text-xl font-bold text-stone-800">
+        Leave a review
+      </h2>
       <div className="mt-4">
         <ReviewForm signedIn={Boolean(user)} />
       </div>

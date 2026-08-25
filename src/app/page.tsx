@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import LocationMap from "@/components/LocationMap";
+import RatingSummary from "@/components/RatingSummary";
 import Stars from "@/components/Stars";
 import { getSiteContent } from "@/lib/content";
 import { getApprovedReviews, getGallery, getPricing } from "@/lib/data";
@@ -169,7 +170,10 @@ export default async function HomePage() {
       {topReviews.length > 0 && (
         <section className="bg-white py-12">
           <div className="mx-auto max-w-5xl px-4">
-            <h2 className="text-2xl font-bold text-stone-800">What guests say</h2>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="text-2xl font-bold text-stone-800">What guests say</h2>
+              {avgRating !== null && <RatingSummary average={avgRating} count={reviews.length} />}
+            </div>
             <div className="mt-6 grid gap-4 md:grid-cols-3">
               {topReviews.map((r) => (
                 <blockquote key={r.id} className="rounded-xl border border-stone-200 p-5">
