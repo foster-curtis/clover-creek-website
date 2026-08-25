@@ -4,6 +4,7 @@
 // before touching data with the service-role client.
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { propertyToday, refundFor } from "@/lib/cancellation";
 import { getHolidays, getPricing } from "@/lib/data";
 import { notifyOwnerCancellation, sendCancellationConfirmation } from "@/lib/email";
@@ -264,6 +265,32 @@ export async function importReview(formData: FormData) {
   revalidatePath("/admin/reviews");
 }
 
+// Imported reviews (no user_id — never submitted through the site) are the
+// only ones an owner can edit. The `.is("user_id", null)` filter enforces
+// that at the data layer too, so a customer's review can't be edited even if
+// a request were crafted to try.
+export async function updateReview(formData: FormData) {
+  const db = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const authorName = String(formData.get("authorName") ?? "").trim();
+  const body = String(formData.get("body") ?? "").trim();
+  const rating = Number(formData.get("rating"));
+  const stayedOn = String(formData.get("stayedOn") ?? "");
+  if (!id || !authorName || !body || !Number.isInteger(rating) || rating < 1 || rating > 5) return;
+  await db
+    .from("reviews")
+    .update({
+      author_name: authorName,
+      body,
+      rating,
+      stayed_on: /^\d{4}-\d{2}-\d{2}$/.test(stayedOn) ? stayedOn : null,
+    })
+    .eq("id", id)
+    .is("user_id", null);
+  revalidatePublic();
+  revalidatePath("/admin/reviews");
+}
+
 // --- blog --------------------------------------------------------------------
 
 function slugify(title: string): string {
@@ -301,6 +328,7 @@ export async function savePost(formData: FormData) {
   revalidatePath("/blog");
   revalidatePath(`/blog/${slug}`);
   revalidatePath("/admin/blog");
+  redirect("/admin/blog");
 }
 
 export async function deletePost(formData: FormData) {

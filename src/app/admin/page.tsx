@@ -101,7 +101,7 @@ export default async function AdminDashboard() {
         <p className="mt-2">
           Analytics are collected with Vercel Web Analytics.{" "}
           <a
-            href="https://vercel.com/dashboard"
+            href="https://vercel.com/clovercreekguesthouse/clover-creek-website/analytics"
             target="_blank"
             className="text-moss underline"
           >
