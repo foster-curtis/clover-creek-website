@@ -6,6 +6,7 @@ import Stars from "@/components/Stars";
 import { getSiteContent } from "@/lib/content";
 import { getApprovedReviews, getGallery, getPricing } from "@/lib/data";
 import { formatUSD } from "@/lib/pricing";
+import { homeGraph, MAIN_IMAGE_URL } from "@/lib/schema";
 import { SITE } from "@/lib/site";
 
 export const revalidate = 300; // re-render at most every 5 minutes
@@ -25,33 +26,20 @@ export default async function HomePage() {
       ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10) / 10
       : null;
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "VacationRental",
-    name: SITE.name,
+  // Schema images: the main exterior photo first, then every gallery photo
+  // (absolute URLs — Google requires 8+ for a vacation rental listing).
+  const schemaImages = [
+    MAIN_IMAGE_URL,
+    ...gallery.map((g) => (g.src.startsWith("http") ? g.src : `${SITE.url}${g.src}`)),
+  ].filter((url, i, all) => all.indexOf(url) === i);
+
+  const jsonLd = homeGraph({
     description: content.home_intro.split("\n")[0],
-    url: SITE.url,
-    address: {
-      "@type": "PostalAddress",
-      addressLocality: SITE.location.town,
-      addressRegion: SITE.location.region,
-      postalCode: SITE.location.postalCode,
-      addressCountry: SITE.location.country,
-    },
-    geo: { "@type": "GeoCoordinates", latitude: SITE.location.lat, longitude: SITE.location.lng },
-    checkinTime: "15:00",
-    checkoutTime: "11:00",
-    petsAllowed: true,
-    ...(avgRating
-      ? {
-          aggregateRating: {
-            "@type": "AggregateRating",
-            ratingValue: avgRating,
-            reviewCount: reviews.length,
-          },
-        }
-      : {}),
-  };
+    images: schemaImages,
+    reviews,
+    priceRange: `$${pricing.weekdayBase}-$${pricing.weekendBase}`,
+    aggregateRating: avgRating ? { ratingValue: avgRating, reviewCount: reviews.length } : null,
+  });
 
   return (
     <>
