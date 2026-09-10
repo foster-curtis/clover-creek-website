@@ -1,10 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { activeNavHref, type NavLink } from "@/lib/nav";
 
-export default function MobileNav({ links }: { links: Array<{ href: string; label: string }> }) {
+export default function MobileNav({ links }: { links: readonly NavLink[] }) {
   const [open, setOpen] = useState(false);
+  const active = activeNavHref(usePathname(), links.map((l) => l.href));
+
   return (
     <div className="lg:hidden">
       <button
@@ -20,17 +24,23 @@ export default function MobileNav({ links }: { links: Array<{ href: string; labe
       {open && (
         <nav className="absolute inset-x-0 top-full border-b border-stone-200 bg-cream shadow-lg">
           <ul className="mx-auto max-w-6xl px-4 py-2">
-            {links.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  onClick={() => setOpen(false)}
-                  className="block py-2.5 text-stone-700 hover:text-moss"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
+            {links.map((link) => {
+              const isActive = link.href === active;
+              return (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    onClick={() => setOpen(false)}
+                    aria-current={isActive ? "page" : undefined}
+                    className={`block py-2.5 ${
+                      isActive ? "font-semibold text-moss" : "text-stone-700 hover:text-moss"
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </nav>
       )}
