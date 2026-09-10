@@ -115,7 +115,7 @@ Verified against the live site and the repository on September 4, 2026.
 | A6 | `aggregateRating` on own site is a self-serving review under Google policy — *retained deliberately for machine readability per §8.1; still will not render stars* | `src/lib/schema.ts` | **High** → accepted |
 | A7 | No schema on `/reviews`, `/faq`, `/house-rules`, `/gallery`, `/blog`, `/blog/[slug]` — *still open; `/` now covered (§8.3)* | all pages | **High** |
 | A8 | No About page (no owner name, no photo, no story, no author byline) | site-wide | **High** |
-| A9 | Blog posts ~340 words, zero in-body images | 13 posts | **High** |
+| A9 | Blog posts ~340 words, zero in-body images — *2026-09-10: the authoring blocker is removed (§13.4); the writing and photography are still outstanding* | 13 posts | **High** |
 | A10 | FAQ answers live inside collapsed `<details>`; questions are `<summary>`, not headings | `src/app/faq/page.tsx` | **Medium** |
 | A11 | No breadcrumbs (visible or schema) | site-wide | **Medium** |
 | A12 | Image filenames are `1787611312870-3B79EF1A-….JPG` | Supabase Storage `gallery/` | **Medium** |
@@ -728,6 +728,13 @@ Express marker, the rodeo, the drive into Tooele.
 Priority order: Onaqui wild horses → Bonneville Salt Flats → Pony Express Trail → stargazing →
 hunting → rodeos.
 
+> **Update 2026-09-10.** Posts move from the database to `.mdx` files in the repository
+> (§13.4), which is what makes this section actionable. Images can now be co-located with
+> the post and imported directly, so each one gets real `next/image` optimisation, correct
+> dimensions and a blur placeholder — none of which was reachable through `marked` output.
+> The photographs themselves are still owner work, and *original* still matters more than
+> polished.
+
 ### 9.6 Technical image checks
 
 | Item | Status | Action |
@@ -803,6 +810,13 @@ coherent body of local expertise.
 7. **Add breadcrumbs** — visible and `BreadcrumbList` schema:
    `Home › Area Guide › The Onaqui Wild Horses`. Currently the only way back is a "← Area
    Guide" link.
+
+> **Update 2026-09-10 on rules 1 and 2.** With posts as `.mdx` files (§13.4), links inside
+> post bodies are editable in the repo. The implementation splits them: the systematic ones
+> — the cluster block and the booking CTA every post needs — are rendered by the page
+> component from a cluster map, so adding or renaming a post cannot leave thirteen stale
+> hand-written blocks behind. Contextual links, the ones that belong inside a sentence, go
+> in the prose during each post's content expansion.
 
 ### 10.4 Specific links to add
 
@@ -978,6 +992,13 @@ than no number.
   E-E-A-T signal, and it is the one thing an aggregator structurally cannot produce.
 - **`sameAs` in the schema**, populated as listings go live (8.1).
 
+> **Update 2026-09-10.** Bylines are now a `meta.author` field on each post file (§13.4),
+> resolved against the `Person` node on `/about` — so the byline and the entity cannot
+> drift apart. The first-hand framing point above is unaffected by the move and becomes
+> *more* important because of it: a developer or an agent can now draft a post, and neither
+> knows what crossed the road last April. That detail has to come from the owner, or the
+> post loses the one signal an aggregator cannot reproduce.
+
 ### 12.5 Do not build an llms.txt
 
 Google says it does not use it. No major engine has committed to it. It is a maintenance burden
@@ -1042,6 +1063,41 @@ them match.
 - Keyword-stuffed footer link blocks
 - Auto-generated town pages (Section 6.5)
 
+### 13.4 Content architecture — the blog moves to MDX
+
+> **Decision, 2026-09-10.** The thirteen Area Guide posts move out of the `blog_posts`
+> table and into `src/content/blog/*.mdx`, compiled at build time. URLs and slugs are
+> unchanged. The Admin → Blog editor is retired; every other admin section is untouched.
+
+This is not an SEO tactic on its own — it is the change that makes several of the tactics
+above affordable, and it has three genuine SEO consequences.
+
+**Why:**
+
+1. **It unblocks §9.5 and §12.4.** Expanding thirteen posts to 800–1,200 words with images,
+   cross-links and bylines is the largest remaining item in this plan. As database rows,
+   every one of those edits is manual work in a textarea. As files they are reviewable
+   diffs that a developer or a coding agent can produce, and that the owner reads back.
+2. **Images become real.** Post bodies previously rendered through `marked` into
+   `dangerouslySetInnerHTML`, so an in-body image was a bare `<img>` — no `next/image`, no
+   dimensions, no lazy-loading control, and a CLS risk on the exact pages §9.5 wants
+   illustrated. Co-located static imports fix all of that.
+3. **The blog stops being a Supabase dependency.** `getPublishedPosts()` catches errors and
+   returns an empty array, so an outage or a cleared environment variable silently empties
+   `/blog` *and drops all thirteen posts out of `sitemap.xml`*. A crawl during that window
+   sees a site with no content section. Files cannot fail that way.
+
+**What it costs:** the owner can no longer publish or edit a post without a developer.
+That is a real loss, accepted deliberately — these posts are evergreen reference pages
+rather than a news feed, and the content push ahead is developer-assisted. The
+`blog_posts` table, its data and its RLS policies are left in place as the rollback path.
+
+**What does *not* change:** home page copy, FAQ answers, house rules, the amenity list,
+gallery photos and alt text, pricing, holidays and review moderation all stay owner-editable
+in the admin panel. Only the blog moves.
+
+Implementation is Stage 06 in [seo-stages/](seo-stages/README.md).
+
 ---
 
 ## 14. Measurement
@@ -1085,6 +1141,11 @@ work will not.
 
 ## 15. Phased roadmap
 
+> **Execution plans:** the phases below are broken into eleven independently runnable,
+> reviewable and committable stages in [seo-stages/](seo-stages/README.md), each marked for
+> whether it is developer work or owner work. Start at
+> [seo-stages/README.md](seo-stages/README.md).
+
 ### Phase 0 — Prerequisites (owner decisions, blocks everything else)
 
 - [ ] Decide on a published phone number (Google Voice if a personal mobile is not acceptable)
@@ -1115,13 +1176,17 @@ work will not.
 
 ### Phase 3 — Content (weeks 3–6)
 
+- [ ] **Move the blog to MDX (§13.4)** — do this before the post work below, or the post
+      work has to be done twice
 - [ ] Write `/about` with a real name, photo and story; add the `Person` node
 - [ ] Write `/directions` with verified distances
 - [ ] Write `/stargazing`
 - [ ] Add these three to the header nav
 - [ ] Add direct-answer blocks to `/`, `/book`, `/faq` and the top blog posts
 - [ ] Restructure `/faq`: real `<h2>` headings, visible answers, nine new questions
-- [ ] Expand the six priority blog posts to 800–1,200 words with original photos
+- [ ] Expand the six priority blog posts to 800–1,200 words with original photos —
+      *owner supplies the first-hand knowledge and the photographs; drafting is dev work
+      once §13.4 lands*
 - [ ] Add cluster cross-links across all 13 posts
 - [ ] Byline every post
 
@@ -1150,12 +1215,19 @@ work will not.
 | 0 | — | 1 hr | — |
 | 1 | ~8 hr | 2 hr | 1 week |
 | 2 | ~8 hr | 3 hr | 1 week |
-| 3 | ~4 hr | 12–20 hr | 4 weeks |
-| 4 | ~2 hr | 10–15 hr | 3 months |
+| 3 | ~4 hr → **~16 hr** | 12–20 hr → **4–6 hr** | 4 weeks |
+| 4 | ~2 hr → **~8 hr** | 10–15 hr → **6–8 hr** | 3 months |
 | 5 | — | 2 hr/month | ongoing |
 
 Phases 1 and 2 are where the return is concentrated: roughly two days of development work
 against defects that are currently costing the site its own brand name.
+
+> **Revised 2026-09-10 for §13.4.** Phases 3 and 4 shift from owner hours to dev hours: the
+> MDX move costs ~4 hr of dev up front, and post expansion becomes dev-assisted drafting
+> rather than owner typing. The owner's remaining hours are the part that cannot be
+> delegated — supplying first-hand knowledge, taking the photographs, and reading each post
+> back before it ships. Total effort across both phases is roughly unchanged; who spends it
+> is not.
 
 ---
 
