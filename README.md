@@ -8,6 +8,8 @@ on Vercel.
   and launch. Start here.
 - **[DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md)** — the original feature plan and
   architecture decisions.
+- **[GIT_WORKFLOW.md](GIT_WORKFLOW.md)** — branches, CI/CD, and the `working` → `stg` →
+  `master` promotion flow.
 
 ## Features
 
