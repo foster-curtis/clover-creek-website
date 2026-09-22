@@ -66,5 +66,3 @@ Vercel's preview environment, and only a push to `master` reaches production.
   or `master` (e.g. to review a Dependabot bump before merging), those PRs won't get a
   CI check until after they're merged; add a `pull_request` trigger to
   `deploy-preview.yml`'s `quality` job if you want pre-merge feedback.
-
-# TEST
