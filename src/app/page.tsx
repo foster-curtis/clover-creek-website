@@ -63,45 +63,62 @@ export default async function HomePage() {
             sizes="100vw"
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 mx-auto max-w-6xl px-4 pb-10 text-white">
-            <PageTitle className="!text-5xl !text-white drop-shadow">{SITE.name}</PageTitle>
-            <p className="mt-2 max-w-xl text-sm drop-shadow sm:text-lg">{SITE.tagline}</p>
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <Link href="/book" className={buttonClasses("primary", "lg")}>
-                Check availability
-              </Link>
-              <span className="rounded-full bg-white/15 px-4 py-2 text-sm backdrop-blur">
-                From {formatUSD(pricing.weekdayBase)}/night · taxes &amp; cleaning included
-              </span>
+          <div className="absolute inset-0 bg-gradient-to-t from-moss-deep/85 via-moss-deep/25 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 px-4 pb-10 sm:px-8 lg:px-16">
+            <div className="mx-auto max-w-[var(--w-wide)]">
+              <PageTitle className="!text-5xl !text-white drop-shadow">{SITE.name}</PageTitle>
+              <p className="mt-2 max-w-xl font-serif text-lg italic text-white/90 drop-shadow sm:text-xl">
+                {SITE.tagline}
+              </p>
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <Link href="/book" className={buttonClasses("primary", "lg")}>
+                  Check availability
+                </Link>
+                <span className="rounded-full bg-white/15 px-4 py-2 text-sm backdrop-blur">
+                  From {formatUSD(pricing.weekdayBase)}/night · taxes &amp; cleaning included
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Intro */}
-      <section className="mx-auto max-w-3xl px-4 py-12">
-        <SectionTitle>A cozy retreat on a working farm</SectionTitle>
-        {content.home_intro.split("\n\n").map((para, i) => (
-          <p key={i} className="mt-4 leading-relaxed text-stone-600">
-            {para}
-          </p>
-        ))}
-        <ul className="mt-6 flex flex-wrap gap-2 text-sm">
-          {["Sleeps 6", "1 bath", "King bed + loft", "Dog friendly", "Full kitchen", "Washer & dryer"].map(
-            (chip) => (
-              <li key={chip} className="rounded-full bg-moss/10 px-3 py-1 text-moss-dark">
-                {chip}
-              </li>
-            )
-          )}
-        </ul>
+      {/* Intro — editorial pairing, image bleeding to the viewport edge */}
+      <section className="grid lg:grid-cols-[6fr_5fr]">
+        <div className="relative order-2 h-72 lg:order-1 lg:h-auto lg:min-h-[420px]">
+          <Image
+            src={gallery[Math.min(1, gallery.length - 1)].src}
+            alt={gallery[Math.min(1, gallery.length - 1)].alt}
+            fill
+            sizes="(min-width: 1024px) 55vw, 100vw"
+            className="object-cover"
+          />
+        </div>
+        <div className="order-1 flex items-center bg-surface lg:order-2">
+          <div className="px-4 py-12 sm:px-8 lg:px-12">
+            <SectionTitle rule>A cozy retreat on a working farm</SectionTitle>
+            {content.home_intro.split("\n\n").map((para, i) => (
+              <p key={i} className="mt-4 leading-relaxed text-stone-600">
+                {para}
+              </p>
+            ))}
+            <ul className="mt-6 flex flex-wrap gap-2 text-sm">
+              {["Sleeps 6", "1 bath", "King bed + loft", "Dog friendly", "Full kitchen", "Washer & dryer"].map(
+                (chip) => (
+                  <li key={chip} className="rounded-full bg-moss/10 px-3 py-1 text-moss-dark">
+                    {chip}
+                  </li>
+                )
+              )}
+            </ul>
+          </div>
+        </div>
       </section>
 
       {/* Amenities */}
-      <section className="bg-white py-12">
+      <section className="bg-surface-sunken py-12">
         <div className="mx-auto max-w-5xl px-4">
-          <SectionTitle>Everything you need</SectionTitle>
+          <SectionTitle rule>Everything you need</SectionTitle>
           <ul className="mt-6 grid gap-x-8 gap-y-2 text-stone-600 sm:grid-cols-2 lg:grid-cols-3">
             {amenities.map((a) => (
               <li key={a} className="flex items-start gap-2">
@@ -115,7 +132,7 @@ export default async function HomePage() {
 
       {/* Pricing */}
       <section className="mx-auto max-w-5xl px-4 py-12">
-        <SectionTitle>Simple, honest pricing</SectionTitle>
+        <SectionTitle rule>Simple, honest pricing</SectionTitle>
         <p className="mt-2 text-stone-600">
           Cleaning fee and taxes are already included — the price you see is the price you pay.
         </p>
@@ -157,7 +174,7 @@ export default async function HomePage() {
 
       {/* Reviews teaser */}
       {topReviews.length > 0 && (
-        <section className="bg-white py-12">
+        <section className="bg-surface-sunken py-12">
           <div className="mx-auto max-w-5xl px-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <SectionTitle>What guests say</SectionTitle>
@@ -188,12 +205,25 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Area + map */}
-      <section className="mx-auto max-w-5xl px-4 py-12">
-        <SectionTitle>Out here, the stars still shine</SectionTitle>
-        <p className="mt-4 max-w-3xl leading-relaxed text-stone-600">{content.area}</p>
-        <div className="mt-6">
-          <LocationMap />
+      {/* Area — editorial pairing, alternating side from the intro section */}
+      <section className="grid lg:grid-cols-[5fr_6fr]">
+        <div className="flex items-center bg-surface">
+          <div className="px-4 py-12 sm:px-8 lg:px-12">
+            <SectionTitle rule>Out here, the stars still shine</SectionTitle>
+            <p className="mt-4 leading-relaxed text-stone-600">{content.area}</p>
+            <div className="mt-6">
+              <LocationMap />
+            </div>
+          </div>
+        </div>
+        <div className="relative h-72 lg:h-auto lg:min-h-[420px]">
+          <Image
+            src={gallery[Math.min(3, gallery.length - 1)].src}
+            alt={gallery[Math.min(3, gallery.length - 1)].alt}
+            fill
+            sizes="(min-width: 1024px) 55vw, 100vw"
+            className="object-cover"
+          />
         </div>
       </section>
 
