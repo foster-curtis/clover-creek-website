@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import BookingWidget from "@/components/BookingWidget";
+import { PageTitle } from "@/components/ui/Heading";
 import { expandRanges, getHolidays, getPricing, getUnavailableRanges } from "@/lib/data";
 import { SITE } from "@/lib/site";
 import { currentUser } from "@/lib/supabase/server";
@@ -22,7 +23,7 @@ export default async function BookPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
-      <h1 className="text-3xl font-bold text-stone-800">Book your stay</h1>
+      <PageTitle>Book your stay</PageTitle>
       <p className="mt-2 max-w-2xl text-stone-600">
         Pick your dates to see the exact price — cleaning fee and taxes are always included.
         Check-in from {SITE.checkInTime}, check-out by {SITE.checkOutTime}.

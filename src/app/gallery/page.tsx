@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import GalleryGrid from "@/components/GalleryGrid";
+import { PageTitle } from "@/components/ui/Heading";
 import { getGallery } from "@/lib/data";
 
 export const metadata: Metadata = {
@@ -13,7 +14,7 @@ export default async function GalleryPage() {
   const images = await getGallery();
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
-      <h1 className="text-3xl font-bold text-stone-800">Photo Gallery</h1>
+      <PageTitle>Photo Gallery</PageTitle>
       <p className="mt-2 text-stone-600">Take a look around the house and the valley.</p>
       <div className="mt-8">
         <GalleryGrid images={images} />

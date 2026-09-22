@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import type { GalleryImage } from "@/lib/data";
+import { ArrowLeftIcon, ArrowRightIcon, CloseIcon } from "@/components/ui/icons";
 
 export default function GalleryGrid({ images }: { images: GalleryImage[] }) {
   const [lightbox, setLightbox] = useState<number | null>(null);
@@ -67,7 +68,7 @@ export default function GalleryGrid({ images }: { images: GalleryImage[] }) {
               className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 px-3 py-2 text-white hover:bg-black/70"
               aria-label="Previous photo"
             >
-              ←
+              <ArrowLeftIcon className="h-4 w-4" />
             </button>
             <button
               type="button"
@@ -75,7 +76,7 @@ export default function GalleryGrid({ images }: { images: GalleryImage[] }) {
               className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 px-3 py-2 text-white hover:bg-black/70"
               aria-label="Next photo"
             >
-              →
+              <ArrowRightIcon className="h-4 w-4" />
             </button>
             <button
               type="button"
@@ -83,7 +84,7 @@ export default function GalleryGrid({ images }: { images: GalleryImage[] }) {
               className="absolute -top-3 right-0 rounded-full bg-black/50 px-3 py-1 text-white hover:bg-black/70"
               aria-label="Close"
             >
-              ✕
+              <CloseIcon className="h-4 w-4" />
             </button>
           </div>
         </div>

@@ -1,12 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Button, { buttonClasses } from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import { Field, Input, Textarea } from "@/components/ui/Field";
 import { updateReview } from "../actions";
-
-const inputCls =
-  "mt-1 block rounded border border-stone-300 bg-white px-3 py-1.5 text-sm focus-visible:border-moss-dark";
-const smallBtnCls =
-  "rounded border border-stone-300 px-2 py-1 text-xs text-stone-600 hover:border-moss hover:text-moss";
 
 export default function EditReviewForm({
   review,
@@ -18,47 +16,48 @@ export default function EditReviewForm({
 
   return (
     <details className="group" open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
-      <summary className={smallBtnCls + " inline-block cursor-pointer list-none"}>Edit</summary>
-      <form
-        className="mt-3 space-y-3 rounded-lg border border-stone-200 p-3"
-        action={(formData) => {
-          startTransition(async () => {
-            await updateReview(formData);
-            setOpen(false);
-          });
-        }}
-      >
-        <input type="hidden" name="id" value={review.id} />
-        <div className="flex flex-wrap gap-3">
-          <label className="text-xs text-ink-muted">
-            Guest name
-            <input name="authorName" required defaultValue={review.author_name} className={inputCls} />
-          </label>
-          <label className="text-xs text-ink-muted">
-            Rating (1–5)
-            <input
-              type="number"
-              name="rating"
-              min={1}
-              max={5}
-              defaultValue={review.rating}
-              required
-              className={inputCls + " w-20"}
-            />
-          </label>
-          <label className="text-xs text-ink-muted">
-            Stay date (optional)
-            <input type="date" name="stayedOn" defaultValue={review.stayed_on ?? ""} className={inputCls} />
-          </label>
-        </div>
-        <label className="block text-xs text-ink-muted">
-          Review text
-          <textarea name="body" required rows={3} defaultValue={review.body} className={inputCls + " w-full"} />
-        </label>
-        <button type="submit" disabled={pending} className={smallBtnCls}>
-          {pending ? "Saving…" : "Save changes"}
-        </button>
-      </form>
+      <summary className={buttonClasses("secondary", "sm", "inline-block cursor-pointer list-none")}>
+        Edit
+      </summary>
+      <Card variant="flat" className="mt-3 p-3">
+        <form
+          className="space-y-3"
+          action={(formData) => {
+            startTransition(async () => {
+              await updateReview(formData);
+              setOpen(false);
+            });
+          }}
+        >
+          <input type="hidden" name="id" value={review.id} />
+          <div className="flex flex-wrap gap-3">
+            <Field label="Guest name" htmlFor="edit-authorName">
+              <Input id="edit-authorName" name="authorName" required defaultValue={review.author_name} />
+            </Field>
+            <Field label="Rating (1–5)" htmlFor="edit-rating">
+              <Input
+                id="edit-rating"
+                type="number"
+                name="rating"
+                min={1}
+                max={5}
+                defaultValue={review.rating}
+                required
+                className="w-20"
+              />
+            </Field>
+            <Field label="Stay date (optional)" htmlFor="edit-stayedOn">
+              <Input id="edit-stayedOn" type="date" name="stayedOn" defaultValue={review.stayed_on ?? ""} />
+            </Field>
+          </div>
+          <Field label="Review text" htmlFor="edit-body">
+            <Textarea id="edit-body" name="body" required rows={3} defaultValue={review.body} className="w-full" />
+          </Field>
+          <Button type="submit" variant="secondary" size="sm" loading={pending}>
+            Save changes
+          </Button>
+        </form>
+      </Card>
     </details>
   );
 }

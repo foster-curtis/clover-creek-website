@@ -3,6 +3,10 @@
 import { useMemo, useState } from "react";
 import type { Review } from "@/lib/data";
 import Stars from "@/components/Stars";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import { Input } from "@/components/ui/Field";
+import { CheckIcon } from "@/components/ui/icons";
 
 export default function ReviewsBrowser({ reviews }: { reviews: Review[] }) {
   const [search, setSearch] = useState("");
@@ -28,51 +32,45 @@ export default function ReviewsBrowser({ reviews }: { reviews: Review[] }) {
   return (
     <div>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <input
+        <Input
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search reviews…"
           aria-label="Search reviews"
-          className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm focus-visible:border-moss-dark sm:max-w-xs"
+          className="sm:max-w-xs"
         />
         <div className="flex flex-wrap gap-2">
-          <button
+          <Button
             type="button"
+            size="sm"
+            variant={ratingFilter === null ? "primary" : "ghost"}
             onClick={() => setRatingFilter(null)}
-            className={`rounded-full px-3 py-1 text-sm font-medium ${
-              ratingFilter === null
-                ? "bg-moss text-white"
-                : "bg-stone-100 text-stone-600 hover:bg-stone-200"
-            }`}
           >
             All ({reviews.length})
-          </button>
+          </Button>
           {[5, 4, 3, 2, 1].map((n) => (
-            <button
+            <Button
               key={n}
               type="button"
+              size="sm"
+              variant={ratingFilter === n ? "primary" : "ghost"}
               onClick={() => setRatingFilter(n)}
-              className={`rounded-full px-3 py-1 text-sm font-medium ${
-                ratingFilter === n
-                  ? "bg-moss text-white"
-                  : "bg-stone-100 text-stone-600 hover:bg-stone-200"
-              }`}
             >
               {n}★ ({counts[n]})
-            </button>
+            </Button>
           ))}
         </div>
       </div>
 
       <div className="mt-6 space-y-4">
         {filtered.length === 0 && (
-          <p className="rounded-lg border border-stone-200 bg-white p-5 text-sm text-ink-muted">
+          <Card variant="flat" className="!p-5 text-sm text-ink-muted">
             No reviews match your search.
-          </p>
+          </Card>
         )}
         {filtered.map((r) => (
-          <article key={r.id} className="rounded-xl border border-stone-200 bg-white p-5">
+          <Card variant="flat" key={r.id} className="!p-5" role="article">
             <div className="flex items-center justify-between">
               <Stars rating={r.rating} />
               <time className="text-xs text-ink-subtle">
@@ -86,12 +84,12 @@ export default function ReviewsBrowser({ reviews }: { reviews: Review[] }) {
             <footer className="mt-3 text-sm font-semibold text-stone-700">
               {r.authorName}
               {r.verified && (
-                <span className="ml-2 rounded-full bg-moss/10 px-2 py-0.5 text-xs font-normal text-moss-dark">
-                  ✓ Verified stay
+                <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-moss/10 px-2 py-0.5 text-xs font-normal text-moss-dark">
+                  <CheckIcon className="h-3 w-3" /> Verified stay
                 </span>
               )}
             </footer>
-          </article>
+          </Card>
         ))}
       </div>
     </div>

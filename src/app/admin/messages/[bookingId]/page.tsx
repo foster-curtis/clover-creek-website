@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import BookingChat from "@/components/BookingChat";
 import { parseStay } from "@/lib/pricing";
 import { currentUser, hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
+import { ArrowLeftIcon } from "@/components/ui/icons";
+import { PageTitle } from "@/components/ui/Heading";
 import { markMessagesRead } from "../../actions";
 
 export const dynamic = "force-dynamic";
@@ -29,10 +31,13 @@ export default async function AdminChatPage({
 
   return (
     <div>
-      <Link href="/admin/messages" className="text-sm text-moss underline">
-        ← All messages
+      <Link
+        href="/admin/messages"
+        className="inline-flex items-center gap-1 text-sm text-moss underline"
+      >
+        <ArrowLeftIcon className="h-4 w-4" /> All messages
       </Link>
-      <h1 className="mt-3 text-2xl font-bold text-stone-800">{booking.guest_name}</h1>
+      <PageTitle className="mt-3">{booking.guest_name}</PageTitle>
       <p className="mt-1 text-sm text-ink-muted">
         {checkIn} → {checkOut} · {booking.guests} guests
         {booking.pets ? ` · ${booking.pets} dogs` : ""} · {booking.status} ·{" "}

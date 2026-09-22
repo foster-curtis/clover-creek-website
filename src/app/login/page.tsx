@@ -2,6 +2,10 @@
 
 import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import { PageTitle } from "@/components/ui/Heading";
+import { Input } from "@/components/ui/Field";
 import { hasSupabaseClient, supabaseBrowser } from "@/lib/supabase/client";
 
 function LoginForm() {
@@ -61,23 +65,18 @@ function LoginForm() {
       <p className="text-sm text-stone-600">
         No password needed — enter your email and we&apos;ll send you a sign-in link.
       </p>
-      <input
+      <Input
         type="email"
         required
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="you@example.com"
-        className="w-full rounded border border-stone-300 bg-white px-3 py-2.5 text-sm focus-visible:border-moss-dark"
         autoComplete="email"
       />
       {status === "error" && <p className="text-sm text-red-700">{error}</p>}
-      <button
-        type="submit"
-        disabled={status === "sending"}
-        className="w-full rounded-full bg-moss py-2.5 font-semibold text-white hover:bg-moss-dark disabled:bg-stone-300"
-      >
+      <Button type="submit" loading={status === "sending"} className="w-full">
         {status === "sending" ? "Sending link…" : "Email me a sign-in link"}
-      </button>
+      </Button>
     </form>
   );
 }
@@ -85,12 +84,12 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <div className="mx-auto max-w-md px-4 py-16">
-      <h1 className="text-center text-3xl font-bold text-stone-800">Sign in</h1>
-      <div className="mt-8 rounded-xl border border-stone-200 bg-white p-6">
+      <PageTitle className="text-center">Sign in</PageTitle>
+      <Card variant="flat" className="mt-8">
         <Suspense>
           <LoginForm />
         </Suspense>
-      </div>
+      </Card>
     </div>
   );
 }

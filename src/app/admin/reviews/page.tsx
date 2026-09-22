@@ -1,14 +1,14 @@
 import Stars from "@/components/Stars";
 import { hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import { Field, Input, Textarea } from "@/components/ui/Field";
+import { PageTitle, SectionTitle } from "@/components/ui/Heading";
+import { StarIcon } from "@/components/ui/icons";
 import { deleteReview, importReview, setReviewApproval, setReviewFeatured } from "../actions";
 import EditReviewForm from "./EditReviewForm";
 
 export const dynamic = "force-dynamic";
-
-const inputCls =
-  "mt-1 block rounded border border-stone-300 bg-white px-3 py-1.5 text-sm focus-visible:border-moss-dark";
-const smallBtnCls =
-  "rounded border border-stone-300 px-2 py-1 text-xs text-stone-600 hover:border-moss hover:text-moss";
 
 export default async function AdminReviewsPage() {
   if (!hasServiceRole()) {
@@ -30,7 +30,7 @@ export default async function AdminReviewsPage() {
     // only owner-imported reviews (no account behind them) can be edited.
     const imported = r.user_id === null;
     return (
-      <div className="rounded-xl border border-stone-200 bg-white p-4">
+      <Card variant="flat" className="p-4">
         <div className="flex items-center justify-between">
           <p className="font-semibold text-stone-800">
             {r.author_name}
@@ -53,20 +53,26 @@ export default async function AdminReviewsPage() {
           <Stars rating={r.rating} />
         </div>
         <p className="mt-2 text-sm text-stone-600">{r.body}</p>
-        <div className="mt-3 flex gap-2">
+        <div className="mt-3 flex flex-wrap items-center gap-2">
           <form action={setReviewApproval}>
             <input type="hidden" name="id" value={r.id} />
             <input type="hidden" name="approved" value={r.approved ? "false" : "true"} />
-            <button type="submit" className={smallBtnCls}>
+            <Button type="submit" variant={r.approved ? "secondary" : "primary"} size="sm">
               {r.approved ? "Hide from site" : "Approve & publish"}
-            </button>
+            </Button>
           </form>
           <form action={setReviewFeatured}>
             <input type="hidden" name="id" value={r.id} />
             <input type="hidden" name="featured" value={r.featured ? "false" : "true"} />
-            <button type="submit" className={smallBtnCls}>
-              {r.featured ? "Unfeature" : "★ Feature"}
-            </button>
+            <Button type="submit" variant="secondary" size="sm">
+              {r.featured ? (
+                "Unfeature"
+              ) : (
+                <>
+                  <StarIcon className="h-3 w-3" /> Feature
+                </>
+              )}
+            </Button>
           </form>
           {imported && (
             <EditReviewForm
@@ -81,62 +87,60 @@ export default async function AdminReviewsPage() {
           )}
           <form action={deleteReview}>
             <input type="hidden" name="id" value={r.id} />
-            <button type="submit" className={smallBtnCls + " text-red-600"}>Delete</button>
+            <Button type="submit" variant="danger" size="sm">
+              Delete
+            </Button>
           </form>
         </div>
-      </div>
+      </Card>
     );
   }
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-stone-800">Reviews</h1>
+      <PageTitle>Reviews</PageTitle>
 
-      <h2 className="mt-6 text-lg font-bold text-stone-800">
+      <SectionTitle as="h2" className="mt-6 text-lg">
         Awaiting approval {pending.length > 0 && `(${pending.length})`}
-      </h2>
+      </SectionTitle>
       <div className="mt-3 space-y-3">
         {pending.length === 0 && <p className="text-sm text-ink-subtle">Nothing waiting — nice.</p>}
         {pending.map((r) => <ReviewCard key={r.id} r={r} />)}
       </div>
 
-      <h2 className="mt-8 text-lg font-bold text-stone-800">Published ({approved.length})</h2>
+      <SectionTitle as="h2" className="mt-8 text-lg">
+        Published ({approved.length})
+      </SectionTitle>
       <div className="mt-3 space-y-3">
         {approved.map((r) => <ReviewCard key={r.id} r={r} />)}
       </div>
 
-      <section className="mt-10 rounded-xl border border-stone-200 bg-white p-5">
-        <h2 className="font-bold text-stone-800">Import a past review</h2>
+      <Card variant="flat" className="mt-10 p-5">
+        <SectionTitle as="h2" className="text-lg">
+          Import a past review
+        </SectionTitle>
         <p className="mt-1 text-xs text-ink-subtle">
           For reviews from DirectStay/Google Drive. They publish immediately.
         </p>
         <form action={importReview} className="mt-4 space-y-3">
           <div className="flex flex-wrap gap-3">
-            <label className="text-xs text-ink-muted">
-              Guest name
-              <input name="authorName" required className={inputCls} />
-            </label>
-            <label className="text-xs text-ink-muted">
-              Rating (1–5)
-              <input type="number" name="rating" min={1} max={5} defaultValue={5} required className={inputCls + " w-20"} />
-            </label>
-            <label className="text-xs text-ink-muted">
-              Stay date (optional)
-              <input type="date" name="stayedOn" className={inputCls} />
-            </label>
+            <Field label="Guest name" htmlFor="authorName">
+              <Input id="authorName" name="authorName" required />
+            </Field>
+            <Field label="Rating (1–5)" htmlFor="rating">
+              <Input id="rating" type="number" name="rating" min={1} max={5} defaultValue={5} required className="w-20" />
+            </Field>
+            <Field label="Stay date (optional)" htmlFor="stayedOn">
+              <Input id="stayedOn" type="date" name="stayedOn" />
+            </Field>
           </div>
-          <label className="block text-xs text-ink-muted">
-            Review text
-            <textarea name="body" required rows={3} className={inputCls + " w-full"} />
-          </label>
-          <button
-            type="submit"
-            className="rounded-full bg-moss px-5 py-2 text-sm font-semibold text-white hover:bg-moss-dark"
-          >
-            Import review
-          </button>
+          <Field label="Review text" htmlFor="body">
+            <Textarea id="body" name="body" required rows={3} className="w-full" />
+          </Field>
+          <Button type="submit">Import review</Button>
         </form>
-      </section>
+      </Card>
     </div>
   );
 }
+

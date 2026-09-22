@@ -5,6 +5,8 @@
 
 import { useMemo, useState } from "react";
 import { addDays, isWeekendNight, parseISODate, stayNights, toISODate } from "@/lib/pricing";
+import Button from "@/components/ui/Button";
+import { ArrowLeftIcon, ArrowRightIcon } from "@/components/ui/icons";
 
 interface Props {
   unavailable: string[]; // night dates that cannot be booked
@@ -142,18 +144,16 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => shiftMonth(-1)}
           disabled={atCurrentMonth}
-          className={[
-            "rounded px-3 py-1",
-            atCurrentMonth ? "cursor-not-allowed text-stone-300" : "text-stone-600 hover:bg-stone-100",
-          ].join(" ")}
           aria-label="Previous month"
         >
-          ←
-        </button>
+          <ArrowLeftIcon className="h-4 w-4" />
+        </Button>
         <p className="text-sm text-ink-muted">
           {checkIn && checkOut
             ? `${checkIn} → ${checkOut}`
@@ -161,18 +161,16 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
               ? `Check-in ${checkIn} — now pick check-out`
               : "Select your check-in date"}
         </p>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => shiftMonth(1)}
           disabled={atMaxMonth}
-          className={[
-            "rounded px-3 py-1",
-            atMaxMonth ? "cursor-not-allowed text-stone-300" : "text-stone-600 hover:bg-stone-100",
-          ].join(" ")}
           aria-label="Next month"
         >
-          →
-        </button>
+          <ArrowRightIcon className="h-4 w-4" />
+        </Button>
       </div>
       <div className="grid gap-6 sm:grid-cols-2">
         {renderMonth(viewYear, viewMonth)}

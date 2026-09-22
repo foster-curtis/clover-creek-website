@@ -3,6 +3,10 @@ import Link from "next/link";
 import LocationMap from "@/components/LocationMap";
 import RatingSummary from "@/components/RatingSummary";
 import Stars from "@/components/Stars";
+import Card from "@/components/ui/Card";
+import { buttonClasses } from "@/components/ui/Button";
+import { PageTitle, SectionTitle } from "@/components/ui/Heading";
+import { ArrowRightIcon, CheckIcon } from "@/components/ui/icons";
 import { getSiteContent } from "@/lib/content";
 import { getApprovedReviews, getGallery, getPricing } from "@/lib/data";
 import { formatUSD } from "@/lib/pricing";
@@ -61,13 +65,10 @@ export default async function HomePage() {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
           <div className="absolute inset-x-0 bottom-0 mx-auto max-w-6xl px-4 pb-10 text-white">
-            <h1 className="font-serif text-3xl font-bold drop-shadow sm:text-5xl">{SITE.name}</h1>
+            <PageTitle className="!text-5xl !text-white drop-shadow">{SITE.name}</PageTitle>
             <p className="mt-2 max-w-xl text-sm drop-shadow sm:text-lg">{SITE.tagline}</p>
             <div className="mt-4 flex flex-wrap items-center gap-3">
-              <Link
-                href="/book"
-                className="rounded-full bg-moss px-6 py-3 font-semibold text-white shadow hover:bg-moss-dark"
-              >
+              <Link href="/book" className={buttonClasses("primary", "lg")}>
                 Check availability
               </Link>
               <span className="rounded-full bg-white/15 px-4 py-2 text-sm backdrop-blur">
@@ -80,7 +81,7 @@ export default async function HomePage() {
 
       {/* Intro */}
       <section className="mx-auto max-w-3xl px-4 py-12">
-        <h2 className="text-2xl font-bold text-stone-800">A cozy retreat on a working farm</h2>
+        <SectionTitle>A cozy retreat on a working farm</SectionTitle>
         {content.home_intro.split("\n\n").map((para, i) => (
           <p key={i} className="mt-4 leading-relaxed text-stone-600">
             {para}
@@ -100,11 +101,11 @@ export default async function HomePage() {
       {/* Amenities */}
       <section className="bg-white py-12">
         <div className="mx-auto max-w-5xl px-4">
-          <h2 className="text-2xl font-bold text-stone-800">Everything you need</h2>
+          <SectionTitle>Everything you need</SectionTitle>
           <ul className="mt-6 grid gap-x-8 gap-y-2 text-stone-600 sm:grid-cols-2 lg:grid-cols-3">
             {amenities.map((a) => (
               <li key={a} className="flex items-start gap-2">
-                <span className="mt-1 text-moss">✓</span>
+                <CheckIcon className="mt-1 h-4 w-4 shrink-0 text-moss" />
                 {a}
               </li>
             ))}
@@ -114,12 +115,12 @@ export default async function HomePage() {
 
       {/* Pricing */}
       <section className="mx-auto max-w-5xl px-4 py-12">
-        <h2 className="text-2xl font-bold text-stone-800">Simple, honest pricing</h2>
+        <SectionTitle>Simple, honest pricing</SectionTitle>
         <p className="mt-2 text-stone-600">
           Cleaning fee and taxes are already included — the price you see is the price you pay.
         </p>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border border-stone-200 bg-white p-6">
+          <Card variant="flat">
             <p className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
               Weeknights · Sun–Thu
             </p>
@@ -130,8 +131,8 @@ export default async function HomePage() {
             <p className="mt-2 text-sm text-stone-600">
               +{formatUSD(pricing.extraGuestWeekday)} per additional guest (up to {pricing.maxGuests})
             </p>
-          </div>
-          <div className="rounded-xl border border-stone-200 bg-white p-6">
+          </Card>
+          <Card variant="flat">
             <p className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
               Weekends &amp; holidays · Fri–Sat
             </p>
@@ -142,7 +143,7 @@ export default async function HomePage() {
             <p className="mt-2 text-sm text-stone-600">
               +{formatUSD(pricing.extraGuestWeekend)} per additional guest (up to {pricing.maxGuests})
             </p>
-          </div>
+          </Card>
         </div>
         <p className="mt-4 text-sm text-stone-600">
           Bringing a dog? {formatUSD(pricing.petFeePerDay)}/day each, up to {pricing.maxPets} dogs (
@@ -159,12 +160,12 @@ export default async function HomePage() {
         <section className="bg-white py-12">
           <div className="mx-auto max-w-5xl px-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <h2 className="text-2xl font-bold text-stone-800">What guests say</h2>
+              <SectionTitle>What guests say</SectionTitle>
               {avgRating !== null && <RatingSummary average={avgRating} count={reviews.length} />}
             </div>
             <div className="mt-6 grid gap-4 md:grid-cols-3">
               {topReviews.map((r) => (
-                <blockquote key={r.id} className="rounded-xl border border-stone-200 p-5">
+                <Card key={r.id} variant="flat" className="!p-5">
                   <Stars rating={r.rating} />
                   <p className="mt-2 text-sm leading-relaxed text-stone-600">
                     {r.body.length > 200 ? r.body.slice(0, 200) + "…" : r.body}
@@ -172,16 +173,16 @@ export default async function HomePage() {
                   <footer className="mt-3 text-sm font-semibold text-stone-700">
                     {r.authorName}
                     {r.verified && (
-                      <span className="ml-2 rounded-full bg-moss/10 px-2 py-0.5 text-xs font-normal text-moss-dark">
-                        ✓ Verified stay
+                      <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-moss/10 px-2 py-0.5 text-xs font-normal text-moss-dark">
+                        <CheckIcon className="h-3 w-3" /> Verified stay
                       </span>
                     )}
                   </footer>
-                </blockquote>
+                </Card>
               ))}
             </div>
-            <Link href="/reviews" className="mt-6 inline-block text-moss underline">
-              Read all reviews →
+            <Link href="/reviews" className="mt-6 inline-flex items-center gap-1 text-moss underline">
+              Read all reviews <ArrowRightIcon className="h-4 w-4" />
             </Link>
           </div>
         </section>
@@ -189,7 +190,7 @@ export default async function HomePage() {
 
       {/* Area + map */}
       <section className="mx-auto max-w-5xl px-4 py-12">
-        <h2 className="text-2xl font-bold text-stone-800">Out here, the stars still shine</h2>
+        <SectionTitle>Out here, the stars still shine</SectionTitle>
         <p className="mt-4 max-w-3xl leading-relaxed text-stone-600">{content.area}</p>
         <div className="mt-6">
           <LocationMap />
@@ -199,13 +200,13 @@ export default async function HomePage() {
       {/* CTA */}
       <section className="mx-auto max-w-5xl px-4 pb-4 text-center">
         <div className="rounded-2xl bg-moss px-6 py-12 text-white">
-          <h2 className="font-serif text-2xl font-bold sm:text-3xl">Ready for some quiet?</h2>
+          <SectionTitle className="!text-white sm:!text-3xl">Ready for some quiet?</SectionTitle>
           <p className="mx-auto mt-2 max-w-md text-white/85">
             Book direct and skip the platform fees — cleaning and taxes are always included.
           </p>
           <Link
             href="/book"
-            className="mt-6 inline-block rounded-full bg-white px-8 py-3 font-semibold text-moss hover:bg-cream"
+            className={buttonClasses("primary", "lg", "mt-6 !bg-white !text-moss hover:!bg-cream")}
           >
             Check availability
           </Link>

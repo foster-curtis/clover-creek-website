@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import Button from "@/components/ui/Button";
+import { Field, Input, Textarea } from "@/components/ui/Field";
 
 export default function ContactForm() {
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
@@ -29,9 +31,6 @@ export default function ContactForm() {
     }
   }
 
-  const inputCls =
-    "w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm focus-visible:border-moss-dark";
-
   if (status === "sent") {
     return (
       <p className="rounded-lg bg-moss/10 px-4 py-6 text-center text-moss-dark">
@@ -42,28 +41,21 @@ export default function ContactForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <label className="block text-sm text-stone-700">
-        Your name
-        <input name="name" required minLength={2} className={inputCls + " mt-1"} />
-      </label>
-      <label className="block text-sm text-stone-700">
-        Email
-        <input name="email" type="email" required className={inputCls + " mt-1"} />
-      </label>
-      <label className="block text-sm text-stone-700">
-        Message
-        <textarea name="body" required minLength={10} rows={5} className={inputCls + " mt-1"} />
-      </label>
+      <Field label="Your name" htmlFor="contact-name">
+        <Input id="contact-name" name="name" required minLength={2} />
+      </Field>
+      <Field label="Email" htmlFor="contact-email">
+        <Input id="contact-email" name="email" type="email" required />
+      </Field>
+      <Field label="Message" htmlFor="contact-body">
+        <Textarea id="contact-body" name="body" required minLength={10} rows={5} />
+      </Field>
       {/* Honeypot */}
       <input type="text" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="hidden" />
       {status === "error" && <p className="text-sm text-red-700">{error}</p>}
-      <button
-        type="submit"
-        disabled={status === "sending"}
-        className="rounded-full bg-moss px-6 py-2.5 font-semibold text-white hover:bg-moss-dark disabled:bg-stone-300"
-      >
+      <Button type="submit" variant="primary" size="md" loading={status === "sending"}>
         {status === "sending" ? "Sending…" : "Send message"}
-      </button>
+      </Button>
     </form>
   );
 }

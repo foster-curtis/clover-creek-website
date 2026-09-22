@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ContactForm from "@/components/ContactForm";
+import { PageTitle } from "@/components/ui/Heading";
 import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -10,7 +11,7 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <div className="mx-auto max-w-xl px-4 py-10">
-      <h1 className="text-3xl font-bold text-stone-800">Contact us</h1>
+      <PageTitle>Contact us</PageTitle>
       <p className="mt-2 text-stone-600">
         Questions about the house, your dates, or bringing your dog? Send a note and we&apos;ll get
         back to you. You can also email{" "}

@@ -10,6 +10,9 @@ import {
   type PricingConfig,
   type Quote,
 } from "@/lib/pricing";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import { Field, Input, Select } from "@/components/ui/Field";
 
 interface Props {
   pricing: PricingConfig;
@@ -87,12 +90,9 @@ export default function BookingWidget({ pricing, unavailable, holidays, prefill 
     }
   }
 
-  const inputCls =
-    "w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm focus-visible:border-moss-dark";
-
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
-      <div className="rounded-xl border border-stone-200 bg-white p-4 sm:p-6">
+      <Card variant="flat" className="!p-4 sm:!p-6">
         <StayCalendar
           unavailable={unavailable}
           holidays={holidayMap}
@@ -103,35 +103,33 @@ export default function BookingWidget({ pricing, unavailable, holidays, prefill 
             setCheckOut(co);
           }}
         />
-      </div>
+      </Card>
 
       <div className="space-y-4">
-        <div className="rounded-xl border border-stone-200 bg-white p-5">
+        <Card variant="flat" className="!p-5">
           <div className="grid grid-cols-2 gap-3">
-            <label className="text-sm text-stone-700">
-              Guests (max {pricing.maxGuests})
-              <select
-                className={inputCls + " mt-1"}
+            <Field label={`Guests (max ${pricing.maxGuests})`} htmlFor="booking-guests">
+              <Select
+                id="booking-guests"
                 value={guests}
                 onChange={(e) => setGuests(Number(e.target.value))}
               >
                 {Array.from({ length: pricing.maxGuests }, (_, i) => i + 1).map((n) => (
                   <option key={n} value={n}>{n}</option>
                 ))}
-              </select>
-            </label>
-            <label className="text-sm text-stone-700">
-              Dogs (max {pricing.maxPets})
-              <select
-                className={inputCls + " mt-1"}
+              </Select>
+            </Field>
+            <Field label={`Dogs (max ${pricing.maxPets})`} htmlFor="booking-pets">
+              <Select
+                id="booking-pets"
                 value={pets}
                 onChange={(e) => setPets(Number(e.target.value))}
               >
                 {Array.from({ length: pricing.maxPets + 1 }, (_, i) => i).map((n) => (
                   <option key={n} value={n}>{n}</option>
                 ))}
-              </select>
-            </label>
+              </Select>
+            </Field>
           </div>
           <p className="mt-2 text-xs text-ink-muted">
             Dogs only (no cats), {pricing.petWeightLimitLbs} lb limit each,{" "}
@@ -172,22 +170,19 @@ export default function BookingWidget({ pricing, unavailable, holidays, prefill 
               </p>
             </div>
           )}
-        </div>
+        </Card>
 
-        <div className="rounded-xl border border-stone-200 bg-white p-5">
+        <Card variant="flat" className="!p-5">
           <div className="space-y-3">
-            <label className="block text-sm text-stone-700">
-              Full name
-              <input className={inputCls + " mt-1"} value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
-            </label>
-            <label className="block text-sm text-stone-700">
-              Email
-              <input className={inputCls + " mt-1"} type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
-            </label>
-            <label className="block text-sm text-stone-700">
-              Phone (optional)
-              <input className={inputCls + " mt-1"} type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
-            </label>
+            <Field label="Full name" htmlFor="booking-name">
+              <Input id="booking-name" value={name} onChange={(e) => setName(e.target.value)} autoComplete="name" />
+            </Field>
+            <Field label="Email" htmlFor="booking-email">
+              <Input id="booking-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+            </Field>
+            <Field label="Phone (optional)" htmlFor="booking-phone">
+              <Input id="booking-phone" type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} autoComplete="tel" />
+            </Field>
             {/* Honeypot field — hidden from real users */}
             <input
               type="text"
@@ -236,22 +231,25 @@ export default function BookingWidget({ pricing, unavailable, holidays, prefill 
 
           {error && <p className="mt-3 rounded bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
-          <button
+          <Button
             type="button"
+            variant="primary"
+            size="lg"
             disabled={!canSubmit}
+            loading={submitting}
             onClick={reserve}
-            className="mt-4 w-full rounded-full bg-moss py-3 font-semibold text-white transition hover:bg-moss-dark disabled:cursor-not-allowed disabled:bg-stone-300"
+            className="mt-4 w-full"
           >
             {submitting
               ? "Redirecting to secure payment…"
               : quote
                 ? `Reserve · ${formatUSD(quote.total)}`
                 : "Select dates to see your price"}
-          </button>
+          </Button>
           <p className="mt-2 text-center text-xs text-ink-muted">
             Secure payment by Stripe. You won&apos;t be charged until you complete payment.
           </p>
-        </div>
+        </Card>
       </div>
     </div>
   );

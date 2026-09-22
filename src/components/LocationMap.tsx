@@ -73,11 +73,11 @@ export default function LocationMap() {
       <iframe
         title={`Map of ${SITE.location.town}, ${SITE.location.region}`}
         src={`https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat},${lng}`}
-        className="h-80 w-full rounded-xl border border-stone-200"
+        className="h-80 w-full rounded-xl border border-line"
         loading="lazy"
       />
     );
   }
 
-  return <div ref={ref} className="h-80 w-full rounded-xl border border-stone-200" />;
+  return <div ref={ref} className="h-80 w-full rounded-xl border border-line" />;
 }

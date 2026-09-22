@@ -1,13 +1,14 @@
 import Image from "next/image";
 import { galleryPublicUrl } from "@/lib/data";
 import { supabaseServer } from "@/lib/supabase/server";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import { Field, Input } from "@/components/ui/Field";
+import { PageTitle } from "@/components/ui/Heading";
 import { deleteGalleryImage, updateGalleryImage } from "../actions";
 import GalleryUploader from "./GalleryUploader";
 
 export const dynamic = "force-dynamic";
-
-const inputCls =
-  "rounded border border-stone-300 bg-white px-2 py-1 text-xs focus-visible:border-moss-dark";
 
 export default async function AdminGalleryPage() {
   const supabase = await supabaseServer();
@@ -18,7 +19,7 @@ export default async function AdminGalleryPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-stone-800">Gallery</h1>
+      <PageTitle>Gallery</PageTitle>
       <p className="mt-1 text-sm text-ink-muted">
         Photos appear on the home page and gallery in the order below (lowest number first). Tip:
         resize photos to ~2000px wide before uploading for faster pages.
@@ -30,8 +31,8 @@ export default async function AdminGalleryPage() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {(images ?? []).map((img) => (
-          <div key={img.id} className="rounded-xl border border-stone-200 bg-white p-3">
-            <div className="relative aspect-[4/3] overflow-hidden rounded bg-stone-100">
+          <Card key={img.id} variant="flat" className="p-3">
+            <div className="relative aspect-[4/3] overflow-hidden rounded-md bg-surface-sunken">
               <Image
                 src={galleryPublicUrl(img.storage_path)}
                 alt={img.alt ?? ""}
@@ -42,44 +43,40 @@ export default async function AdminGalleryPage() {
             </div>
             <form action={updateGalleryImage} className="mt-3 space-y-2">
               <input type="hidden" name="id" value={img.id} />
-              <input
+              <Input
                 name="caption"
                 defaultValue={img.caption ?? ""}
                 placeholder="Caption"
-                className={inputCls + " w-full"}
+                className="w-full"
               />
-              <input
+              <Input
                 name="alt"
                 defaultValue={img.alt ?? ""}
                 placeholder="Alt text (describe the photo)"
-                className={inputCls + " w-full"}
+                className="w-full"
               />
-              <div className="flex items-center justify-between">
-                <label className="text-xs text-ink-muted">
-                  Order{" "}
-                  <input
+              <div className="flex items-end justify-between gap-2">
+                <Field label="Order" htmlFor={`sort-${img.id}`} className="w-20">
+                  <Input
+                    id={`sort-${img.id}`}
                     type="number"
                     name="sortOrder"
                     defaultValue={img.sort_order}
-                    className={inputCls + " w-16"}
                   />
-                </label>
-                <button
-                  type="submit"
-                  className="rounded-full bg-moss px-3 py-1 text-xs font-semibold text-white hover:bg-moss-dark"
-                >
+                </Field>
+                <Button type="submit" size="sm">
                   Save
-                </button>
+                </Button>
               </div>
             </form>
             <form action={deleteGalleryImage} className="mt-2 text-right">
               <input type="hidden" name="id" value={img.id} />
               <input type="hidden" name="storagePath" value={img.storage_path} />
-              <button type="submit" className="text-xs text-red-600 underline">
+              <Button type="submit" variant="danger" size="sm">
                 Delete photo
-              </button>
+              </Button>
             </form>
-          </div>
+          </Card>
         ))}
         {(images ?? []).length === 0 && (
           <p className="text-sm text-ink-muted sm:col-span-2 lg:col-span-3">

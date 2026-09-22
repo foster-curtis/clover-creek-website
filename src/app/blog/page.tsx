@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Card from "@/components/ui/Card";
+import { PageTitle } from "@/components/ui/Heading";
+import { ArrowRightIcon } from "@/components/ui/icons";
 import { getPublishedPosts } from "@/lib/data";
 
 export const metadata: Metadata = {
@@ -15,18 +18,18 @@ export default async function BlogPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-3xl font-bold text-stone-800">Area Guide</h1>
+      <PageTitle>Area Guide</PageTitle>
       <p className="mt-2 text-stone-600">
         Ideas for your stay — from stargazing to day trips around Rush Valley.
       </p>
       <div className="mt-8 space-y-4">
         {posts.length === 0 && (
-          <p className="rounded-xl border border-stone-200 bg-white p-6 text-ink-muted">
-            Posts are coming soon — check back for local tips and trip ideas.
-          </p>
+          <Card variant="flat">
+            <p className="text-ink-muted">Posts are coming soon — check back for local tips and trip ideas.</p>
+          </Card>
         )}
         {posts.map((post) => (
-          <article key={post.id} className="rounded-xl border border-stone-200 bg-white p-6">
+          <Card key={post.id} variant="flat">
             <h2 className="text-xl font-bold">
               <Link href={`/blog/${post.slug}`} className="text-stone-800 hover:text-moss">
                 {post.title}
@@ -42,10 +45,13 @@ export default async function BlogPage() {
               </time>
             )}
             {post.excerpt && <p className="mt-2 text-stone-600">{post.excerpt}</p>}
-            <Link href={`/blog/${post.slug}`} className="mt-3 inline-block text-sm text-moss underline">
-              Read more →
+            <Link
+              href={`/blog/${post.slug}`}
+              className="mt-3 inline-flex items-center gap-1 text-sm text-moss underline"
+            >
+              Read more <ArrowRightIcon className="h-3.5 w-3.5" />
             </Link>
-          </article>
+          </Card>
         ))}
       </div>
     </div>

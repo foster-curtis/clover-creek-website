@@ -39,7 +39,7 @@ export default function AdminNav({ variant }: { variant: "sidebar" | "pills" }) 
               className={`rounded-full border px-3 py-1 ${
                 isActive
                   ? "border-moss bg-moss font-medium text-white"
-                  : "border-stone-300 text-stone-600"
+                  : "border-line-strong text-ink-muted"
               }`}
             >
               {l.label}
@@ -62,7 +62,7 @@ export default function AdminNav({ variant }: { variant: "sidebar" | "pills" }) 
             className={`block rounded px-3 py-2 ${
               isActive
                 ? "bg-moss/10 font-semibold text-moss-dark"
-                : "text-stone-600 hover:bg-moss/10 hover:text-moss-dark"
+                : "text-ink-muted hover:bg-moss/10 hover:text-moss-dark"
             }`}
           >
             {l.label}

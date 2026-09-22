@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { supabaseBrowser } from "@/lib/supabase/client";
+import { buttonClasses } from "@/components/ui/Button";
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
@@ -97,10 +98,10 @@ export default function GalleryUploader() {
         }
       }}
       className={`cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition-colors ${
-        dragging ? "border-moss bg-moss/10" : "border-stone-300 bg-white hover:border-moss/60"
+        dragging ? "border-moss bg-moss/10" : "border-line-strong bg-surface-raised hover:border-moss/60"
       } ${busy ? "cursor-wait opacity-80" : ""}`}
     >
-      <span className="inline-block rounded-full bg-moss px-5 py-2.5 font-semibold text-white hover:bg-moss-dark">
+      <span className={buttonClasses("primary", "md", "pointer-events-none")}>
         {busy ? "Uploading…" : "Choose photos to upload"}
       </span>
       <input

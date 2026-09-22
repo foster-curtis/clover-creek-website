@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import ReviewForm from "@/components/ReviewForm";
 import ReviewsBrowser from "@/components/ReviewsBrowser";
 import RatingSummary from "@/components/RatingSummary";
+import { buttonClasses } from "@/components/ui/Button";
+import { PageTitle, SectionTitle } from "@/components/ui/Heading";
 import { getApprovedReviews } from "@/lib/data";
 import { currentUser } from "@/lib/supabase/server";
 
@@ -22,7 +24,7 @@ export default async function ReviewsPage() {
     <div className="mx-auto max-w-3xl px-4 py-10">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-stone-800">Guest Reviews</h1>
+          <PageTitle>Guest Reviews</PageTitle>
           {avgRating !== null ? (
             <div className="mt-2">
               <RatingSummary average={avgRating} count={reviews.length} />
@@ -31,10 +33,7 @@ export default async function ReviewsPage() {
             <p className="mt-2 text-stone-600">Be the first to review your stay!</p>
           )}
         </div>
-        <a
-          href="#leave-review"
-          className="rounded-full bg-moss px-5 py-2.5 text-sm font-semibold text-white hover:bg-moss-dark"
-        >
+        <a href="#leave-review" className={buttonClasses("primary", "md")}>
           Leave a Review
         </a>
       </div>
@@ -43,9 +42,9 @@ export default async function ReviewsPage() {
         <ReviewsBrowser reviews={reviews} />
       </div>
 
-      <h2 id="leave-review" className="mt-12 scroll-mt-24 text-xl font-bold text-stone-800">
+      <SectionTitle as="h2" id="leave-review" className="mt-12 scroll-mt-24 !text-xl">
         Leave a review
-      </h2>
+      </SectionTitle>
       <div className="mt-4">
         <ReviewForm signedIn={Boolean(user)} />
       </div>
