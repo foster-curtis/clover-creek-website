@@ -2,11 +2,11 @@
 
 Three branches, each with a different job:
 
-| Branch    | Purpose                        | GitHub Actions                              | Local hooks |
-| --------- | ------------------------------- | -------------------------------------------- | ----------- |
-| `working` | Day-to-day development          | none                                         | Husky pre-commit (lint + typecheck) |
-| `stg`     | Staging / review                | lint, typecheck, test → deploy to **Vercel preview** | — |
-| `master`  | Production                      | lint, typecheck, test → deploy to **Vercel production** | — |
+| Branch    | Purpose                | GitHub Actions                                          | Local hooks                         |
+| --------- | ---------------------- | ------------------------------------------------------- | ----------------------------------- |
+| `working` | Day-to-day development | none                                                    | Husky pre-commit (lint + typecheck) |
+| `stg`     | Staging / review       | lint, typecheck, test → deploy to **Vercel preview**    | —                                   |
+| `master`  | Production             | lint, typecheck, test → deploy to **Vercel production** | —                                   |
 
 ## The promotion flow
 
@@ -66,3 +66,5 @@ Vercel's preview environment, and only a push to `master` reaches production.
   or `master` (e.g. to review a Dependabot bump before merging), those PRs won't get a
   CI check until after they're merged; add a `pull_request` trigger to
   `deploy-preview.yml`'s `quality` job if you want pre-merge feedback.
+
+# TEST
