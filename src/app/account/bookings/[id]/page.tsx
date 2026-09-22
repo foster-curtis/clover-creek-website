@@ -105,7 +105,7 @@ export default async function BookingDetailPage({
                 )}
                 {refund.percent === 100 && <> A full refund applies through {fullUntil}.</>}
               </p>
-              <p className="mt-2 text-xs text-stone-500">
+              <p className="mt-2 text-xs text-ink-muted">
                 Send a message below to cancel, or see the full{" "}
                 <Link href="/faq" className="text-moss underline">
                   cancellation policy

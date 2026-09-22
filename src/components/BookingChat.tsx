@@ -90,14 +90,14 @@ export default function BookingChat({ bookingId, asAdmin, userId }: Props) {
   }
 
   if (!hasSupabaseClient()) {
-    return <p className="text-sm text-stone-500">Messaging will be available once the site is fully configured.</p>;
+    return <p className="text-sm text-ink-muted">Messaging will be available once the site is fully configured.</p>;
   }
 
   return (
     <div className="flex h-96 flex-col rounded-xl border border-stone-200 bg-white">
       <div className="flex-1 space-y-2 overflow-y-auto p-4">
         {messages.length === 0 && (
-          <p className="text-center text-sm text-stone-400">
+          <p className="text-center text-sm text-ink-subtle">
             No messages yet — say hello!
           </p>
         )}
@@ -111,7 +111,7 @@ export default function BookingChat({ bookingId, asAdmin, userId }: Props) {
                 }`}
               >
                 <p className="whitespace-pre-wrap">{m.body}</p>
-                <p className={`mt-1 text-[10px] ${mine ? "text-white/70" : "text-stone-400"}`}>
+                <p className={`mt-1 text-[10px] ${mine ? "text-white/70" : "text-ink-subtle"}`}>
                   {new Date(m.created_at).toLocaleString("en-US", {
                     month: "short",
                     day: "numeric",
@@ -138,7 +138,7 @@ export default function BookingChat({ bookingId, asAdmin, userId }: Props) {
           }}
           rows={1}
           placeholder="Write a message…"
-          className="flex-1 resize-none rounded border border-stone-300 px-3 py-2 text-sm focus:border-moss focus:outline-none"
+          className="flex-1 resize-none rounded border border-stone-300 px-3 py-2 text-sm focus-visible:border-moss-dark"
         />
         <button
           type="button"

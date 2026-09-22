@@ -13,7 +13,7 @@ import {
 export const dynamic = "force-dynamic";
 
 const inputCls =
-  "rounded border border-stone-300 bg-white px-3 py-1.5 text-sm focus:border-moss focus:outline-none";
+  "rounded border border-stone-300 bg-white px-3 py-1.5 text-sm focus-visible:border-moss-dark";
 const btnCls =
   "rounded-full bg-moss px-4 py-1.5 text-sm font-semibold text-white hover:bg-moss-dark";
 const smallBtnCls =
@@ -64,15 +64,15 @@ export default async function AdminCalendarPage() {
       <section className="mt-6 rounded-xl border border-stone-200 bg-white p-4">
         <h2 className="font-bold text-stone-800">Block dates</h2>
         <form action={blockDates} className="mt-3 flex flex-wrap items-end gap-3">
-          <label className="text-xs text-stone-500">
+          <label className="text-xs text-ink-muted">
             First night
             <input type="date" name="from" required className={inputCls + " mt-1 block"} />
           </label>
-          <label className="text-xs text-stone-500">
+          <label className="text-xs text-ink-muted">
             Reopen on (checkout day)
             <input type="date" name="to" required className={inputCls + " mt-1 block"} />
           </label>
-          <label className="text-xs text-stone-500">
+          <label className="text-xs text-ink-muted">
             Reason (optional)
             <input type="text" name="reason" placeholder="Family visit" className={inputCls + " mt-1 block"} />
           </label>
@@ -86,7 +86,7 @@ export default async function AdminCalendarPage() {
                 <li key={b.id} className="flex items-center justify-between rounded bg-stone-50 px-3 py-2">
                   <span>
                     {checkIn} → {checkOut}
-                    {b.reason && <span className="text-stone-400"> · {b.reason}</span>}
+                    {b.reason && <span className="text-ink-subtle"> · {b.reason}</span>}
                   </span>
                   <form action={unblockDates}>
                     <input type="hidden" name="id" value={b.id} />
@@ -103,33 +103,33 @@ export default async function AdminCalendarPage() {
       <section className="mt-6 rounded-xl border border-stone-200 bg-white p-4">
         <h2 className="font-bold text-stone-800">Add a manual booking (phone / walk-in)</h2>
         <form action={createManualBooking} className="mt-3 flex flex-wrap items-end gap-3">
-          <label className="text-xs text-stone-500">
+          <label className="text-xs text-ink-muted">
             Check-in
             <input type="date" name="from" required className={inputCls + " mt-1 block"} />
           </label>
-          <label className="text-xs text-stone-500">
+          <label className="text-xs text-ink-muted">
             Check-out
             <input type="date" name="to" required className={inputCls + " mt-1 block"} />
           </label>
-          <label className="text-xs text-stone-500">
+          <label className="text-xs text-ink-muted">
             Guest name
             <input type="text" name="name" required className={inputCls + " mt-1 block"} />
           </label>
-          <label className="text-xs text-stone-500">
+          <label className="text-xs text-ink-muted">
             Email (optional)
             <input type="email" name="email" className={inputCls + " mt-1 block"} />
           </label>
-          <label className="text-xs text-stone-500">
+          <label className="text-xs text-ink-muted">
             Guests
             <input type="number" name="guests" min={1} max={6} defaultValue={2} className={inputCls + " mt-1 block w-20"} />
           </label>
-          <label className="text-xs text-stone-500">
+          <label className="text-xs text-ink-muted">
             Dogs
             <input type="number" name="pets" min={0} max={2} defaultValue={0} className={inputCls + " mt-1 block w-20"} />
           </label>
           <button type="submit" className={btnCls}>Add booking</button>
         </form>
-        <p className="mt-2 text-xs text-stone-400">
+        <p className="mt-2 text-xs text-ink-subtle">
           Priced automatically from the current rates; marked as confirmed (collect payment
           yourself).
         </p>
@@ -139,7 +139,7 @@ export default async function AdminCalendarPage() {
       <h2 className="mt-8 text-lg font-bold text-stone-800">All bookings</h2>
       <div className="mt-3 overflow-x-auto rounded-xl border border-stone-200 bg-white">
         <table className="w-full text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+          <thead className="bg-stone-50 text-left text-xs uppercase text-ink-muted">
             <tr>
               <th className="px-3 py-2">Dates</th>
               <th className="px-3 py-2">Guest</th>
@@ -159,11 +159,11 @@ export default async function AdminCalendarPage() {
                   <td className="px-3 py-2">
                     {b.guest_name}
                     <br />
-                    <span className="text-xs text-stone-400">{b.guest_email}</span>
+                    <span className="text-xs text-ink-subtle">{b.guest_email}</span>
                     {b.guest_phone && (
                       <>
                         <br />
-                        <span className="text-xs text-stone-400">{b.guest_phone}</span>
+                        <span className="text-xs text-ink-subtle">{b.guest_phone}</span>
                       </>
                     )}
                   </td>
@@ -173,7 +173,7 @@ export default async function AdminCalendarPage() {
                   <td className="px-3 py-2">{formatUSD(b.total_cents / 100)}</td>
                   <td className="px-3 py-2">
                     {b.status}
-                    {b.notes && <p className="text-xs text-stone-400">{b.notes}</p>}
+                    {b.notes && <p className="text-xs text-ink-subtle">{b.notes}</p>}
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex flex-wrap gap-1">
@@ -198,7 +198,7 @@ export default async function AdminCalendarPage() {
                             <button type="submit" className={smallBtnCls + " text-red-600"}>
                               Cancel &amp; refund {formatUSD(refund.refundCents / 100)}
                             </button>
-                            <span className="text-[11px] text-stone-400">
+                            <span className="text-[11px] text-ink-subtle">
                               {refund.percent}% · {refund.tier.label} out
                             </span>
                             <input

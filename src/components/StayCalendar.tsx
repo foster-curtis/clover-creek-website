@@ -78,7 +78,7 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
         <p className="mb-2 text-center font-serif font-semibold text-stone-800">
           {monthLabel(year, month)}
         </p>
-        <div className="grid grid-cols-7 gap-1 text-center text-xs text-stone-500">
+        <div className="grid grid-cols-7 gap-1 text-center text-xs text-ink-muted">
           {WEEKDAYS.map((w) => (
             <div key={w} className="py-1 font-medium">{w}</div>
           ))}
@@ -154,7 +154,7 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
         >
           ←
         </button>
-        <p className="text-sm text-stone-500">
+        <p className="text-sm text-ink-muted">
           {checkIn && checkOut
             ? `${checkIn} → ${checkOut}`
             : checkIn
@@ -178,7 +178,7 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
         {renderMonth(viewYear, viewMonth)}
         {renderMonth(next.getFullYear(), next.getMonth())}
       </div>
-      <p className="mt-3 flex items-center gap-1.5 text-xs text-stone-500">
+      <p className="mt-3 flex items-center gap-1.5 text-xs text-ink-muted">
         <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
         Weekend &amp; holiday nights are priced a little higher — hover a date to see which.
       </p>
@@ -186,7 +186,7 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
         <button
           type="button"
           onClick={() => onChange(null, null)}
-          className="mt-2 text-xs text-stone-500 underline hover:text-moss"
+          className="mt-2 text-xs text-ink-muted underline hover:text-moss"
         >
           Clear dates
         </button>

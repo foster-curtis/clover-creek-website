@@ -30,7 +30,7 @@ export default function ContactForm() {
   }
 
   const inputCls =
-    "w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm focus:border-moss focus:outline-none";
+    "w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm focus-visible:border-moss-dark";
 
   if (status === "sent") {
     return (

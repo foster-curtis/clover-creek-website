@@ -35,7 +35,7 @@ export default async function BookingSuccessPage({
             : `Thanks! Your payment is processing — a confirmation email with your dates and
                arrival details will arrive shortly.`}
         </p>
-        <p className="mt-3 text-sm text-stone-500">
+        <p className="mt-3 text-sm text-ink-muted">
           Check-in from {SITE.checkInTime} · Check-out by {SITE.checkOutTime}
         </p>
         <div className="mt-8 flex justify-center gap-3">

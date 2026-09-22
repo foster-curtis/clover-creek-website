@@ -5,7 +5,7 @@ import { addHoliday, deleteHoliday, savePricing } from "../actions";
 export const dynamic = "force-dynamic";
 
 const inputCls =
-  "mt-1 block w-32 rounded border border-stone-300 bg-white px-3 py-1.5 text-sm focus:border-moss focus:outline-none";
+  "mt-1 block w-32 rounded border border-stone-300 bg-white px-3 py-1.5 text-sm focus-visible:border-moss-dark";
 
 const FIELDS: Array<{ name: string; label: string; key: keyof Awaited<ReturnType<typeof getPricing>> }> = [
   { name: "weekdayBase", label: "Weeknight base (2 guests)", key: "weekdayBase" },
@@ -30,7 +30,7 @@ export default async function AdminPricingPage() {
   return (
     <div>
       <h1 className="text-2xl font-bold text-stone-800">Pricing &amp; Holidays</h1>
-      <p className="mt-1 text-sm text-stone-500">
+      <p className="mt-1 text-sm text-ink-muted">
         All prices include the cleaning fee and taxes. Changes apply to new bookings immediately.
       </p>
 
@@ -63,17 +63,17 @@ export default async function AdminPricingPage() {
 
       <section className="mt-8 rounded-xl border border-stone-200 bg-white p-5">
         <h2 className="font-bold text-stone-800">Holidays with weekend pricing</h2>
-        <p className="mt-1 text-xs text-stone-400">
+        <p className="mt-1 text-xs text-ink-subtle">
           US federal holidays are always included automatically. Add local dates here (Pioneer
           Day, Easter weekend, county fair…). The night before a holiday is also priced as a
           weekend, like Friday is for Saturday.
         </p>
         <form action={addHoliday} className="mt-4 flex flex-wrap items-end gap-3">
-          <label className="text-xs text-stone-500">
+          <label className="text-xs text-ink-muted">
             Date
             <input type="date" name="day" required className={inputCls} />
           </label>
-          <label className="text-xs text-stone-500">
+          <label className="text-xs text-ink-muted">
             Name
             <input type="text" name="label" required placeholder="Pioneer Day" className={inputCls + " w-48"} />
           </label>

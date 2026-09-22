@@ -67,7 +67,7 @@ function LoginForm() {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="you@example.com"
-        className="w-full rounded border border-stone-300 bg-white px-3 py-2.5 text-sm focus:border-moss focus:outline-none"
+        className="w-full rounded border border-stone-300 bg-white px-3 py-2.5 text-sm focus-visible:border-moss-dark"
         autoComplete="email"
       />
       {status === "error" && <p className="text-sm text-red-700">{error}</p>}

@@ -6,7 +6,7 @@ import EditReviewForm from "./EditReviewForm";
 export const dynamic = "force-dynamic";
 
 const inputCls =
-  "mt-1 block rounded border border-stone-300 bg-white px-3 py-1.5 text-sm focus:border-moss focus:outline-none";
+  "mt-1 block rounded border border-stone-300 bg-white px-3 py-1.5 text-sm focus-visible:border-moss-dark";
 const smallBtnCls =
   "rounded border border-stone-300 px-2 py-1 text-xs text-stone-600 hover:border-moss hover:text-moss";
 
@@ -40,7 +40,7 @@ export default async function AdminReviewsPage() {
               </span>
             )}
             {imported && (
-              <span className="ml-2 rounded-full bg-stone-100 px-2 py-0.5 text-xs font-normal text-stone-500">
+              <span className="ml-2 rounded-full bg-stone-100 px-2 py-0.5 text-xs font-normal text-ink-muted">
                 Imported
               </span>
             )}
@@ -96,7 +96,7 @@ export default async function AdminReviewsPage() {
         Awaiting approval {pending.length > 0 && `(${pending.length})`}
       </h2>
       <div className="mt-3 space-y-3">
-        {pending.length === 0 && <p className="text-sm text-stone-400">Nothing waiting — nice.</p>}
+        {pending.length === 0 && <p className="text-sm text-ink-subtle">Nothing waiting — nice.</p>}
         {pending.map((r) => <ReviewCard key={r.id} r={r} />)}
       </div>
 
@@ -107,25 +107,25 @@ export default async function AdminReviewsPage() {
 
       <section className="mt-10 rounded-xl border border-stone-200 bg-white p-5">
         <h2 className="font-bold text-stone-800">Import a past review</h2>
-        <p className="mt-1 text-xs text-stone-400">
+        <p className="mt-1 text-xs text-ink-subtle">
           For reviews from DirectStay/Google Drive. They publish immediately.
         </p>
         <form action={importReview} className="mt-4 space-y-3">
           <div className="flex flex-wrap gap-3">
-            <label className="text-xs text-stone-500">
+            <label className="text-xs text-ink-muted">
               Guest name
               <input name="authorName" required className={inputCls} />
             </label>
-            <label className="text-xs text-stone-500">
+            <label className="text-xs text-ink-muted">
               Rating (1–5)
               <input type="number" name="rating" min={1} max={5} defaultValue={5} required className={inputCls + " w-20"} />
             </label>
-            <label className="text-xs text-stone-500">
+            <label className="text-xs text-ink-muted">
               Stay date (optional)
               <input type="date" name="stayedOn" className={inputCls} />
             </label>
           </div>
-          <label className="block text-xs text-stone-500">
+          <label className="block text-xs text-ink-muted">
             Review text
             <textarea name="body" required rows={3} className={inputCls + " w-full"} />
           </label>

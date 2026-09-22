@@ -31,7 +31,7 @@ export default async function BlogPostPage({ params }: Props) {
       </Link>
       <h1 className="mt-4 text-3xl font-bold text-stone-800">{post.title}</h1>
       {post.publishedAt && (
-        <time className="text-sm text-stone-400">
+        <time className="text-sm text-ink-subtle">
           {new Date(post.publishedAt).toLocaleDateString("en-US", {
             month: "long",
             day: "numeric",

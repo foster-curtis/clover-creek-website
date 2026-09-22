@@ -120,24 +120,24 @@ export default async function HomePage() {
         </p>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <div className="rounded-xl border border-stone-200 bg-white p-6">
-            <p className="text-sm font-semibold uppercase tracking-wide text-stone-500">
+            <p className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
               Weeknights · Sun–Thu
             </p>
             <p className="mt-2 font-serif text-4xl font-bold text-moss">
               {formatUSD(pricing.weekdayBase)}
-              <span className="text-base font-normal text-stone-500"> /night for 2 guests</span>
+              <span className="text-base font-normal text-ink-muted"> /night for 2 guests</span>
             </p>
             <p className="mt-2 text-sm text-stone-600">
               +{formatUSD(pricing.extraGuestWeekday)} per additional guest (up to {pricing.maxGuests})
             </p>
           </div>
           <div className="rounded-xl border border-stone-200 bg-white p-6">
-            <p className="text-sm font-semibold uppercase tracking-wide text-stone-500">
+            <p className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
               Weekends &amp; holidays · Fri–Sat
             </p>
             <p className="mt-2 font-serif text-4xl font-bold text-moss">
               {formatUSD(pricing.weekendBase)}
-              <span className="text-base font-normal text-stone-500"> /night for 2 guests</span>
+              <span className="text-base font-normal text-ink-muted"> /night for 2 guests</span>
             </p>
             <p className="mt-2 text-sm text-stone-600">
               +{formatUSD(pricing.extraGuestWeekend)} per additional guest (up to {pricing.maxGuests})

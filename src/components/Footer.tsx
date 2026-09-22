@@ -35,7 +35,7 @@ export default function Footer() {
           </ul>
         </div>
       </div>
-      <div className="border-t border-stone-200 py-4 text-center text-xs text-stone-500">
+      <div className="border-t border-stone-200 py-4 text-center text-xs text-ink-muted">
         © {new Date().getFullYear()} {SITE.name}. Cleaning fee and taxes included in all rates.
       </div>
     </footer>

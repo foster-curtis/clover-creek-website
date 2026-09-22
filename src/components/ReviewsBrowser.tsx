@@ -34,7 +34,7 @@ export default function ReviewsBrowser({ reviews }: { reviews: Review[] }) {
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search reviews…"
           aria-label="Search reviews"
-          className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm focus:border-moss focus:outline-none sm:max-w-xs"
+          className="w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm focus-visible:border-moss-dark sm:max-w-xs"
         />
         <div className="flex flex-wrap gap-2">
           <button
@@ -67,7 +67,7 @@ export default function ReviewsBrowser({ reviews }: { reviews: Review[] }) {
 
       <div className="mt-6 space-y-4">
         {filtered.length === 0 && (
-          <p className="rounded-lg border border-stone-200 bg-white p-5 text-sm text-stone-500">
+          <p className="rounded-lg border border-stone-200 bg-white p-5 text-sm text-ink-muted">
             No reviews match your search.
           </p>
         )}
@@ -75,7 +75,7 @@ export default function ReviewsBrowser({ reviews }: { reviews: Review[] }) {
           <article key={r.id} className="rounded-xl border border-stone-200 bg-white p-5">
             <div className="flex items-center justify-between">
               <Stars rating={r.rating} />
-              <time className="text-xs text-stone-400">
+              <time className="text-xs text-ink-subtle">
                 {new Date(r.stayedOn ?? r.createdAt).toLocaleDateString("en-US", {
                   month: "long",
                   year: "numeric",

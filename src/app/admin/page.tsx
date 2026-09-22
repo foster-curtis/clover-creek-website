@@ -53,7 +53,7 @@ export default async function AdminDashboard() {
             className="rounded-xl border border-stone-200 bg-white p-4 hover:border-moss"
           >
             <p className="text-2xl font-bold text-moss">{c.value}</p>
-            <p className="mt-1 text-xs text-stone-500">{c.label}</p>
+            <p className="mt-1 text-xs text-ink-muted">{c.label}</p>
           </Link>
         ))}
       </div>
@@ -61,7 +61,7 @@ export default async function AdminDashboard() {
       <h2 className="mt-10 text-lg font-bold text-stone-800">Upcoming stays</h2>
       <div className="mt-3 overflow-x-auto rounded-xl border border-stone-200 bg-white">
         <table className="w-full text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+          <thead className="bg-stone-50 text-left text-xs uppercase text-ink-muted">
             <tr>
               <th className="px-4 py-2">Dates</th>
               <th className="px-4 py-2">Guest</th>
@@ -73,7 +73,7 @@ export default async function AdminDashboard() {
           <tbody>
             {(upcoming.data ?? []).length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-stone-400">
+                <td colSpan={5} className="px-4 py-6 text-center text-ink-subtle">
                   No upcoming stays.
                 </td>
               </tr>

@@ -44,7 +44,7 @@ export default async function AccountPage() {
         <h1 className="text-3xl font-bold text-stone-800">My Stays</h1>
         <SignOutButton />
       </div>
-      <p className="mt-1 text-sm text-stone-500">{user.email}</p>
+      <p className="mt-1 text-sm text-ink-muted">{user.email}</p>
 
       <div className="mt-8 space-y-4">
         {(bookings ?? []).length === 0 && (
@@ -76,7 +76,7 @@ export default async function AccountPage() {
                   {b.status}
                 </span>
               </div>
-              <p className="mt-1 text-sm text-stone-500">
+              <p className="mt-1 text-sm text-ink-muted">
                 {b.guests} guest{b.guests > 1 ? "s" : ""}
                 {b.pets > 0 && ` · ${b.pets} dog${b.pets > 1 ? "s" : ""}`} ·{" "}
                 {formatUSD(b.total_cents / 100)}

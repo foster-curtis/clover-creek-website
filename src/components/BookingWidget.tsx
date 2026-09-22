@@ -88,7 +88,7 @@ export default function BookingWidget({ pricing, unavailable, holidays, prefill 
   }
 
   const inputCls =
-    "w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm focus:border-moss focus:outline-none";
+    "w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm focus-visible:border-moss-dark";
 
   return (
     <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
@@ -133,7 +133,7 @@ export default function BookingWidget({ pricing, unavailable, holidays, prefill 
               </select>
             </label>
           </div>
-          <p className="mt-2 text-xs text-stone-500">
+          <p className="mt-2 text-xs text-ink-muted">
             Dogs only (no cats), {pricing.petWeightLimitLbs} lb limit each,{" "}
             {formatUSD(pricing.petFeePerDay)}/dog/day.
           </p>
@@ -167,7 +167,7 @@ export default function BookingWidget({ pricing, unavailable, holidays, prefill 
                 <span>Total</span>
                 <span>{formatUSD(quote.total)}</span>
               </p>
-              <p className="mt-1 text-xs text-stone-500">
+              <p className="mt-1 text-xs text-ink-muted">
                 Cleaning fee and taxes included — no hidden fees.
               </p>
             </div>
@@ -248,7 +248,7 @@ export default function BookingWidget({ pricing, unavailable, holidays, prefill 
                 ? `Reserve · ${formatUSD(quote.total)}`
                 : "Select dates to see your price"}
           </button>
-          <p className="mt-2 text-center text-xs text-stone-500">
+          <p className="mt-2 text-center text-xs text-ink-muted">
             Secure payment by Stripe. You won&apos;t be charged until you complete payment.
           </p>
         </div>

@@ -5,7 +5,7 @@ import { savePost } from "../../actions";
 export const dynamic = "force-dynamic";
 
 const inputCls =
-  "mt-1 block w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm focus:border-moss focus:outline-none";
+  "mt-1 block w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm focus-visible:border-moss-dark";
 
 export default async function AdminBlogEditPage({
   params,
@@ -44,15 +44,15 @@ export default async function AdminBlogEditPage({
           <input name="title" required defaultValue={post?.title ?? ""} className={inputCls} />
         </label>
         <label className="block text-sm text-stone-700">
-          URL slug <span className="text-xs text-stone-400">(leave blank to generate from the title)</span>
+          URL slug <span className="text-xs text-ink-subtle">(leave blank to generate from the title)</span>
           <input name="slug" defaultValue={post?.slug ?? ""} className={inputCls} />
         </label>
         <label className="block text-sm text-stone-700">
-          Excerpt <span className="text-xs text-stone-400">(one or two sentences for the list page and Google)</span>
+          Excerpt <span className="text-xs text-ink-subtle">(one or two sentences for the list page and Google)</span>
           <textarea name="excerpt" rows={2} defaultValue={post?.excerpt ?? ""} className={inputCls} />
         </label>
         <label className="block text-sm text-stone-700">
-          Body <span className="text-xs text-stone-400">(Markdown: ## headings, **bold**, - lists, [links](https://…))</span>
+          Body <span className="text-xs text-ink-subtle">(Markdown: ## headings, **bold**, - lists, [links](https://…))</span>
           <textarea name="body" required rows={18} defaultValue={post?.body ?? ""} className={inputCls + " font-mono"} />
         </label>
         <label className="flex items-center gap-2 text-sm text-stone-700">

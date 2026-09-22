@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { updateReview } from "../actions";
 
 const inputCls =
-  "mt-1 block rounded border border-stone-300 bg-white px-3 py-1.5 text-sm focus:border-moss focus:outline-none";
+  "mt-1 block rounded border border-stone-300 bg-white px-3 py-1.5 text-sm focus-visible:border-moss-dark";
 const smallBtnCls =
   "rounded border border-stone-300 px-2 py-1 text-xs text-stone-600 hover:border-moss hover:text-moss";
 
@@ -30,11 +30,11 @@ export default function EditReviewForm({
       >
         <input type="hidden" name="id" value={review.id} />
         <div className="flex flex-wrap gap-3">
-          <label className="text-xs text-stone-500">
+          <label className="text-xs text-ink-muted">
             Guest name
             <input name="authorName" required defaultValue={review.author_name} className={inputCls} />
           </label>
-          <label className="text-xs text-stone-500">
+          <label className="text-xs text-ink-muted">
             Rating (1–5)
             <input
               type="number"
@@ -46,12 +46,12 @@ export default function EditReviewForm({
               className={inputCls + " w-20"}
             />
           </label>
-          <label className="text-xs text-stone-500">
+          <label className="text-xs text-ink-muted">
             Stay date (optional)
             <input type="date" name="stayedOn" defaultValue={review.stayed_on ?? ""} className={inputCls} />
           </label>
         </div>
-        <label className="block text-xs text-stone-500">
+        <label className="block text-xs text-ink-muted">
           Review text
           <textarea name="body" required rows={3} defaultValue={review.body} className={inputCls + " w-full"} />
         </label>

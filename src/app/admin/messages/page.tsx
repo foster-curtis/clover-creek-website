@@ -55,7 +55,7 @@ export default async function AdminMessagesPage() {
       <h2 className="mt-6 text-lg font-bold text-stone-800">Guest conversations</h2>
       <div className="mt-3 space-y-2">
         {threads.size === 0 && (
-          <p className="text-sm text-stone-400">No conversations yet.</p>
+          <p className="text-sm text-ink-subtle">No conversations yet.</p>
         )}
         {[...threads.entries()]
           .sort((a, b) => (a[1].lastAt < b[1].lastAt ? 1 : -1))
@@ -72,7 +72,7 @@ export default async function AdminMessagesPage() {
                   <p className="font-semibold text-stone-800">
                     {booking?.guest_name ?? "Guest"}
                     {stay && (
-                      <span className="ml-2 text-xs font-normal text-stone-400">
+                      <span className="ml-2 text-xs font-normal text-ink-subtle">
                         {stay.checkIn} → {stay.checkOut}
                       </span>
                     )}
@@ -83,19 +83,19 @@ export default async function AdminMessagesPage() {
                     </span>
                   )}
                 </div>
-                <p className="mt-1 truncate text-sm text-stone-500">{t.last}</p>
+                <p className="mt-1 truncate text-sm text-ink-muted">{t.last}</p>
               </Link>
             );
           })}
       </div>
 
       <h2 className="mt-10 text-lg font-bold text-stone-800">Website inquiries</h2>
-      <p className="mt-1 text-xs text-stone-400">
+      <p className="mt-1 text-xs text-ink-subtle">
         From the contact form — reply by email, then archive.
       </p>
       <div className="mt-3 space-y-2">
         {(inquiries ?? []).length === 0 && (
-          <p className="text-sm text-stone-400">No open inquiries.</p>
+          <p className="text-sm text-ink-subtle">No open inquiries.</p>
         )}
         {(inquiries ?? []).map((inq) => (
           <div key={inq.id} className="rounded-xl border border-stone-200 bg-white p-4">
@@ -106,7 +106,7 @@ export default async function AdminMessagesPage() {
                   {inq.email}
                 </a>
               </p>
-              <time className="text-xs text-stone-400">
+              <time className="text-xs text-ink-subtle">
                 {new Date(inq.created_at).toLocaleDateString()}
               </time>
             </div>

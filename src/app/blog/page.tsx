@@ -21,7 +21,7 @@ export default async function BlogPage() {
       </p>
       <div className="mt-8 space-y-4">
         {posts.length === 0 && (
-          <p className="rounded-xl border border-stone-200 bg-white p-6 text-stone-500">
+          <p className="rounded-xl border border-stone-200 bg-white p-6 text-ink-muted">
             Posts are coming soon — check back for local tips and trip ideas.
           </p>
         )}
@@ -33,7 +33,7 @@ export default async function BlogPage() {
               </Link>
             </h2>
             {post.publishedAt && (
-              <time className="text-xs text-stone-400">
+              <time className="text-xs text-ink-subtle">
                 {new Date(post.publishedAt).toLocaleDateString("en-US", {
                   month: "long",
                   day: "numeric",

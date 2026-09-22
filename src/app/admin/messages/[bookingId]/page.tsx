@@ -33,7 +33,7 @@ export default async function AdminChatPage({
         ← All messages
       </Link>
       <h1 className="mt-3 text-2xl font-bold text-stone-800">{booking.guest_name}</h1>
-      <p className="mt-1 text-sm text-stone-500">
+      <p className="mt-1 text-sm text-ink-muted">
         {checkIn} → {checkOut} · {booking.guests} guests
         {booking.pets ? ` · ${booking.pets} dogs` : ""} · {booking.status} ·{" "}
         <a href={`mailto:${booking.guest_email}`} className="text-moss underline">

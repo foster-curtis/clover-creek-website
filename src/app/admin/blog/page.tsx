@@ -28,19 +28,19 @@ export default async function AdminBlogPage() {
           New post
         </Link>
       </div>
-      <p className="mt-1 text-sm text-stone-500">
+      <p className="mt-1 text-sm text-ink-muted">
         Posts about the area help people find the site on Google — stargazing, trails, day
         trips, family reunion ideas.
       </p>
 
       {(posts ?? []).length === 0 && (
-        <p className="mt-6 text-sm text-stone-400">No posts yet — write the first one!</p>
+        <p className="mt-6 text-sm text-ink-subtle">No posts yet — write the first one!</p>
       )}
 
       {drafts.length > 0 && (
         <section className="mt-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500">
-            Drafts <span className="text-stone-400">({drafts.length})</span>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
+            Drafts <span className="text-ink-subtle">({drafts.length})</span>
           </h2>
           <div className="mt-3 space-y-2">
             {drafts.map((post) => (
@@ -52,8 +52,8 @@ export default async function AdminBlogPage() {
 
       {published.length > 0 && (
         <section className="mt-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-500">
-            Published <span className="text-stone-400">({published.length})</span>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
+            Published <span className="text-ink-subtle">({published.length})</span>
           </h2>
           <div className="mt-3 space-y-2">
             {published.map((post) => (
@@ -86,7 +86,7 @@ function PostRow({
           <Link href={`/admin/blog/${post.id}`} className="font-semibold text-stone-800 hover:text-moss">
             {post.title}
           </Link>
-          {post.published && <p className="text-xs text-stone-400">/blog/{post.slug}</p>}
+          {post.published && <p className="text-xs text-ink-subtle">/blog/{post.slug}</p>}
         </div>
       </div>
       <div className="flex items-center gap-2">

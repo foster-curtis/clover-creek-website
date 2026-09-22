@@ -112,7 +112,7 @@ export default function GalleryUploader() {
         onChange={onInputChange}
         className="hidden"
       />
-      <p className="mt-3 text-xs text-stone-500">
+      <p className="mt-3 text-xs text-ink-muted">
         {dragging
           ? "Drop your photos to upload"
           : "Drag photos here, or click to choose. JPEG, PNG or WebP — several at once is fine."}
