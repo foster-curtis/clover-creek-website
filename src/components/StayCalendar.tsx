@@ -77,7 +77,7 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
 
     return (
       <div key={`${year}-${month}`} className="w-full">
-        <p className="mb-2 text-center font-serif font-semibold text-stone-800">
+        <p className="mb-2 text-center font-serif font-semibold text-ink">
           {monthLabel(year, month)}
         </p>
         <div className="grid grid-cols-7 gap-1 text-center text-xs text-ink-muted">
@@ -116,10 +116,10 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
                 className={[
                   "relative rounded py-1.5 text-sm",
                   disabled
-                    ? "cursor-not-allowed text-stone-300 line-through"
+                    ? "bg-hatch cursor-not-allowed text-line-strong line-through"
                     : "hover:bg-moss/20",
                   selected ? "bg-moss font-bold text-white hover:bg-moss" : "",
-                  inRange && !isStart ? "bg-moss/15 text-moss-dark" : "",
+                  inRange && !isStart ? "bg-moss/10 text-moss-dark" : "",
                 ].join(" ")}
               >
                 {Number(date.slice(8))}
@@ -127,7 +127,7 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
                   <span
                     aria-hidden="true"
                     className={`pointer-events-none absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full ${
-                      selected ? "bg-white/80" : "bg-amber-500"
+                      selected ? "bg-white/80" : "bg-harvest"
                     }`}
                   />
                 )}
@@ -177,7 +177,7 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
         {renderMonth(next.getFullYear(), next.getMonth())}
       </div>
       <p className="mt-3 flex items-center gap-1.5 text-xs text-ink-muted">
-        <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
+        <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-harvest" />
         Weekend &amp; holiday nights are priced a little higher — hover a date to see which.
       </p>
       {checkIn && (

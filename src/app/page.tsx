@@ -136,28 +136,30 @@ export default async function HomePage() {
         <p className="mt-2 text-stone-600">
           Cleaning fee and taxes are already included — the price you see is the price you pay.
         </p>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2">
-          <Card variant="flat">
+        <div className="mt-6 grid gap-6 sm:grid-cols-2">
+          <Card variant="raised" className="relative overflow-hidden pt-8">
+            <span aria-hidden="true" className="absolute inset-x-0 top-0 h-1.5 bg-moss" />
             <p className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
               Weeknights · Sun–Thu
             </p>
-            <p className="mt-2 font-serif text-4xl font-bold text-moss">
+            <p className="mt-2 font-serif text-5xl font-bold text-moss-deep">
               {formatUSD(pricing.weekdayBase)}
               <span className="text-base font-normal text-ink-muted"> /night for 2 guests</span>
             </p>
-            <p className="mt-2 text-sm text-stone-600">
+            <p className="mt-3 text-sm text-stone-600">
               +{formatUSD(pricing.extraGuestWeekday)} per additional guest (up to {pricing.maxGuests})
             </p>
           </Card>
-          <Card variant="flat">
+          <Card variant="raised" className="relative overflow-hidden pt-8">
+            <span aria-hidden="true" className="absolute inset-x-0 top-0 h-1.5 bg-clay" />
             <p className="text-sm font-semibold uppercase tracking-wide text-ink-muted">
               Weekends &amp; holidays · Fri–Sat
             </p>
-            <p className="mt-2 font-serif text-4xl font-bold text-moss">
+            <p className="mt-2 font-serif text-5xl font-bold text-clay">
               {formatUSD(pricing.weekendBase)}
               <span className="text-base font-normal text-ink-muted"> /night for 2 guests</span>
             </p>
-            <p className="mt-2 text-sm text-stone-600">
+            <p className="mt-3 text-sm text-stone-600">
               +{formatUSD(pricing.extraGuestWeekend)} per additional guest (up to {pricing.maxGuests})
             </p>
           </Card>

@@ -3,7 +3,7 @@ import type { HTMLAttributes } from "react";
 export type CardVariant = "flat" | "raised" | "interactive";
 
 const variantClasses: Record<CardVariant, string> = {
-  flat: "border border-line bg-surface-raised",
+  flat: "border border-line bg-surface-raised shadow-1",
   raised: "border border-line bg-surface-raised shadow-2",
   interactive: "border border-line bg-surface-raised shadow-2 transition-transform hover:-translate-y-0.5 hover:shadow-3",
 };

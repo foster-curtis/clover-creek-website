@@ -95,6 +95,17 @@ a, button, input, select, textarea, [role="button"] {
   }
 }
 
+/* Diagonal hatching for disabled/unavailable UI (e.g. calendar days) */
+.bg-hatch {
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--color-line) 0,
+    var(--color-line) 1px,
+    transparent 1px,
+    transparent 6px
+  );
+}
+
 /* Low-opacity paper grain on the page ground */
 .bg-grain {
   position: relative;
