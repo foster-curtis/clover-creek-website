@@ -28,8 +28,8 @@ export default function HeaderNav({
   // shifts the row.
   const textLink = (href: string) =>
     href === active
-      ? "border-b-2 border-moss font-semibold text-moss"
-      : "border-b-2 border-transparent text-stone-600 hover:text-moss";
+      ? "border-b-2 border-moss font-semibold text-moss-dark"
+      : "border-b-2 border-transparent text-ink-muted hover:text-moss-dark";
 
   return (
     <nav className="hidden items-center gap-5 text-sm lg:flex">
@@ -47,10 +47,10 @@ export default function HeaderNav({
         <Link
           href="/account"
           aria-current={active === "/account" ? "page" : undefined}
-          className={`rounded-full border border-moss px-4 py-1.5 ${
+          className={`rounded-pill border border-moss-dark px-4 py-1.5 ${
             active === "/account"
               ? "bg-moss font-medium text-white"
-              : "text-moss hover:bg-moss hover:text-white"
+              : "text-moss-dark hover:bg-moss hover:text-white"
           }`}
         >
           My Stays
@@ -68,7 +68,7 @@ export default function HeaderNav({
               carries it when you're on /book. */}
           <Link
             href="/book"
-            className={`rounded-full px-4 py-1.5 text-white ${
+            className={`rounded-pill px-4 py-1.5 font-semibold text-white shadow-1 ${
               active === "/book" ? "bg-moss-dark" : "bg-moss hover:bg-moss-dark"
             }`}
           >
