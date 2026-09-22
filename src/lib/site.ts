@@ -28,8 +28,10 @@ export const SITE = {
   checkInTime: "3:00 PM",
   checkOutTime: "11:00 AM",
   location: {
+    streetAddress: "1475 W Hwy 199",
     town: "Rush Valley",
     region: "Utah",
+    regionCode: "UT", // 2-letter form for structured data / postal use
     postalCode: "84069",
     country: "US",
     timezone: "America/Denver",

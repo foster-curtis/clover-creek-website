@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageTitle } from "@/components/ui/Heading";
 import { describeRefund, REFUND_TIERS } from "@/lib/cancellation";
 import { getSiteContent } from "@/lib/content";
 
@@ -60,7 +61,7 @@ export default async function FaqPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="text-3xl font-bold text-stone-800">Frequently Asked Questions</h1>
+      <PageTitle>Frequently Asked Questions</PageTitle>
       <div className="mt-8 space-y-3">
         {faqs.map(({ q, a }) => (
           <details key={q} className="group rounded-xl border border-stone-200 bg-white p-5">

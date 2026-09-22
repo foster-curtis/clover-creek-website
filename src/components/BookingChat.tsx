@@ -4,6 +4,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { hasSupabaseClient, supabaseBrowser } from "@/lib/supabase/client";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import { Textarea } from "@/components/ui/Field";
 
 interface Message {
   id: string;
@@ -90,14 +93,14 @@ export default function BookingChat({ bookingId, asAdmin, userId }: Props) {
   }
 
   if (!hasSupabaseClient()) {
-    return <p className="text-sm text-stone-500">Messaging will be available once the site is fully configured.</p>;
+    return <p className="text-sm text-ink-muted">Messaging will be available once the site is fully configured.</p>;
   }
 
   return (
-    <div className="flex h-96 flex-col rounded-xl border border-stone-200 bg-white">
+    <Card variant="flat" className="!p-0 flex h-96 flex-col overflow-hidden">
       <div className="flex-1 space-y-2 overflow-y-auto p-4">
         {messages.length === 0 && (
-          <p className="text-center text-sm text-stone-400">
+          <p className="text-center text-sm text-ink-subtle">
             No messages yet — say hello!
           </p>
         )}
@@ -111,7 +114,7 @@ export default function BookingChat({ bookingId, asAdmin, userId }: Props) {
                 }`}
               >
                 <p className="whitespace-pre-wrap">{m.body}</p>
-                <p className={`mt-1 text-[10px] ${mine ? "text-white/70" : "text-stone-400"}`}>
+                <p className={`mt-1 text-[10px] ${mine ? "text-white/70" : "text-ink-subtle"}`}>
                   {new Date(m.created_at).toLocaleString("en-US", {
                     month: "short",
                     day: "numeric",
@@ -126,8 +129,8 @@ export default function BookingChat({ bookingId, asAdmin, userId }: Props) {
         <div ref={bottomRef} />
       </div>
       {error && <p className="px-4 text-xs text-red-700">{error}</p>}
-      <div className="flex gap-2 border-t border-stone-200 p-3">
-        <textarea
+      <div className="flex gap-2 border-t border-line p-3">
+        <Textarea
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
@@ -138,17 +141,12 @@ export default function BookingChat({ bookingId, asAdmin, userId }: Props) {
           }}
           rows={1}
           placeholder="Write a message…"
-          className="flex-1 resize-none rounded border border-stone-300 px-3 py-2 text-sm focus:border-moss focus:outline-none"
+          className="flex-1 resize-none"
         />
-        <button
-          type="button"
-          onClick={send}
-          disabled={sending || !draft.trim()}
-          className="rounded-full bg-moss px-5 text-sm font-semibold text-white hover:bg-moss-dark disabled:bg-stone-300"
-        >
+        <Button type="button" variant="primary" size="md" onClick={send} disabled={sending || !draft.trim()}>
           Send
-        </button>
+        </Button>
       </div>
-    </div>
+    </Card>
   );
 }

@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { parseStay } from "@/lib/pricing";
 import { hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
+import Button, { buttonClasses } from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import { PageTitle, SectionTitle } from "@/components/ui/Heading";
 import { archiveInquiry } from "../actions";
 
 export const dynamic = "force-dynamic";
@@ -50,12 +53,14 @@ export default async function AdminMessagesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-stone-800">Messages</h1>
+      <PageTitle>Messages</PageTitle>
 
-      <h2 className="mt-6 text-lg font-bold text-stone-800">Guest conversations</h2>
+      <SectionTitle as="h2" className="mt-6 text-lg">
+        Guest conversations
+      </SectionTitle>
       <div className="mt-3 space-y-2">
         {threads.size === 0 && (
-          <p className="text-sm text-stone-400">No conversations yet.</p>
+          <p className="text-sm text-ink-subtle">No conversations yet.</p>
         )}
         {[...threads.entries()]
           .sort((a, b) => (a[1].lastAt < b[1].lastAt ? 1 : -1))
@@ -63,42 +68,42 @@ export default async function AdminMessagesPage() {
             const booking = bookingById.get(bookingId);
             const stay = booking ? parseStay(booking.stay) : null;
             return (
-              <Link
-                key={bookingId}
-                href={`/admin/messages/${bookingId}`}
-                className="block rounded-xl border border-stone-200 bg-white p-4 hover:border-moss"
-              >
-                <div className="flex items-center justify-between">
-                  <p className="font-semibold text-stone-800">
-                    {booking?.guest_name ?? "Guest"}
-                    {stay && (
-                      <span className="ml-2 text-xs font-normal text-stone-400">
-                        {stay.checkIn} → {stay.checkOut}
+              <Link key={bookingId} href={`/admin/messages/${bookingId}`} className="block">
+                <Card variant="interactive" className="p-4">
+                  <div className="flex items-center justify-between">
+                    <p className="font-semibold text-stone-800">
+                      {booking?.guest_name ?? "Guest"}
+                      {stay && (
+                        <span className="ml-2 text-xs font-normal text-ink-subtle">
+                          {stay.checkIn} → {stay.checkOut}
+                        </span>
+                      )}
+                    </p>
+                    {t.unread > 0 && (
+                      <span className="rounded-full bg-moss px-2 py-0.5 text-xs font-bold text-white">
+                        {t.unread} new
                       </span>
                     )}
-                  </p>
-                  {t.unread > 0 && (
-                    <span className="rounded-full bg-moss px-2 py-0.5 text-xs font-bold text-white">
-                      {t.unread} new
-                    </span>
-                  )}
-                </div>
-                <p className="mt-1 truncate text-sm text-stone-500">{t.last}</p>
+                  </div>
+                  <p className="mt-1 truncate text-sm text-ink-muted">{t.last}</p>
+                </Card>
               </Link>
             );
           })}
       </div>
 
-      <h2 className="mt-10 text-lg font-bold text-stone-800">Website inquiries</h2>
-      <p className="mt-1 text-xs text-stone-400">
+      <SectionTitle as="h2" className="mt-10 text-lg">
+        Website inquiries
+      </SectionTitle>
+      <p className="mt-1 text-xs text-ink-subtle">
         From the contact form — reply by email, then archive.
       </p>
       <div className="mt-3 space-y-2">
         {(inquiries ?? []).length === 0 && (
-          <p className="text-sm text-stone-400">No open inquiries.</p>
+          <p className="text-sm text-ink-subtle">No open inquiries.</p>
         )}
         {(inquiries ?? []).map((inq) => (
-          <div key={inq.id} className="rounded-xl border border-stone-200 bg-white p-4">
+          <Card key={inq.id} variant="flat" className="p-4">
             <div className="flex items-center justify-between">
               <p className="font-semibold text-stone-800">
                 {inq.name}{" "}
@@ -106,7 +111,7 @@ export default async function AdminMessagesPage() {
                   {inq.email}
                 </a>
               </p>
-              <time className="text-xs text-stone-400">
+              <time className="text-xs text-ink-subtle">
                 {new Date(inq.created_at).toLocaleDateString()}
               </time>
             </div>
@@ -114,21 +119,18 @@ export default async function AdminMessagesPage() {
             <div className="mt-3 flex gap-2">
               <a
                 href={`mailto:${inq.email}?subject=Re: your Clover Creek inquiry`}
-                className="rounded border border-stone-300 px-2 py-1 text-xs text-stone-600 hover:border-moss hover:text-moss"
+                className={buttonClasses("secondary", "sm")}
               >
                 Reply by email
               </a>
               <form action={archiveInquiry}>
                 <input type="hidden" name="id" value={inq.id} />
-                <button
-                  type="submit"
-                  className="rounded border border-stone-300 px-2 py-1 text-xs text-stone-600 hover:border-moss hover:text-moss"
-                >
+                <Button type="submit" variant="secondary" size="sm">
                   Archive
-                </button>
+                </Button>
               </form>
             </div>
-          </div>
+          </Card>
         ))}
       </div>
     </div>

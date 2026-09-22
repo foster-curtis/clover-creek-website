@@ -1,4 +1,6 @@
 import Link from "next/link";
+import Card from "@/components/ui/Card";
+import { PageTitle, SectionTitle } from "@/components/ui/Heading";
 import { formatUSD, parseStay } from "@/lib/pricing";
 import { supabaseAdmin, hasServiceRole } from "@/lib/supabase/server";
 
@@ -6,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
   if (!hasServiceRole()) {
-    return <p className="text-stone-600">Set SUPABASE_SERVICE_ROLE_KEY to enable the dashboard.</p>;
+    return <p className="text-ink-muted">Set SUPABASE_SERVICE_ROLE_KEY to enable the dashboard.</p>;
   }
   const db = supabaseAdmin();
   const today = new Date().toISOString().slice(0, 10);
@@ -43,25 +45,23 @@ export default async function AdminDashboard() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-stone-800">Dashboard</h1>
+      <PageTitle>Dashboard</PageTitle>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
-          <Link
-            key={c.label}
-            href={c.href}
-            className="rounded-xl border border-stone-200 bg-white p-4 hover:border-moss"
-          >
-            <p className="text-2xl font-bold text-moss">{c.value}</p>
-            <p className="mt-1 text-xs text-stone-500">{c.label}</p>
+          <Link key={c.label} href={c.href} className="block">
+            <Card variant="interactive" className="p-4">
+              <p className="text-2xl font-bold text-moss">{c.value}</p>
+              <p className="mt-1 text-xs text-ink-muted">{c.label}</p>
+            </Card>
           </Link>
         ))}
       </div>
 
-      <h2 className="mt-10 text-lg font-bold text-stone-800">Upcoming stays</h2>
-      <div className="mt-3 overflow-x-auto rounded-xl border border-stone-200 bg-white">
+      <SectionTitle className="mt-10">Upcoming stays</SectionTitle>
+      <Card variant="flat" className="mt-3 overflow-x-auto p-0">
         <table className="w-full text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+          <thead className="bg-surface-sunken text-left text-xs uppercase text-ink-muted">
             <tr>
               <th className="px-4 py-2">Dates</th>
               <th className="px-4 py-2">Guest</th>
@@ -73,7 +73,7 @@ export default async function AdminDashboard() {
           <tbody>
             {(upcoming.data ?? []).length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-stone-400">
+                <td colSpan={5} className="px-4 py-6 text-center text-ink-subtle">
                   No upcoming stays.
                 </td>
               </tr>
@@ -81,7 +81,7 @@ export default async function AdminDashboard() {
             {(upcoming.data ?? []).map((b) => {
               const { checkIn, checkOut } = parseStay(b.stay);
               return (
-                <tr key={b.id} className="border-t border-stone-100">
+                <tr key={b.id} className="border-t border-line">
                   <td className="px-4 py-2">{checkIn} → {checkOut}</td>
                   <td className="px-4 py-2">{b.guest_name}</td>
                   <td className="px-4 py-2">
@@ -94,10 +94,10 @@ export default async function AdminDashboard() {
             })}
           </tbody>
         </table>
-      </div>
+      </Card>
 
-      <div className="mt-10 rounded-xl border border-stone-200 bg-white p-5 text-sm text-stone-600">
-        <h2 className="font-bold text-stone-800">Site traffic</h2>
+      <Card variant="flat" className="mt-10 p-5 text-sm text-ink-muted">
+        <h2 className="font-bold text-ink">Site traffic</h2>
         <p className="mt-2">
           Analytics are collected with Vercel Web Analytics.{" "}
           <a
@@ -110,7 +110,7 @@ export default async function AdminDashboard() {
           and select this project&apos;s Analytics tab to see visits, unique visitors and top
           pages.
         </p>
-      </div>
+      </Card>
     </div>
   );
 }

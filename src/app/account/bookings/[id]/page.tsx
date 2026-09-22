@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import BookingChat from "@/components/BookingChat";
+import Card from "@/components/ui/Card";
+import { PageTitle } from "@/components/ui/Heading";
+import { ArrowLeftIcon } from "@/components/ui/icons";
 import { fullRefundDeadline, propertyToday, refundFor } from "@/lib/cancellation";
 import { formatUSD, parseStay, type Quote } from "@/lib/pricing";
 import { SITE } from "@/lib/site";
@@ -37,12 +40,12 @@ export default async function BookingDetailPage({
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <Link href="/account" className="text-sm text-moss underline">
-        ← My stays
+      <Link href="/account" className="inline-flex items-center gap-1 text-sm text-moss underline">
+        <ArrowLeftIcon className="h-3.5 w-3.5" /> My stays
       </Link>
-      <h1 className="mt-4 text-3xl font-bold text-stone-800">
+      <PageTitle className="mt-4">
         {checkIn} → {checkOut}
-      </h1>
+      </PageTitle>
       <p className="mt-1 text-stone-600">
         {booking.guests} guest{booking.guests > 1 ? "s" : ""}
         {booking.pets > 0 && ` · ${booking.pets} dog${booking.pets > 1 ? "s" : ""}`} · status:{" "}
@@ -50,7 +53,7 @@ export default async function BookingDetailPage({
       </p>
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
-        <div className="rounded-xl border border-stone-200 bg-white p-5 text-sm">
+        <Card variant="flat" className="!p-5 text-sm">
           <h2 className="font-bold text-stone-800">Price breakdown</h2>
           {quote ? (
             <ul className="mt-3 space-y-1 text-stone-600">
@@ -69,7 +72,7 @@ export default async function BookingDetailPage({
                   <span>{formatUSD(quote.petFee)}</span>
                 </li>
               )}
-              <li className="flex justify-between border-t border-stone-200 pt-2 font-semibold text-stone-800">
+              <li className="flex justify-between border-t border-line pt-2 font-semibold text-stone-800">
                 <span>Total (cleaning &amp; taxes included)</span>
                 <span>{formatUSD(booking.total_cents / 100)}</span>
               </li>
@@ -105,7 +108,7 @@ export default async function BookingDetailPage({
                 )}
                 {refund.percent === 100 && <> A full refund applies through {fullUntil}.</>}
               </p>
-              <p className="mt-2 text-xs text-stone-500">
+              <p className="mt-2 text-xs text-ink-muted">
                 Send a message below to cancel, or see the full{" "}
                 <Link href="/faq" className="text-moss underline">
                   cancellation policy
@@ -114,7 +117,7 @@ export default async function BookingDetailPage({
               </p>
             </>
           )}
-        </div>
+        </Card>
 
         <div>
           <h2 className="mb-2 font-bold text-stone-800">Message the host</h2>

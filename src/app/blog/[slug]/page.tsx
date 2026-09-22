@@ -2,6 +2,8 @@ import { marked } from "marked";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PageTitle } from "@/components/ui/Heading";
+import { ArrowLeftIcon } from "@/components/ui/icons";
 import { getPost } from "@/lib/data";
 
 export const revalidate = 300;
@@ -26,12 +28,12 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-10">
-      <Link href="/blog" className="text-sm text-moss underline">
-        ← Area Guide
+      <Link href="/blog" className="inline-flex items-center gap-1 text-sm text-moss underline">
+        <ArrowLeftIcon className="h-3.5 w-3.5" /> Area Guide
       </Link>
-      <h1 className="mt-4 text-3xl font-bold text-stone-800">{post.title}</h1>
+      <PageTitle className="mt-4">{post.title}</PageTitle>
       {post.publishedAt && (
-        <time className="text-sm text-stone-400">
+        <time className="text-sm text-ink-subtle">
           {new Date(post.publishedAt).toLocaleDateString("en-US", {
             month: "long",
             day: "numeric",

@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import { Field, Input, Textarea } from "@/components/ui/Field";
+import { StarIcon } from "@/components/ui/icons";
 
 export default function ReviewForm({ signedIn }: { signedIn: boolean }) {
   const [rating, setRating] = useState(5);
@@ -9,13 +13,13 @@ export default function ReviewForm({ signedIn }: { signedIn: boolean }) {
 
   if (!signedIn) {
     return (
-      <p className="rounded-lg border border-stone-200 bg-white p-4 text-sm text-stone-600">
+      <Card variant="flat" className="!p-4 text-sm text-stone-600">
         <a href="/login?next=/reviews" className="font-semibold text-moss underline">
           Sign in
         </a>{" "}
         to leave a review. If you&apos;ve stayed with us before, your review gets a
         &ldquo;verified stay&rdquo; badge automatically.
-      </p>
+      </Card>
     );
   }
 
@@ -48,43 +52,36 @@ export default function ReviewForm({ signedIn }: { signedIn: boolean }) {
     }
   }
 
-  const inputCls =
-    "w-full rounded border border-stone-300 bg-white px-3 py-2 text-sm focus:border-moss focus:outline-none";
-
   return (
-    <form onSubmit={onSubmit} className="space-y-4 rounded-xl border border-stone-200 bg-white p-5">
-      <div>
-        <p className="text-sm text-stone-700">Your rating</p>
-        <div className="mt-1 flex gap-1">
-          {[1, 2, 3, 4, 5].map((n) => (
-            <button
-              key={n}
-              type="button"
-              onClick={() => setRating(n)}
-              aria-label={`${n} star${n > 1 ? "s" : ""}`}
-              className={`text-2xl ${n <= rating ? "text-amber-500" : "text-stone-300"}`}
-            >
-              ★
-            </button>
-          ))}
+    <form onSubmit={onSubmit}>
+      <Card variant="flat" className="!p-5 space-y-4">
+        <div>
+          <p className="text-sm text-ink-muted">Your rating</p>
+          <div className="mt-1 flex gap-1">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setRating(n)}
+                aria-label={`${n} star${n > 1 ? "s" : ""}`}
+                className={n <= rating ? "text-harvest" : "text-line-strong"}
+              >
+                <StarIcon className="h-6 w-6" />
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
-      <label className="block text-sm text-stone-700">
-        Display name
-        <input name="authorName" required minLength={2} className={inputCls + " mt-1"} />
-      </label>
-      <label className="block text-sm text-stone-700">
-        Your review
-        <textarea name="body" required minLength={10} rows={4} className={inputCls + " mt-1"} />
-      </label>
-      {status === "error" && <p className="text-sm text-red-700">{error}</p>}
-      <button
-        type="submit"
-        disabled={status === "sending"}
-        className="rounded-full bg-moss px-6 py-2.5 font-semibold text-white hover:bg-moss-dark disabled:bg-stone-300"
-      >
-        {status === "sending" ? "Submitting…" : "Submit review"}
-      </button>
+        <Field label="Display name" htmlFor="review-author">
+          <Input id="review-author" name="authorName" required minLength={2} />
+        </Field>
+        <Field label="Your review" htmlFor="review-body">
+          <Textarea id="review-body" name="body" required minLength={10} rows={4} />
+        </Field>
+        {status === "error" && <p className="text-sm text-red-700">{error}</p>}
+        <Button type="submit" variant="primary" size="md" loading={status === "sending"}>
+          {status === "sending" ? "Submitting…" : "Submit review"}
+        </Button>
+      </Card>
     </form>
   );
 }

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageTitle, SectionTitle } from "@/components/ui/Heading";
 import { describeRefund, REFUND_TIERS } from "@/lib/cancellation";
 import { SITE } from "@/lib/site";
 
@@ -7,18 +8,18 @@ export const metadata: Metadata = { title: "Terms of Service" };
 
 export default function TermsPage() {
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10 leading-relaxed text-stone-600">
-      <h1 className="text-3xl font-bold text-stone-800">Terms of Service</h1>
-      <p className="mt-2 text-sm text-stone-400">Last updated: August 2026</p>
+    <div className="mx-auto max-w-[var(--w-prose)] px-4 py-10 leading-relaxed text-stone-600">
+      <PageTitle>Terms of Service</PageTitle>
+      <p className="mt-2 text-sm text-ink-subtle">Last updated: August 2026</p>
 
-      <h2 className="mt-8 text-xl font-bold text-stone-800">Booking &amp; payment</h2>
+      <SectionTitle as="h2" className="mt-8 !text-xl">Booking &amp; payment</SectionTitle>
       <p className="mt-2">
         A booking is confirmed when payment is completed through Stripe. Rates include the
         cleaning fee and applicable taxes. Maximum occupancy is 6 guests; bookings exceeding the
         stated guest or pet count may be cancelled without refund.
       </p>
 
-      <h2 className="mt-8 text-xl font-bold text-stone-800">Cancellations</h2>
+      <SectionTitle as="h2" className="mt-8 !text-xl">Cancellations</SectionTitle>
       <p className="mt-2">
         Refunds are calculated from the date the cancellation is received, as a percentage of the
         booking total (which includes the cleaning fee and taxes):
@@ -38,7 +39,7 @@ export default function TermsPage() {
         business days.
       </p>
 
-      <h2 className="mt-8 text-xl font-bold text-stone-800">House rules &amp; liability</h2>
+      <SectionTitle as="h2" className="mt-8 !text-xl">House rules &amp; liability</SectionTitle>
       <p className="mt-2">
         Guests agree to the <Link href="/house-rules" className="text-moss underline">house rules
         and pet policy</Link> at booking. Guests are responsible for the care and safety of their
@@ -49,7 +50,7 @@ export default function TermsPage() {
         by separate payment request.
       </p>
 
-      <h2 className="mt-8 text-xl font-bold text-stone-800">Quiet, rural property</h2>
+      <SectionTitle as="h2" className="mt-8 !text-xl">Quiet, rural property</SectionTitle>
       <p className="mt-2">
         The house sits in a working farm setting. Wildlife (including skunks), farm activity,
         limited cell coverage and well water are part of rural life in Rush Valley.

@@ -1,3 +1,7 @@
+import Button from "@/components/ui/Button";
+import Card from "@/components/ui/Card";
+import { Field, Input } from "@/components/ui/Field";
+import { PageTitle, SectionTitle } from "@/components/ui/Heading";
 import { propertyToday, refundFor } from "@/lib/cancellation";
 import { formatUSD, parseStay } from "@/lib/pricing";
 import { SITE } from "@/lib/site";
@@ -12,16 +16,9 @@ import {
 
 export const dynamic = "force-dynamic";
 
-const inputCls =
-  "rounded border border-stone-300 bg-white px-3 py-1.5 text-sm focus:border-moss focus:outline-none";
-const btnCls =
-  "rounded-full bg-moss px-4 py-1.5 text-sm font-semibold text-white hover:bg-moss-dark";
-const smallBtnCls =
-  "rounded border border-stone-300 px-2 py-1 text-xs text-stone-600 hover:border-moss hover:text-moss";
-
 export default async function AdminCalendarPage() {
   if (!hasServiceRole()) {
-    return <p className="text-stone-600">Set SUPABASE_SERVICE_ROLE_KEY to manage bookings.</p>;
+    return <p className="text-ink-muted">Set SUPABASE_SERVICE_ROLE_KEY to manage bookings.</p>;
   }
   const db = supabaseAdmin();
   await db.rpc("expire_stale_holds");
@@ -42,104 +39,95 @@ export default async function AdminCalendarPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold text-stone-800">Calendar &amp; Bookings</h1>
+      <PageTitle>Calendar &amp; Bookings</PageTitle>
 
       {/* Sync info */}
-      <div className="mt-4 rounded-xl border border-stone-200 bg-white p-4 text-sm text-stone-600">
-        <p className="font-semibold text-stone-800">Calendar sync</p>
+      <Card variant="flat" className="mt-4 p-4 text-sm text-ink-muted">
+        <p className="font-semibold text-ink">Calendar sync</p>
         <p className="mt-1">
           Subscribe from Google Calendar (Settings → Add calendar → From URL) using{" "}
-          <code className="rounded bg-stone-100 px-1">
+          <code className="rounded bg-surface-sunken px-1">
             {SITE.url}/api/ical{icalToken ? `?key=${icalToken}` : ""}
           </code>
           {icalToken
             ? " — this private link includes guest names."
             : " — set ICAL_FEED_TOKEN to get a private link with guest names."}{" "}
           For Airbnb/VRBO availability sync, give them the public link{" "}
-          <code className="rounded bg-stone-100 px-1">{SITE.url}/api/ical</code> (busy dates only).
+          <code className="rounded bg-surface-sunken px-1">{SITE.url}/api/ical</code> (busy dates only).
         </p>
-      </div>
+      </Card>
 
       {/* Block dates */}
-      <section className="mt-6 rounded-xl border border-stone-200 bg-white p-4">
-        <h2 className="font-bold text-stone-800">Block dates</h2>
+      <Card variant="flat" className="mt-6 p-4">
+        <SectionTitle as="h2" className="text-lg">Block dates</SectionTitle>
         <form action={blockDates} className="mt-3 flex flex-wrap items-end gap-3">
-          <label className="text-xs text-stone-500">
-            First night
-            <input type="date" name="from" required className={inputCls + " mt-1 block"} />
-          </label>
-          <label className="text-xs text-stone-500">
-            Reopen on (checkout day)
-            <input type="date" name="to" required className={inputCls + " mt-1 block"} />
-          </label>
-          <label className="text-xs text-stone-500">
-            Reason (optional)
-            <input type="text" name="reason" placeholder="Family visit" className={inputCls + " mt-1 block"} />
-          </label>
-          <button type="submit" className={btnCls}>Block</button>
+          <Field label="First night" htmlFor="block-from" className="w-40">
+            <Input id="block-from" type="date" name="from" required />
+          </Field>
+          <Field label="Reopen on (checkout day)" htmlFor="block-to" className="w-40">
+            <Input id="block-to" type="date" name="to" required />
+          </Field>
+          <Field label="Reason (optional)" htmlFor="block-reason" className="w-48">
+            <Input id="block-reason" type="text" name="reason" placeholder="Family visit" />
+          </Field>
+          <Button type="submit" size="sm">Block</Button>
         </form>
         {(blocks ?? []).length > 0 && (
           <ul className="mt-4 space-y-2 text-sm">
             {(blocks ?? []).map((b) => {
               const { checkIn, checkOut } = parseStay(b.span);
               return (
-                <li key={b.id} className="flex items-center justify-between rounded bg-stone-50 px-3 py-2">
+                <li key={b.id} className="flex items-center justify-between rounded bg-surface-sunken px-3 py-2">
                   <span>
                     {checkIn} → {checkOut}
-                    {b.reason && <span className="text-stone-400"> · {b.reason}</span>}
+                    {b.reason && <span className="text-ink-subtle"> · {b.reason}</span>}
                   </span>
                   <form action={unblockDates}>
                     <input type="hidden" name="id" value={b.id} />
-                    <button type="submit" className={smallBtnCls}>Unblock</button>
+                    <Button type="submit" variant="secondary" size="sm">Unblock</Button>
                   </form>
                 </li>
               );
             })}
           </ul>
         )}
-      </section>
+      </Card>
 
       {/* Manual booking */}
-      <section className="mt-6 rounded-xl border border-stone-200 bg-white p-4">
-        <h2 className="font-bold text-stone-800">Add a manual booking (phone / walk-in)</h2>
+      <Card variant="flat" className="mt-6 p-4">
+        <SectionTitle as="h2" className="text-lg">Add a manual booking (phone / walk-in)</SectionTitle>
         <form action={createManualBooking} className="mt-3 flex flex-wrap items-end gap-3">
-          <label className="text-xs text-stone-500">
-            Check-in
-            <input type="date" name="from" required className={inputCls + " mt-1 block"} />
-          </label>
-          <label className="text-xs text-stone-500">
-            Check-out
-            <input type="date" name="to" required className={inputCls + " mt-1 block"} />
-          </label>
-          <label className="text-xs text-stone-500">
-            Guest name
-            <input type="text" name="name" required className={inputCls + " mt-1 block"} />
-          </label>
-          <label className="text-xs text-stone-500">
-            Email (optional)
-            <input type="email" name="email" className={inputCls + " mt-1 block"} />
-          </label>
-          <label className="text-xs text-stone-500">
-            Guests
-            <input type="number" name="guests" min={1} max={6} defaultValue={2} className={inputCls + " mt-1 block w-20"} />
-          </label>
-          <label className="text-xs text-stone-500">
-            Dogs
-            <input type="number" name="pets" min={0} max={2} defaultValue={0} className={inputCls + " mt-1 block w-20"} />
-          </label>
-          <button type="submit" className={btnCls}>Add booking</button>
+          <Field label="Check-in" htmlFor="manual-from" className="w-40">
+            <Input id="manual-from" type="date" name="from" required />
+          </Field>
+          <Field label="Check-out" htmlFor="manual-to" className="w-40">
+            <Input id="manual-to" type="date" name="to" required />
+          </Field>
+          <Field label="Guest name" htmlFor="manual-name" className="w-48">
+            <Input id="manual-name" type="text" name="name" required />
+          </Field>
+          <Field label="Email (optional)" htmlFor="manual-email" className="w-56">
+            <Input id="manual-email" type="email" name="email" />
+          </Field>
+          <Field label="Guests" htmlFor="manual-guests" className="w-20">
+            <Input id="manual-guests" type="number" name="guests" min={1} max={6} defaultValue={2} />
+          </Field>
+          <Field label="Dogs" htmlFor="manual-pets" className="w-20">
+            <Input id="manual-pets" type="number" name="pets" min={0} max={2} defaultValue={0} />
+          </Field>
+          <Button type="submit" size="sm">Add booking</Button>
         </form>
-        <p className="mt-2 text-xs text-stone-400">
+        <p className="mt-2 text-xs text-ink-subtle">
           Priced automatically from the current rates; marked as confirmed (collect payment
           yourself).
         </p>
-      </section>
+      </Card>
 
       {/* Bookings table */}
-      <h2 className="mt-8 text-lg font-bold text-stone-800">All bookings</h2>
-      <div className="mt-3 overflow-x-auto rounded-xl border border-stone-200 bg-white">
+      <SectionTitle className="mt-8">All bookings</SectionTitle>
+      <Card variant="flat" className="mt-3 overflow-x-auto p-0">
         <table className="w-full text-sm">
-          <thead className="bg-stone-50 text-left text-xs uppercase text-stone-500">
+          <thead className="bg-surface-sunken text-left text-xs uppercase text-ink-muted">
             <tr>
               <th className="px-3 py-2">Dates</th>
               <th className="px-3 py-2">Guest</th>
@@ -154,16 +142,16 @@ export default async function AdminCalendarPage() {
               const { checkIn, checkOut } = parseStay(b.stay);
               const refund = refundFor(checkIn, today, b.total_cents);
               return (
-                <tr key={b.id} className="border-t border-stone-100 align-top">
+                <tr key={b.id} className="border-t border-line align-top">
                   <td className="px-3 py-2 whitespace-nowrap">{checkIn} → {checkOut}</td>
                   <td className="px-3 py-2">
                     {b.guest_name}
                     <br />
-                    <span className="text-xs text-stone-400">{b.guest_email}</span>
+                    <span className="text-xs text-ink-subtle">{b.guest_email}</span>
                     {b.guest_phone && (
                       <>
                         <br />
-                        <span className="text-xs text-stone-400">{b.guest_phone}</span>
+                        <span className="text-xs text-ink-subtle">{b.guest_phone}</span>
                       </>
                     )}
                   </td>
@@ -173,7 +161,7 @@ export default async function AdminCalendarPage() {
                   <td className="px-3 py-2">{formatUSD(b.total_cents / 100)}</td>
                   <td className="px-3 py-2">
                     {b.status}
-                    {b.notes && <p className="text-xs text-stone-400">{b.notes}</p>}
+                    {b.notes && <p className="text-xs text-ink-subtle">{b.notes}</p>}
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex flex-wrap gap-1">
@@ -181,24 +169,24 @@ export default async function AdminCalendarPage() {
                         <form action={setBookingStatus}>
                           <input type="hidden" name="id" value={b.id} />
                           <input type="hidden" name="status" value="confirmed" />
-                          <button type="submit" className={smallBtnCls}>Confirm</button>
+                          <Button type="submit" variant="secondary" size="sm">Confirm</Button>
                         </form>
                       )}
                       {b.status === "confirmed" && (
                         <form action={setBookingStatus}>
                           <input type="hidden" name="id" value={b.id} />
                           <input type="hidden" name="status" value="completed" />
-                          <button type="submit" className={smallBtnCls}>Complete</button>
+                          <Button type="submit" variant="secondary" size="sm">Complete</Button>
                         </form>
                       )}
                       {(b.status === "pending" || b.status === "confirmed") &&
                         (b.stripe_payment_intent ? (
                           <form action={refundBooking} className="flex flex-col gap-1">
                             <input type="hidden" name="id" value={b.id} />
-                            <button type="submit" className={smallBtnCls + " text-red-600"}>
+                            <Button type="submit" variant="danger" size="sm">
                               Cancel &amp; refund {formatUSD(refund.refundCents / 100)}
-                            </button>
-                            <span className="text-[11px] text-stone-400">
+                            </Button>
+                            <span className="text-[11px] text-ink-subtle">
                               {refund.percent}% · {refund.tier.label} out
                             </span>
                             <input
@@ -209,16 +197,14 @@ export default async function AdminCalendarPage() {
                               max={b.total_cents / 100}
                               placeholder="override $"
                               title="Refund a different amount instead of the policy amount"
-                              className="w-24 rounded border border-stone-200 px-1 py-0.5 text-[11px]"
+                              className="w-24 rounded border border-line px-1 py-0.5 text-[11px]"
                             />
                           </form>
                         ) : (
                           <form action={setBookingStatus}>
                             <input type="hidden" name="id" value={b.id} />
                             <input type="hidden" name="status" value="cancelled" />
-                            <button type="submit" className={smallBtnCls + " text-red-600"}>
-                              Cancel
-                            </button>
+                            <Button type="submit" variant="danger" size="sm">Cancel</Button>
                           </form>
                         ))}
                     </div>
@@ -228,7 +214,7 @@ export default async function AdminCalendarPage() {
             })}
           </tbody>
         </table>
-      </div>
+      </Card>
     </div>
   );
 }

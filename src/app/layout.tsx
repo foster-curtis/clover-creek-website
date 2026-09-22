@@ -26,8 +26,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
-      <body className={`${lora.variable} ${inter.variable} antialiased`}>
+    <html lang="en" className="scroll-smooth">
+      <body className={`${lora.variable} ${inter.variable} bg-grain relative antialiased`}>
         <Header />
         <main className="min-h-[70vh]">{children}</main>
         <Footer />

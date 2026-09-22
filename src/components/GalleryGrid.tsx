@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import type { GalleryImage } from "@/lib/data";
+import { ArrowLeftIcon, ArrowRightIcon, CloseIcon } from "@/components/ui/icons";
 
 export default function GalleryGrid({ images }: { images: GalleryImage[] }) {
   const [lightbox, setLightbox] = useState<number | null>(null);
@@ -27,7 +28,7 @@ export default function GalleryGrid({ images }: { images: GalleryImage[] }) {
             key={img.id}
             type="button"
             onClick={() => setLightbox(i)}
-            className="group relative aspect-[4/3] overflow-hidden rounded-lg bg-stone-200"
+            className="group relative aspect-[4/3] overflow-hidden rounded-lg bg-surface-sunken"
             aria-label={`View photo: ${img.alt}`}
           >
             <Image
@@ -49,7 +50,7 @@ export default function GalleryGrid({ images }: { images: GalleryImage[] }) {
           aria-modal="true"
         >
           <div className="relative max-h-[85vh] w-full max-w-4xl" onClick={(e) => e.stopPropagation()}>
-            <div className="relative aspect-[4/3] w-full">
+            <div className="relative aspect-[4/3] w-full shadow-4">
               <Image
                 src={images[lightbox].src}
                 alt={images[lightbox].alt}
@@ -67,7 +68,7 @@ export default function GalleryGrid({ images }: { images: GalleryImage[] }) {
               className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 px-3 py-2 text-white hover:bg-black/70"
               aria-label="Previous photo"
             >
-              ←
+              <ArrowLeftIcon className="h-4 w-4" />
             </button>
             <button
               type="button"
@@ -75,15 +76,15 @@ export default function GalleryGrid({ images }: { images: GalleryImage[] }) {
               className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/50 px-3 py-2 text-white hover:bg-black/70"
               aria-label="Next photo"
             >
-              →
+              <ArrowRightIcon className="h-4 w-4" />
             </button>
             <button
               type="button"
               onClick={() => setLightbox(null)}
-              className="absolute -top-3 right-0 rounded-full bg-black/50 px-3 py-1 text-white hover:bg-black/70"
+              className="absolute -top-3 right-0 rounded-full bg-black/50 p-2.5 text-white hover:bg-black/70"
               aria-label="Close"
             >
-              ✕
+              <CloseIcon className="h-4 w-4" />
             </button>
           </div>
         </div>

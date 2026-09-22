@@ -5,6 +5,8 @@
 
 import { useMemo, useState } from "react";
 import { addDays, isWeekendNight, parseISODate, stayNights, toISODate } from "@/lib/pricing";
+import Button from "@/components/ui/Button";
+import { ArrowLeftIcon, ArrowRightIcon } from "@/components/ui/icons";
 
 interface Props {
   unavailable: string[]; // night dates that cannot be booked
@@ -75,10 +77,10 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
 
     return (
       <div key={`${year}-${month}`} className="w-full">
-        <p className="mb-2 text-center font-serif font-semibold text-stone-800">
+        <p className="mb-2 text-center font-serif font-semibold text-ink">
           {monthLabel(year, month)}
         </p>
-        <div className="grid grid-cols-7 gap-1 text-center text-xs text-stone-500">
+        <div className="grid grid-cols-7 gap-1 text-center text-xs text-ink-muted">
           {WEEKDAYS.map((w) => (
             <div key={w} className="py-1 font-medium">{w}</div>
           ))}
@@ -114,10 +116,10 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
                 className={[
                   "relative rounded py-1.5 text-sm",
                   disabled
-                    ? "cursor-not-allowed text-stone-300 line-through"
+                    ? "bg-hatch cursor-not-allowed text-line-strong line-through"
                     : "hover:bg-moss/20",
                   selected ? "bg-moss font-bold text-white hover:bg-moss" : "",
-                  inRange && !isStart ? "bg-moss/15 text-moss-dark" : "",
+                  inRange && !isStart ? "bg-moss/10 text-moss-dark" : "",
                 ].join(" ")}
               >
                 {Number(date.slice(8))}
@@ -125,7 +127,7 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
                   <span
                     aria-hidden="true"
                     className={`pointer-events-none absolute bottom-1 left-1/2 h-1 w-1 -translate-x-1/2 rounded-full ${
-                      selected ? "bg-white/80" : "bg-amber-500"
+                      selected ? "bg-white/80" : "bg-harvest"
                     }`}
                   />
                 )}
@@ -142,51 +144,47 @@ export default function StayCalendar({ unavailable, holidays, checkIn, checkOut,
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => shiftMonth(-1)}
           disabled={atCurrentMonth}
-          className={[
-            "rounded px-3 py-1",
-            atCurrentMonth ? "cursor-not-allowed text-stone-300" : "text-stone-600 hover:bg-stone-100",
-          ].join(" ")}
           aria-label="Previous month"
         >
-          ←
-        </button>
-        <p className="text-sm text-stone-500">
+          <ArrowLeftIcon className="h-4 w-4" />
+        </Button>
+        <p className="text-sm text-ink-muted">
           {checkIn && checkOut
             ? `${checkIn} → ${checkOut}`
             : checkIn
               ? `Check-in ${checkIn} — now pick check-out`
               : "Select your check-in date"}
         </p>
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="sm"
           onClick={() => shiftMonth(1)}
           disabled={atMaxMonth}
-          className={[
-            "rounded px-3 py-1",
-            atMaxMonth ? "cursor-not-allowed text-stone-300" : "text-stone-600 hover:bg-stone-100",
-          ].join(" ")}
           aria-label="Next month"
         >
-          →
-        </button>
+          <ArrowRightIcon className="h-4 w-4" />
+        </Button>
       </div>
       <div className="grid gap-6 sm:grid-cols-2">
         {renderMonth(viewYear, viewMonth)}
         {renderMonth(next.getFullYear(), next.getMonth())}
       </div>
-      <p className="mt-3 flex items-center gap-1.5 text-xs text-stone-500">
-        <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-amber-500" />
+      <p className="mt-3 flex items-center gap-1.5 text-xs text-ink-muted">
+        <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-harvest" />
         Weekend &amp; holiday nights are priced a little higher — hover a date to see which.
       </p>
       {checkIn && (
         <button
           type="button"
           onClick={() => onChange(null, null)}
-          className="mt-2 text-xs text-stone-500 underline hover:text-moss"
+          className="mt-2 text-xs text-ink-muted underline hover:text-moss"
         >
           Clear dates
         </button>

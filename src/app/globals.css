@@ -1,25 +1,127 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cream: #faf7f0;
-  --color-moss: #4d7c0f;
-  --color-moss-dark: #3f6212;
-  --color-hay: #d9c58a;
+  /* ---- Brand palette (ratios measured against cream #faf7f0) ---- */
+  --color-cream:      #faf7f0;  /* page ground */
+  --color-parchment:  #f4efe4;  /* alternating section ground */
+  --color-moss:       #4d7c0f;  /* 4.67:1  AA */
+  --color-moss-dark:  #3f6212;  /* 6.61:1  AA */
+  --color-moss-deep:  #35520f;  /* 8.30:1  AA — display headings */
+  --color-clay:       #9c4f2f;  /* 5.49:1  AA — warm secondary accent */
+  --color-harvest:    #b45309;  /* 4.69:1  AA — stars (was amber-500 @ 2.15:1) */
+  --color-hay-ink:    #6b5a28;  /* 6.29:1  AA — legible form of the hay brand color */
+  --color-hay:        #d9c58a;  /* decorative fills and rules ONLY — 1.60:1 */
+
+  /* ---- Semantic aliases: components reference these, never raw palette ---- */
+  --color-surface:         var(--color-cream);
+  --color-surface-raised:  #ffffff;
+  --color-surface-sunken:  var(--color-parchment);
+  --color-ink:             #292524;  /* 14.18:1 */
+  --color-ink-muted:       #57534e;  /*  7.13:1 — replaces stone-500 @ 4.48:1 */
+  --color-ink-subtle:      #6d6862;  /*  5.4:1  — replaces stone-400 @ 2.36:1 */
+  --color-line:            #e2ddd2;  /* warm rule, replaces cool stone-200 */
+  --color-line-strong:     #cfc7b6;
+  --color-focus:           var(--color-moss-dark);
+
   --font-serif: var(--font-lora), Georgia, serif;
   --font-sans: var(--font-inter), system-ui, sans-serif;
+
+  /* ---- Fluid type scale · 1.25 ratio ---- */
+  --text-xs:   0.8125rem;
+  --text-sm:   0.9375rem;
+  --text-base: clamp(1rem,     0.96rem + 0.20vw, 1.0625rem);
+  --text-lg:   clamp(1.125rem, 1.08rem + 0.22vw, 1.1875rem);
+  --text-xl:   clamp(1.25rem,  1.18rem + 0.35vw, 1.375rem);
+  --text-2xl:  clamp(1.5rem,   1.38rem + 0.60vw, 1.75rem);
+  --text-3xl:  clamp(1.875rem, 1.68rem + 0.98vw, 2.25rem);
+  --text-4xl:  clamp(2.25rem,  1.95rem + 1.50vw, 3rem);
+  --text-5xl:  clamp(2.75rem,  2.25rem + 2.50vw, 4rem);
+
+  /* ---- Elevation · warm-tinted (stone-800 41,37,36), never neutral black ---- */
+  --shadow-1: 0 1px 2px rgb(41 37 36 / .05), 0 1px 3px   rgb(41 37 36 / .06);
+  --shadow-2: 0 2px 4px rgb(41 37 36 / .05), 0 4px 8px   rgb(41 37 36 / .06);
+  --shadow-3: 0 4px 8px rgb(41 37 36 / .05), 0 12px 24px rgb(41 37 36 / .08);
+  --shadow-4: 0 8px 16px rgb(41 37 36 / .06), 0 24px 48px rgb(41 37 36 / .10);
+
+  /* ---- Radius ---- */
+  --radius-sm: 0.375rem;  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;  --radius-xl: 1.25rem;  --radius-pill: 9999px;
+
+  /* ---- Motion ---- */
+  --ease-out:      cubic-bezier(.22, 1, .36, 1);
+  --ease-standard: cubic-bezier(.4, 0, .2, 1);
+  --dur-fast: 120ms;  --dur-base: 200ms;  --dur-slow: 320ms;
+
+  /* ---- Section rhythm & container widths ---- */
+  --space-section: clamp(3rem, 2rem + 5vw, 6rem);
+  --w-prose: 68ch;
+  --w-wide: 72rem;
 }
 
 body {
-  background: var(--color-cream);
-  color: #292524;
+  background: var(--color-surface);
+  color: var(--color-ink);
   font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.65;
 }
 
 h1, h2, h3, h4 {
   font-family: var(--font-serif);
 }
 
+/* Visible keyboard focus everywhere — WCAG 2.2 SC 2.4.7 (AA) */
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Animate the ~60 existing hover states sitewide */
+a, button, input, select, textarea, [role="button"] {
+  transition: color var(--dur-fast) var(--ease-standard),
+              background-color var(--dur-fast) var(--ease-standard),
+              border-color var(--dur-fast) var(--ease-standard),
+              box-shadow var(--dur-base) var(--ease-out),
+              transform var(--dur-base) var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Diagonal hatching for disabled/unavailable UI (e.g. calendar days) */
+.bg-hatch {
+  background-image: repeating-linear-gradient(
+    135deg,
+    var(--color-line) 0,
+    var(--color-line) 1px,
+    transparent 1px,
+    transparent 6px
+  );
+}
+
+/* Low-opacity paper grain on the page ground */
+.bg-grain {
+  position: relative;
+}
+.bg-grain::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.025;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
 /* Simple typography for admin-authored markdown (blog posts) */
+.prose-simple { max-width: var(--w-prose); }
 .prose-simple h2 { font-size: 1.4rem; font-weight: 700; margin: 1.5em 0 0.5em; }
 .prose-simple h3 { font-size: 1.15rem; font-weight: 700; margin: 1.25em 0 0.5em; }
 .prose-simple p { margin: 0.75em 0; line-height: 1.7; }
@@ -27,5 +129,5 @@ h1, h2, h3, h4 {
 .prose-simple ul { list-style: disc; }
 .prose-simple ol { list-style: decimal; }
 .prose-simple a { color: var(--color-moss); text-decoration: underline; }
-.prose-simple blockquote { border-left: 3px solid var(--color-hay); padding-left: 1em; color: #57534e; margin: 1em 0; }
-.prose-simple img { border-radius: 0.5rem; margin: 1em 0; }
+.prose-simple blockquote { border-left: 3px solid var(--color-hay); padding-left: 1em; color: var(--color-ink-muted); margin: 1em 0; }
+.prose-simple img { border-radius: var(--radius-md); margin: 1em 0; }
