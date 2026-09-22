@@ -5,6 +5,23 @@
 
 ---
 
+## Decisions taken (2026-09-21, owner)
+
+Settled before implementation. These are binding for the plan in §3.
+
+| Decision | Choice | Consequence |
+|---|---|---|
+| **Type scale migration** | Override Tailwind's built-in `--text-*` tokens | Whole site converts to the fluid scale in one commit, **zero per-file edits**. All 246 existing size utilities re-map at once — expect one large visual diff and a noticeably more generous UI. |
+| **Admin dashboard** | **Full parity** with guest-facing | Admin gets the same tokens, primitives, icons and elevation. Adds ~1.5 days; removes the ~40% of findings that are admin-only rather than deferring them. |
+| **Typeface** | Keep Lora + Inter | No new font payload. Identity comes from Lora doing real display work, the clover mark, texture, and color — not a typeface swap. |
+| **Palette breadth** | Add `clay` + `harvest` | `harvest #b45309` fixes the 2.15:1 star failure; `clay #9c4f2f` (5.49:1) gives a warm secondary accent so green isn't the only option. Both AA-verified. |
+
+Defaults taken without escalation: hand-authored inline SVG icons (no `lucide-react` dependency); semantic tokens structured so dark mode stays *possible* without building it now; work on a feature branch off `stg`.
+
+> **Context:** [DEVELOPMENT_PLAN.md:143](DEVELOPMENT_PLAN.md#L143) already lists *"Accessibility & mobile-first design — most direct-booking traffic is mobile"* as a project principle. Phase 1 closes a gap against a stated goal rather than adding new scope.
+
+---
+
 ## 0. Executive summary
 
 The site works. Booking, payments, reviews, messaging, and admin are all real and coherent. What's missing is not features — it's a **design system**. Every visual decision in this codebase was made locally, at the point of use, in a Tailwind class string. Nothing is named, nothing is reused, and nothing is enforced.
@@ -206,7 +223,9 @@ Ordered by (impact × confidence) ÷ effort. Phases 1–2 are where nearly all t
 ### Phase 1 — Foundation + the accessibility fix
 *Highest leverage. One stylesheet, plus a find-and-replace.*
 
-**1.1 — Install a real token layer.** Replace the `@theme` block in [globals.css](src/app/globals.css) wholesale. Every ratio below was measured, not estimated:
+**1.1 — Install a real token layer.** Replace the `@theme` block in [globals.css](src/app/globals.css) wholesale. Every ratio below was measured, not estimated.
+
+> **Migration note (decided):** these `--text-*`, `--radius-*` and `--shadow-*` names deliberately **override Tailwind v4's built-in tokens**. Every existing `text-2xl`, `text-sm`, `rounded-xl` etc. in the codebase re-maps to the new scale the moment this lands — no call sites need editing. Verify against Tailwind 4.3.3, and expect the first render to look markedly more generous, since this also corrects the shrunken-UI problem in §2.2.
 
 ```css
 @theme {
@@ -319,6 +338,8 @@ This single rule animates all ~60 existing hover states at once — one of the l
 ### Phase 2 — Component primitives
 *Eliminates the duplication that causes drift. ~5 new files.*
 
+> **Scope (decided): full parity.** The primitives below replace admin call sites as well as guest-facing ones — all four `inputCls` copies, every admin button, and the admin table/card surfaces. Admin is not a second-class surface in this plan.
+
 **2.1 — `Button`** (`src/components/ui/Button.tsx`) with variants `primary | secondary | ghost | danger` and sizes `sm | md | lg`. Replace every bespoke button string. Must include designed **disabled** and **loading** states — the booking submit button currently has neither.
 
 **2.2 — `Input` / `Field`** — one implementation, replacing all four `inputCls` copies. Radius `--radius-md` (10px) to sit correctly inside `--radius-xl` cards. Include label, hint, and error slots; error styling is currently ad-hoc.
@@ -366,14 +387,18 @@ This single rule animates all ~60 existing hover states at once — one of the l
 
 ## 4. Effort vs. impact
 
+Estimates below include the **admin full-parity** decision.
+
 | Phase | Effort | Perceived-quality gain | Fixes |
 |---|---|---|---|
 | **1 — Foundation + a11y** | ~1 day | **Very high** | Tokens, WCAG 2.4.7 AA, 3 contrast failures, all 60 hover states, fluid type |
-| **2 — Primitives** | ~2 days | **High** | Duplication, hierarchy, icon system, disabled/loading states |
+| **2 — Primitives** | ~3 days | **High** | Duplication, hierarchy, icon system, disabled/loading states (guest + admin) |
 | **3 — Brand** | ~2 days | **Very high** | The actual "no brand identity" complaint |
-| **4 — Polish** | ~2 days | Medium | Depth, responsive, measure, target sizes |
+| **4 — Polish** | ~2.5 days | Medium | Depth, responsive, measure, target sizes (guest + admin) |
 
-**Projected score after all four phases: ~85/100.**
+**Total ~8.5 days. Projected score after all four phases: ~85/100.**
+
+Phase 1 is disproportionately cheap because the override-built-ins decision means it edits one file. Phases 2 and 4 carry the admin-parity cost.
 
 If only one phase ships, ship **Phase 1** — it is a single stylesheet plus a find-and-replace, it closes the accessibility failure on the revenue path, and the global transition rule alone changes how the entire site feels to use.
 
