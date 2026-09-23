@@ -2,11 +2,11 @@
 
 Three branches, each with a different job:
 
-| Branch    | Purpose                        | GitHub Actions                              | Local hooks |
-| --------- | ------------------------------- | -------------------------------------------- | ----------- |
-| `working` | Day-to-day development          | none                                         | Husky pre-commit (lint + typecheck) |
-| `stg`     | Staging / review                | lint, typecheck, test → deploy to **Vercel preview** | — |
-| `master`  | Production                      | lint, typecheck, test → deploy to **Vercel production** | — |
+| Branch    | Purpose                | GitHub Actions                                          | Local hooks                         |
+| --------- | ---------------------- | ------------------------------------------------------- | ----------------------------------- |
+| `working` | Day-to-day development | none                                                    | Husky pre-commit (lint + typecheck) |
+| `stg`     | Staging / review       | lint, typecheck, test → deploy to **Vercel preview**    | —                                   |
+| `master`  | Production             | lint, typecheck, test → deploy to **Vercel production** | —                                   |
 
 ## The promotion flow
 

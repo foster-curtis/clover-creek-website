@@ -11,6 +11,7 @@ concurrency:
 
 permissions:
   contents: read
+  deployments: write
 
 env:
   NEXT_TELEMETRY_DISABLED: "1"
@@ -43,6 +44,13 @@ jobs:
     name: Preview deploy
     needs: quality
     runs-on: ubuntu-latest
+    # Publishes the deployment URL as a GitHub environment, which puts a
+    # clickable link on the workflow run page and in the repo's Environments.
+    environment:
+      name: preview
+      url: ${{ steps.deploy.outputs.url }}
+    outputs:
+      url: ${{ steps.deploy.outputs.url }}
     env:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
@@ -92,6 +100,20 @@ jobs:
       - name: Deploy
         id: deploy
         run: |
-          url="$(vercel deploy --prebuilt --token="$VERCEL_TOKEN")"
-          echo "Deployed to $url"
-          echo "### Preview: $url" >> "$GITHUB_STEP_SUMMARY"
+          # The CLI streams progress to stderr and prints the deployment URL
+          # as the last line of stdout; take that line so no stray output can
+          # end up inside the link.
+          url="$(vercel deploy --prebuilt --token="$VERCEL_TOKEN" | tail -n 1)"
+          if [ -z "$url" ]; then
+            echo "::error::Deploy finished but no deployment URL was returned."
+            exit 1
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Preview deploy::$url"
+          {
+            echo "## Preview ready"
+            echo
+            echo "### [$url]($url)"
+            echo
+            echo "Deployed from ${GITHUB_REF_NAME} @ ${GITHUB_SHA:0:7}"
+          } >> "$GITHUB_STEP_SUMMARY"

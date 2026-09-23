@@ -37,7 +37,8 @@ export async function POST(request: NextRequest) {
       booking.guest_email,
       SITE.name,
       preview,
-      `${SITE.url}/account/bookings/${booking.id}`
+      `${SITE.url}/account/bookings/${booking.id}`,
+      SITE.ownerEmail
     );
   } else {
     // Guest sender must own the booking; notify the owner.
@@ -46,7 +47,8 @@ export async function POST(request: NextRequest) {
       SITE.ownerEmail,
       booking.guest_name,
       preview,
-      `${SITE.url}/admin/messages/${booking.id}`
+      `${SITE.url}/admin/messages/${booking.id}`,
+      booking.guest_email
     );
   }
   return NextResponse.json({ ok: true });
