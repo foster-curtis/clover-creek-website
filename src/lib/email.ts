@@ -7,7 +7,15 @@ import { formatUSD, type Quote } from "./pricing";
 
 const FROM = process.env.EMAIL_FROM ?? `${SITE.name} <onboarding@resend.dev>`;
 
-export async function sendEmail(to: string, subject: string, html: string): Promise<void> {
+// `replyTo` matters because the from-address is a send-only alias with no inbox behind
+// it: without it, hitting Reply on any of these bounces. Owner notifications reply to the
+// guest, guest notifications reply to the owner.
+export async function sendEmail(
+  to: string,
+  subject: string,
+  html: string,
+  replyTo?: string
+): Promise<void> {
   const key = process.env.RESEND_API_KEY;
   if (!key) {
     console.log(`[email skipped — RESEND_API_KEY not set] to=${to} subject=${subject}`);
@@ -16,7 +24,13 @@ export async function sendEmail(to: string, subject: string, html: string): Prom
   try {
     const { Resend } = await import("resend");
     const resend = new Resend(key);
-    const { error } = await resend.emails.send({ from: FROM, to, subject, html });
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to,
+      subject,
+      html,
+      ...(replyTo ? { replyTo } : {}),
+    });
     if (error) console.error("Resend error:", error);
   } catch (err) {
     console.error("Email send failed:", err);
@@ -77,7 +91,7 @@ export async function sendBookingConfirmation(info: BookingEmailInfo): Promise<v
     <p>Questions before your stay? Just reply to this email or message us from your
     <a href="${SITE.url}/account">booking page</a>.</p>
   `);
-  await sendEmail(info.guestEmail, `Booking confirmed — ${SITE.name}`, html);
+  await sendEmail(info.guestEmail, `Booking confirmed — ${SITE.name}`, html, SITE.ownerEmail);
 }
 
 export async function notifyOwnerNewBooking(info: BookingEmailInfo): Promise<void> {
@@ -88,7 +102,12 @@ export async function notifyOwnerNewBooking(info: BookingEmailInfo): Promise<voi
     Total paid: <strong>${formatUSD(info.quote.total)}</strong></p>
     <p><a href="${SITE.url}/admin/calendar">Open the booking calendar</a></p>
   `);
-  await sendEmail(SITE.ownerEmail, `New booking: ${info.checkIn} (${info.guestName})`, html);
+  await sendEmail(
+    SITE.ownerEmail,
+    `New booking: ${info.checkIn} (${info.guestName})`,
+    html,
+    info.guestEmail
+  );
 }
 
 export async function notifyOwnerInquiry(name: string, email: string, body: string): Promise<void> {
@@ -97,14 +116,15 @@ export async function notifyOwnerInquiry(name: string, email: string, body: stri
     <p><strong>${name}</strong> · <a href="mailto:${email}">${email}</a></p>
     <p style="white-space:pre-wrap;">${body.replace(/</g, "&lt;")}</p>
   `);
-  await sendEmail(SITE.ownerEmail, `Website inquiry from ${name}`, html);
+  await sendEmail(SITE.ownerEmail, `Website inquiry from ${name}`, html, email);
 }
 
 export async function notifyNewMessage(
   to: string,
   fromName: string,
   preview: string,
-  link: string
+  link: string,
+  replyTo?: string
 ): Promise<void> {
   const html = layout(`
     <p><strong>${fromName}</strong> sent you a message:</p>
@@ -113,7 +133,7 @@ export async function notifyNewMessage(
     </blockquote>
     <p><a href="${link}">Reply on the website</a></p>
   `);
-  await sendEmail(to, `New message — ${SITE.name}`, html);
+  await sendEmail(to, `New message — ${SITE.name}`, html, replyTo);
 }
 
 export interface CancellationEmailInfo {
@@ -155,7 +175,7 @@ export async function sendCancellationConfirmation(info: CancellationEmailInfo):
       If something about this doesn't look right, just reply to this email.</p>
     <p>We're sorry to miss you, and we hope to host you another time.</p>
   `);
-  await sendEmail(info.guestEmail, `Booking cancelled — ${SITE.name}`, html);
+  await sendEmail(info.guestEmail, `Booking cancelled — ${SITE.name}`, html, SITE.ownerEmail);
 }
 
 export async function notifyOwnerCancellation(info: CancellationEmailInfo): Promise<void> {
@@ -169,5 +189,10 @@ export async function notifyOwnerCancellation(info: CancellationEmailInfo): Prom
     <p>Stripe's processing fee on the original charge is not returned.</p>
     <p><a href="${SITE.url}/admin/calendar">Open the booking calendar</a></p>
   `);
-  await sendEmail(SITE.ownerEmail, `Cancelled: ${info.checkIn} (${info.guestName})`, html);
+  await sendEmail(
+    SITE.ownerEmail,
+    `Cancelled: ${info.checkIn} (${info.guestName})`,
+    html,
+    info.guestEmail
+  );
 }
