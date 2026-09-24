@@ -2,11 +2,14 @@ import type { Metadata } from "next";
 import GalleryGrid from "@/components/GalleryGrid";
 import { PageTitle } from "@/components/ui/Heading";
 import { getGallery } from "@/lib/data";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/gallery",
   title: "Photo Gallery",
-  description: "Photos of the Clover Creek Guest House — bedrooms, kitchen, patio, fire pit and the Rush Valley scenery.",
-};
+  description:
+    "Photos of the Clover Creek Guest House — bedrooms, kitchen, patio, fire pit and the Rush Valley scenery.",
+});
 
 export const revalidate = 300;
 

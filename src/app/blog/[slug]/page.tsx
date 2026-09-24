@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { PageTitle } from "@/components/ui/Heading";
 import { ArrowLeftIcon } from "@/components/ui/icons";
 import { getPost } from "@/lib/data";
+import { pageMetadata } from "@/lib/seo";
 
 export const revalidate = 300;
 
@@ -15,8 +16,14 @@ interface Props {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPost(slug);
-  if (!post) return { title: "Post not found" };
-  return { title: post.title, description: post.excerpt ?? undefined };
+  // A 404-shaped page should never be indexed.
+  if (!post) return { title: "Post not found", robots: { index: false, follow: false } };
+  return pageMetadata({
+    path: `/blog/${slug}`,
+    title: post.title,
+    description: post.excerpt ?? undefined,
+    type: "article",
+  });
 }
 
 export default async function BlogPostPage({ params }: Props) {

@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import ContactForm from "@/components/ContactForm";
 import { PageTitle } from "@/components/ui/Heading";
+import { pageMetadata } from "@/lib/seo";
 import { SITE } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/contact",
   title: "Contact",
   description: "Questions about the Clover Creek Guest House? Send us a message.",
-};
+});
 
 export default function ContactPage() {
   return (

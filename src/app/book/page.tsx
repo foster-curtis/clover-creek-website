@@ -2,14 +2,16 @@ import type { Metadata } from "next";
 import BookingWidget from "@/components/BookingWidget";
 import { PageTitle } from "@/components/ui/Heading";
 import { expandRanges, getHolidays, getPricing, getUnavailableRanges } from "@/lib/data";
+import { pageMetadata } from "@/lib/seo";
 import { SITE } from "@/lib/site";
 import { currentUser } from "@/lib/supabase/server";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/book",
   title: "Book a Stay",
   description:
     "Check availability and book the Clover Creek Guest House directly. Cleaning fee and taxes included in every rate.",
-};
+});
 
 export const dynamic = "force-dynamic"; // availability must always be fresh
 

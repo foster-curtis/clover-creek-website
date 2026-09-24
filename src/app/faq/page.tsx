@@ -3,12 +3,14 @@ import Link from "next/link";
 import { PageTitle } from "@/components/ui/Heading";
 import { describeRefund, REFUND_TIERS } from "@/lib/cancellation";
 import { getSiteContent } from "@/lib/content";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/faq",
   title: "FAQ",
   description:
     "Frequently asked questions about staying at the Clover Creek Guest House — check-in, pets, pricing and the Rush Valley area.",
-};
+});
 
 export const revalidate = 3600;
 

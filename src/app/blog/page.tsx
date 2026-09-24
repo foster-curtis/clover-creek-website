@@ -4,12 +4,14 @@ import Card from "@/components/ui/Card";
 import { PageTitle } from "@/components/ui/Heading";
 import { ArrowRightIcon } from "@/components/ui/icons";
 import { getPublishedPosts } from "@/lib/data";
+import { pageMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/blog",
   title: "Area Guide",
   description:
     "Things to do around Rush Valley, Utah — stargazing, trails, day trips and ideas for your stay at the Clover Creek Guest House.",
-};
+});
 
 export const revalidate = 300;
 

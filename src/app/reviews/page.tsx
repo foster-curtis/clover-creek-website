@@ -5,14 +5,16 @@ import RatingSummary from "@/components/RatingSummary";
 import { buttonClasses } from "@/components/ui/Button";
 import { PageTitle, SectionTitle } from "@/components/ui/Heading";
 import { getApprovedReviews } from "@/lib/data";
+import { pageMetadata } from "@/lib/seo";
 import { currentUser } from "@/lib/supabase/server";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/reviews",
   title: "Guest Reviews",
   description: "Reviews from guests who have stayed at the Clover Creek Guest House.",
-};
+});
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function ReviewsPage() {
   const [reviews, user] = await Promise.all([getApprovedReviews(), currentUser()]);

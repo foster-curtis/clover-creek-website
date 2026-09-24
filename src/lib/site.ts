@@ -1,7 +1,11 @@
 // Site-wide constants. Structural text (titles, buttons, nav) lives in code by
 // design — only descriptive paragraphs are editable from the admin dashboard.
 
-const DEFAULT_SITE_URL = "https://clovercreekguesthouse.com";
+// Must stay on the same host as the deployed NEXT_PUBLIC_SITE_URL ("www"). If the
+// two disagree, a cleared or malformed env var silently swaps the host in every
+// canonical tag and sitemap URL — the duplicate-host problem canonicals exist to
+// prevent (SEO_PLAN.md §13.1).
+const DEFAULT_SITE_URL = "https://www.clovercreekguesthouse.com";
 
 // layout.tsx passes this straight into `new URL()` for metadataBase, and every
 // other consumer concatenates a path onto it directly (`${SITE.url}/faq`), so

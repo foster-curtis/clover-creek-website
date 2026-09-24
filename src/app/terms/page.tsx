@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageTitle, SectionTitle } from "@/components/ui/Heading";
 import { describeRefund, REFUND_TIERS } from "@/lib/cancellation";
+import { pageMetadata } from "@/lib/seo";
 import { SITE } from "@/lib/site";
 
-export const metadata: Metadata = { title: "Terms of Service" };
+export const metadata: Metadata = pageMetadata({ path: "/terms", title: "Terms of Service" });
 
 export default function TermsPage() {
   return (

@@ -11,7 +11,11 @@ import { getSiteContent } from "@/lib/content";
 import { getApprovedReviews, getGallery, getPricing } from "@/lib/data";
 import { formatUSD } from "@/lib/pricing";
 import { homeGraph, MAIN_IMAGE_URL } from "@/lib/schema";
+import { pageMetadata } from "@/lib/seo";
 import { SITE } from "@/lib/site";
+
+// Title and description come from the root layout defaults.
+export const metadata = pageMetadata({ path: "/" });
 
 export const revalidate = 300; // re-render at most every 5 minutes
 

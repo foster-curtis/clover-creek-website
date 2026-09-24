@@ -4,13 +4,15 @@ import { PageTitle, SectionTitle } from "@/components/ui/Heading";
 import { getSiteContent } from "@/lib/content";
 import { getPricing } from "@/lib/data";
 import { formatUSD } from "@/lib/pricing";
+import { pageMetadata } from "@/lib/seo";
 import { SITE } from "@/lib/site";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
+  path: "/house-rules",
   title: "House Rules & Pet Policy",
   description:
     "House rules, checkout checklist and pet policy for the Clover Creek Guest House in Rush Valley, Utah.",
-};
+});
 
 export const revalidate = 3600;
 

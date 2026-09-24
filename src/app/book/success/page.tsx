@@ -2,8 +2,15 @@ import Link from "next/link";
 import { buttonClasses } from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { PageTitle } from "@/components/ui/Heading";
+import { pageMetadata } from "@/lib/seo";
 import { hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
 import { SITE } from "@/lib/site";
+
+export const metadata = pageMetadata({
+  path: "/book/success",
+  title: "Booking confirmed",
+  noindex: true,
+});
 
 export const dynamic = "force-dynamic";
 
