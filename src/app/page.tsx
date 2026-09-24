@@ -30,7 +30,7 @@ export default async function HomePage() {
   // page features are named there by role rather than looked up by a number.
   const gallery = getGallery();
   const heroPhoto = getGalleryPhotoForRole("hero");
-  const introPhoto = getGalleryPhotoForRole("intro");
+  const amenitiesPhoto = getGalleryPhotoForRole("amenities");
 
   const amenities = content.amenities.split("\n").map((a) => a.trim()).filter(Boolean);
   const topReviews = reviews.slice(0, 3);
@@ -94,52 +94,53 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Intro — editorial pairing, image bleeding to the viewport edge */}
-      <section className="grid lg:grid-cols-[6fr_5fr]">
-        <div className="relative order-2 h-72 lg:order-1 lg:h-auto lg:min-h-[420px]">
+      {/* Intro — a full-width lede, so the hero is the only photograph up top */}
+      <section className="bg-surface">
+        <div className="mx-auto max-w-5xl px-4 py-14">
+          <SectionTitle rule>A cozy retreat on a working farm</SectionTitle>
+          {content.home_intro.split("\n\n").map((para, i) => (
+            <p key={i} className="mt-4 max-w-2xl leading-relaxed text-stone-600">
+              {para}
+            </p>
+          ))}
+          <ul className="mt-6 flex flex-wrap gap-2 text-sm">
+            {["Sleeps 6", "1 bath", "King bed + loft", "Dog friendly", "Full kitchen", "Washer & dryer"].map(
+              (chip) => (
+                <li key={chip} className="rounded-full bg-moss/10 px-3 py-1 text-moss-dark">
+                  {chip}
+                </li>
+              )
+            )}
+          </ul>
+        </div>
+      </section>
+
+      {/* Amenities — editorial pairing, image bleeding to the viewport edge. The
+          photo is the kitchen, so it illustrates the list sitting beside it. */}
+      <section className="grid bg-surface-sunken lg:grid-cols-[6fr_5fr]">
+        <div className="relative h-72 lg:h-auto lg:min-h-[420px]">
           <Image
-            src={introPhoto.src}
-            alt={introPhoto.alt}
+            src={amenitiesPhoto.src}
+            alt={amenitiesPhoto.alt}
             fill
             placeholder="blur"
-            blurDataURL={introPhoto.blurDataURL}
+            blurDataURL={amenitiesPhoto.blurDataURL}
             sizes="(min-width: 1024px) 55vw, 100vw"
             className="object-cover"
           />
         </div>
-        <div className="order-1 flex items-center bg-surface lg:order-2">
+        <div className="flex items-center">
           <div className="px-4 py-12 sm:px-8 lg:px-12">
-            <SectionTitle rule>A cozy retreat on a working farm</SectionTitle>
-            {content.home_intro.split("\n\n").map((para, i) => (
-              <p key={i} className="mt-4 leading-relaxed text-stone-600">
-                {para}
-              </p>
-            ))}
-            <ul className="mt-6 flex flex-wrap gap-2 text-sm">
-              {["Sleeps 6", "1 bath", "King bed + loft", "Dog friendly", "Full kitchen", "Washer & dryer"].map(
-                (chip) => (
-                  <li key={chip} className="rounded-full bg-moss/10 px-3 py-1 text-moss-dark">
-                    {chip}
-                  </li>
-                )
-              )}
+            <SectionTitle rule>Everything you need</SectionTitle>
+            <ul className="mt-6 grid gap-x-8 gap-y-2 text-stone-600 sm:grid-cols-2">
+              {amenities.map((a) => (
+                <li key={a} className="flex items-start gap-2">
+                  <CheckIcon className="mt-1 h-4 w-4 shrink-0 text-moss" />
+                  {a}
+                </li>
+              ))}
             </ul>
           </div>
-        </div>
-      </section>
-
-      {/* Amenities */}
-      <section className="bg-surface-sunken py-12">
-        <div className="mx-auto max-w-5xl px-4">
-          <SectionTitle rule>Everything you need</SectionTitle>
-          <ul className="mt-6 grid gap-x-8 gap-y-2 text-stone-600 sm:grid-cols-2 lg:grid-cols-3">
-            {amenities.map((a) => (
-              <li key={a} className="flex items-start gap-2">
-                <CheckIcon className="mt-1 h-4 w-4 shrink-0 text-moss" />
-                {a}
-              </li>
-            ))}
-          </ul>
         </div>
       </section>
 

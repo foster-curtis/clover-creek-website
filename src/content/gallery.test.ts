@@ -100,7 +100,7 @@ describe("gallery manifest", () => {
   });
 
   it("fills each home page role exactly once", () => {
-    for (const role of ["hero", "intro"] satisfies GalleryRole[]) {
+    for (const role of ["hero", "amenities"] satisfies GalleryRole[]) {
       expect(GALLERY.filter((p) => p.role === role), `role "${role}"`).toHaveLength(1);
     }
   });
