@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Inter, Lora } from "next/font/google";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import { DEFAULT_OG_IMAGE } from "@/lib/seo";
 import { SITE } from "@/lib/site";
 import "./globals.css";
 
@@ -21,6 +22,21 @@ export const metadata: Metadata = {
     siteName: SITE.name,
     type: "website",
     locale: "en_US",
+    images: [
+      {
+        url: DEFAULT_OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: "The Clover Creek Guest House farmhouse in Rush Valley, Utah",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${SITE.name} — Farm Stay Vacation Rental in Rush Valley, Utah`,
+    description:
+      "A farmhouse cottage an hour from Salt Lake City. Sleeps 6, dog friendly, dark skies.",
+    images: [DEFAULT_OG_IMAGE],
   },
 };
 

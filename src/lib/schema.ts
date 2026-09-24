@@ -18,6 +18,9 @@ const RENTAL_ID = `${SITE.url}/#vacation-rental`;
 /** The main exterior photo, used wherever a single representative image is wanted. */
 export const MAIN_IMAGE_URL = `${SITE.url}/guest-house-main.JPG`;
 
+/** 1200x630 social share card. Also the Organization logo stand-in until one exists. */
+export const OG_IMAGE_URL = `${SITE.url}/og-default.jpg`;
+
 const TELEPHONE = SITE.phoneDisplay || undefined;
 
 // Byte-identical postal address for every schema block (SEO_PLAN.md §6.2).

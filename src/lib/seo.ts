@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
 import { SITE } from "./site";
 
+/**
+ * The site-wide social share card (1200x630, public/og-default.jpg). Site-relative on
+ * purpose — `metadataBase` in the root layout resolves it to an absolute URL, which is
+ * what Facebook requires.
+ */
+export const DEFAULT_OG_IMAGE = "/og-default.jpg";
+
 /** Absolute URL for a site-relative path. Always canonical-host, no trailing slash. */
 export function absoluteUrl(path: string): string {
   if (!path || path === "/") return SITE.url;
@@ -36,6 +43,12 @@ export function pageMetadata(input: PageMetaInput): Metadata {
       type: input.type ?? "website",
       ...(input.title ? { title: input.title } : {}),
       ...(input.description ? { description: input.description } : {}),
+      // Dimensions are only safe to assert for the default card, which we generated
+      // at exactly 1200x630. A caller-supplied image is an unknown size, so let the
+      // consumer read it rather than advertising a shape it may not have.
+      images: input.image
+        ? [{ url: input.image }]
+        : [{ url: DEFAULT_OG_IMAGE, width: 1200, height: 630 }],
     },
     ...(input.noindex ? { robots: { index: false, follow: false } } : {}),
   };
