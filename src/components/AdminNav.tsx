@@ -8,7 +8,6 @@ const ADMIN_LINKS = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/calendar", label: "Calendar & Bookings" },
   { href: "/admin/messages", label: "Messages" },
-  { href: "/admin/gallery", label: "Gallery" },
   { href: "/admin/content", label: "Site Content" },
   { href: "/admin/pricing", label: "Pricing & Holidays" },
   { href: "/admin/reviews", label: "Reviews" },

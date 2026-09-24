@@ -1,0 +1,127 @@
+{
+  "exportedAt": "2026-09-24",
+  "source": "supabase project rqfcacuybphzxcvhxxrl — select id, storage_path, caption, alt, sort_order, created_at from public.gallery_images order by sort_order, created_at",
+  "note": "Verbatim copy of the gallery metadata as it stood before the table and the 'gallery' storage bucket were retired. This is the parity baseline for src/content/gallery.ts and, once the table is dropped, the only remaining copy of the alt text and captions.",
+  "rows": [
+    {
+      "id": "18d5e25d-6b62-4b8d-af66-f7d8e0626c00",
+      "storage_path": "1787611312870-3B79EF1A-408B-4043-8F49-0F66D12C93D6.JPG",
+      "caption": "The farmhouse and barn",
+      "alt": "Clover Creek Guest House farmhouse with its red barn behind it, seen from the front yard in Rush Valley, Utah",
+      "sort_order": 100,
+      "created_at": "2026-08-24 22:41:56.322126+00"
+    },
+    {
+      "id": "be7249d7-88c2-4752-a326-ca6149b00515",
+      "storage_path": "1787611262788-4D6B95E9-3EA1-4EBB-A24A-AB98A4AFCBF1.JPG",
+      "caption": "Front entrance of the farmhouse",
+      "alt": "Front door and red shutters of the farmhouse, with red Adirondack chairs along the front walkway",
+      "sort_order": 101,
+      "created_at": "2026-08-24 22:41:06.460502+00"
+    },
+    {
+      "id": "9b366079-ce97-456c-9642-d3814d472631",
+      "storage_path": "1787611303604-7538DD97-BE5F-4899-9158-4FEB6940A73E.JPG",
+      "caption": "Picnic area and porch swing",
+      "alt": "White picnic table and porch swing on the back lawn of the farmhouse, with the grill and old shed nearby",
+      "sort_order": 102,
+      "created_at": "2026-08-24 22:41:47.470101+00"
+    },
+    {
+      "id": "b0f9de47-c43f-41b8-be86-4506024096f3",
+      "storage_path": "1787611308165-C33A2308-9331-49CA-BC8F-AE5199B416AC.JPG",
+      "caption": "Fenced yard and farmland view",
+      "alt": "Grassy side yard with a wood-rail fence and shade tree, looking out over open Rush Valley farmland",
+      "sort_order": 103,
+      "created_at": "2026-08-24 22:41:52.176536+00"
+    },
+    {
+      "id": "f527a260-7067-42e5-aca3-89de6ecf211f",
+      "storage_path": "1787611271348-2A1EF0CA-9A17-4AF7-9DAF-BFF9E57E7C35.JPG",
+      "caption": "Front room",
+      "alt": "Front room of the farmhouse with an electric fireplace, maroon leather sofa, and staircase to the loft",
+      "sort_order": 104,
+      "created_at": "2026-08-24 22:41:14.963487+00"
+    },
+    {
+      "id": "1e4996ad-787e-4d8a-941e-acf67c78e140",
+      "storage_path": "1787611275658-56EEDA33-5A71-429A-99B7-8765E41F91B5.JPG",
+      "caption": "Front room seating",
+      "alt": "Front room seating area with two maroon leather couches, a round area rug, and coffee table",
+      "sort_order": 105,
+      "created_at": "2026-08-24 22:41:19.175048+00"
+    },
+    {
+      "id": "32b09ef1-103f-4c05-be00-06376179c71d",
+      "storage_path": "1787611299539-45E1ECC8-62D1-4ED9-ADE2-032FA0F482E1.JPG",
+      "caption": "Dining nook",
+      "alt": "Drop-leaf dining table for two near the front entrance, with red curtains and farmhouse trim",
+      "sort_order": 106,
+      "created_at": "2026-08-24 22:41:42.908334+00"
+    },
+    {
+      "id": "870aff6f-3935-48ca-8836-1843efd5b6d1",
+      "storage_path": "1787611267157-DA4EDDA7-DB9D-48AF-86E3-A700C8E9BA59.JPG",
+      "caption": "Kitchen",
+      "alt": "Farmhouse kitchen with a full-size refrigerator, wood cabinets, and a dining table with area rug",
+      "sort_order": 107,
+      "created_at": "2026-08-24 22:41:10.651573+00"
+    },
+    {
+      "id": "59e1e1e1-2862-442d-946b-40457d70e4d0",
+      "storage_path": "1787611279869-C88777C4-753D-4E99-BF6F-5A64ED74813E.JPG",
+      "caption": "Master bedroom",
+      "alt": "King-size master bedroom bed with a red plaid patchwork quilt, wood headboard, and a small shelf nightstand",
+      "sort_order": 108,
+      "created_at": "2026-08-24 22:41:23.548134+00"
+    },
+    {
+      "id": "0abdaa9a-62be-4ef2-8779-57454e98603b",
+      "storage_path": "1787611284264-B912C4F4-A669-4131-BF4E-FE84717D68BF.JPG",
+      "caption": "Master bedroom wardrobe",
+      "alt": "Master bedroom wardrobe area with a wood dresser, standing mirror, and the foot of the quilted bed",
+      "sort_order": 109,
+      "created_at": "2026-08-24 22:41:28.621697+00"
+    },
+    {
+      "id": "9877924e-70db-4277-830b-50e0e07072dc",
+      "storage_path": "1787611254679-E24D085E-CE89-48A8-807B-06A9EF5805D8.JPG",
+      "caption": "Bathroom with tub and shower",
+      "alt": "Bathroom with a tub-and-shower combo and vanity, with a washer and dryer along the same wall",
+      "sort_order": 110,
+      "created_at": "2026-08-24 22:40:57.947464+00"
+    },
+    {
+      "id": "b9859d48-3d4a-413f-b910-879bd7cf9c0a",
+      "storage_path": "1787611289316-FD6E1F34-7E6E-472D-964F-B89DF958EA16.JPG",
+      "caption": "Bathroom with washer and dryer",
+      "alt": "Bathroom with a toilet and a side-by-side washer and dryer, with wood-look flooring",
+      "sort_order": 111,
+      "created_at": "2026-08-24 22:41:32.084849+00"
+    },
+    {
+      "id": "9a98848a-5c6b-4a04-864b-cc1727080e41",
+      "storage_path": "1787611294917-68E55AF9-E585-4A63-9397-DB79E47B841C.JPG",
+      "caption": "The Loft",
+      "alt": "Two full-size beds with patchwork quilts in the upstairs loft, tucked under the sloped farmhouse ceiling",
+      "sort_order": 112,
+      "created_at": "2026-08-24 22:41:38.843955+00"
+    },
+    {
+      "id": "e59f7b0c-c05c-4df1-9a83-8debd0cbbd59",
+      "storage_path": "1787611258647-42AEF8AC-566D-43C3-A3E2-16509B37147C.JPG",
+      "caption": "Loft sitting area",
+      "alt": "Loft sitting area with an armchair, dresser, and foosball table, next to the foot of the loft beds",
+      "sort_order": 113,
+      "created_at": "2026-08-24 22:41:02.090949+00"
+    },
+    {
+      "id": "6896068c-e437-4bf2-829e-c7dc2ada9f36",
+      "storage_path": "1787611292779-3B0D37F3-21BC-4A5B-9AE0-6B70394AADE3.JPG",
+      "caption": "Welcome sign",
+      "alt": "Wooden welcome sign for Clover Creek Guest House at 1475, with the phone number for availability in Rush Valley, Utah",
+      "sort_order": 114,
+      "created_at": "2026-08-24 22:41:34.22377+00"
+    }
+  ]
+}

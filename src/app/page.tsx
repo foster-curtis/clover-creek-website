@@ -8,10 +8,10 @@ import { buttonClasses } from "@/components/ui/Button";
 import { PageTitle, SectionTitle } from "@/components/ui/Heading";
 import { ArrowRightIcon, CheckIcon } from "@/components/ui/icons";
 import { getSiteContent } from "@/lib/content";
-import { getApprovedReviews, getGallery, getPricing } from "@/lib/data";
+import { getApprovedReviews, getGallery, getGalleryPhotoForRole, getPricing } from "@/lib/data";
 import { formatUSD } from "@/lib/pricing";
 import { homeGraph, MAIN_IMAGE_URL } from "@/lib/schema";
-import { pageMetadata } from "@/lib/seo";
+import { absoluteUrl, pageMetadata } from "@/lib/seo";
 import { SITE } from "@/lib/site";
 
 // Title and description come from the root layout defaults.
@@ -20,21 +20,17 @@ export const metadata = pageMetadata({ path: "/" });
 export const revalidate = 300; // re-render at most every 5 minutes
 
 export default async function HomePage() {
-  const [content, pricing, gallery, reviews] = await Promise.all([
+  const [content, pricing, reviews] = await Promise.all([
     getSiteContent(),
     getPricing(),
-    getGallery(),
     getApprovedReviews(),
   ]);
 
-  // Which gallery photos the home page features, chosen by the "Order" number
-  // shown next to each photo in Admin → Gallery. If that number no longer exists,
-  // fall back to the nth photo so the page never renders a missing image.
-  const photo = (order: number, fallbackIndex: number) =>
-    gallery.find((g) => g.sortOrder === order) ??
-    gallery[Math.min(fallbackIndex, gallery.length - 1)];
-  const heroPhoto = photo(100, 0);
-  const introPhoto = photo(108, 1);
+  // Photos come from the committed manifest, so no await here. The two the home
+  // page features are named there by role rather than looked up by a number.
+  const gallery = getGallery();
+  const heroPhoto = getGalleryPhotoForRole("hero");
+  const introPhoto = getGalleryPhotoForRole("intro");
 
   const amenities = content.amenities.split("\n").map((a) => a.trim()).filter(Boolean);
   const topReviews = reviews.slice(0, 3);
@@ -44,11 +40,11 @@ export default async function HomePage() {
       : null;
 
   // Schema images: the main exterior photo first, then every gallery photo
-  // (absolute URLs — Google requires 8+ for a vacation rental listing).
-  const schemaImages = [
-    MAIN_IMAGE_URL,
-    ...gallery.map((g) => (g.src.startsWith("http") ? g.src : `${SITE.url}${g.src}`)),
-  ].filter((url, i, all) => all.indexOf(url) === i);
+  // (absolute URLs — Google requires 8+ for a vacation rental listing). MAIN_IMAGE_URL
+  // is itself the hero photo, so the dedupe keeps it from appearing twice.
+  const schemaImages = [MAIN_IMAGE_URL, ...gallery.map((g) => absoluteUrl(g.src))].filter(
+    (url, i, all) => all.indexOf(url) === i
+  );
 
   const jsonLd = homeGraph({
     description: content.home_intro.split("\n")[0],
@@ -73,6 +69,8 @@ export default async function HomePage() {
             alt={heroPhoto.alt}
             fill
             priority
+            placeholder="blur"
+            blurDataURL={heroPhoto.blurDataURL}
             sizes="100vw"
             className="object-cover"
           />
@@ -103,6 +101,8 @@ export default async function HomePage() {
             src={introPhoto.src}
             alt={introPhoto.alt}
             fill
+            placeholder="blur"
+            blurDataURL={introPhoto.blurDataURL}
             sizes="(min-width: 1024px) 55vw, 100vw"
             className="object-cover"
           />

@@ -2,6 +2,7 @@
 // isn't configured yet, so the site builds and previews before any accounts
 // are set up.
 
+import { GALLERY, type GalleryPhoto, type GalleryRole, photoForRole } from "@/content/gallery";
 import { holidayMap } from "./holidays";
 import { DEFAULT_PRICING, type PricingConfig, addDays } from "./pricing";
 import { hasServiceRole, hasSupabase, supabaseAdmin, supabaseServer } from "./supabase/server";
@@ -9,9 +10,13 @@ import { hasServiceRole, hasSupabase, supabaseAdmin, supabaseServer } from "./su
 export interface GalleryImage {
   id: string;
   src: string;
-  caption: string | null;
+  caption: string;
   alt: string;
   sortOrder: number;
+  /** Intrinsic size of the file on disk — next/image needs both to reserve space. */
+  width: number;
+  height: number;
+  blurDataURL: string;
 }
 
 export interface Review {
@@ -81,36 +86,30 @@ export async function getHolidays(): Promise<Map<string, string>> {
 
 // --- gallery ------------------------------------------------------------
 
-const PLACEHOLDER_GALLERY: GalleryImage[] = [
-  { id: "p1", src: "/placeholders/farmhouse.svg", caption: "The guest house", alt: "Clover Creek Guest House exterior", sortOrder: 0 },
-  { id: "p2", src: "/placeholders/bedroom.svg", caption: "Master bedroom with king bed", alt: "Master bedroom", sortOrder: 1 },
-  { id: "p3", src: "/placeholders/kitchen.svg", caption: "Full kitchen with coffee & tea bar", alt: "Kitchen", sortOrder: 2 },
-  { id: "p4", src: "/placeholders/firepit.svg", caption: "Fire pit under the night sky", alt: "Fire pit", sortOrder: 3 },
-];
-
-export function galleryPublicUrl(storagePath: string): string {
-  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/gallery/${storagePath}`;
+function toGalleryImage(photo: GalleryPhoto): GalleryImage {
+  return {
+    id: photo.id,
+    src: photo.src,
+    caption: photo.caption,
+    alt: photo.alt,
+    sortOrder: photo.order,
+    width: photo.width,
+    height: photo.height,
+    blurDataURL: photo.blurDataURL,
+  };
 }
 
-export async function getGallery(): Promise<GalleryImage[]> {
-  if (!hasSupabase()) return PLACEHOLDER_GALLERY;
-  try {
-    const supabase = await supabaseServer();
-    const { data } = await supabase
-      .from("gallery_images")
-      .select("id, storage_path, caption, alt, sort_order")
-      .order("sort_order");
-    if (!data || data.length === 0) return PLACEHOLDER_GALLERY;
-    return data.map((row) => ({
-      id: row.id,
-      src: galleryPublicUrl(row.storage_path),
-      caption: row.caption,
-      alt: row.alt ?? row.caption ?? "Clover Creek Guest House",
-      sortOrder: row.sort_order,
-    }));
-  } catch {
-    return PLACEHOLDER_GALLERY;
-  }
+/**
+ * The gallery, from src/content/gallery.ts. Synchronous and Supabase-free: the
+ * photos are committed files, so every page that shows them stays fully static.
+ */
+export function getGallery(): GalleryImage[] {
+  return [...GALLERY].sort((a, b) => a.order - b.order).map(toGalleryImage);
+}
+
+/** The single photo filling a named slot on the home page (hero, intro). */
+export function getGalleryPhotoForRole(role: GalleryRole): GalleryImage {
+  return toGalleryImage(photoForRole(role));
 }
 
 // --- availability -------------------------------------------------------

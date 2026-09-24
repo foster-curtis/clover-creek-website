@@ -31,10 +31,14 @@ export default function GalleryGrid({ images }: { images: GalleryImage[] }) {
             className="group relative aspect-[4/3] overflow-hidden rounded-lg bg-surface-sunken"
             aria-label={`View photo: ${img.alt}`}
           >
+            {/* The 4:3 parent reserves the space, so no width/height needed here.
+                `priority` stays off — the LCP element is on the home page. */}
             <Image
               src={img.src}
               alt={img.alt}
               fill
+              placeholder="blur"
+              blurDataURL={img.blurDataURL}
               sizes="(max-width: 768px) 50vw, 33vw"
               className="object-cover transition group-hover:scale-105"
             />
@@ -55,7 +59,11 @@ export default function GalleryGrid({ images }: { images: GalleryImage[] }) {
                 src={images[lightbox].src}
                 alt={images[lightbox].alt}
                 fill
-                sizes="100vw"
+                placeholder="blur"
+                blurDataURL={images[lightbox].blurDataURL}
+                // The dialog is capped at max-w-4xl (896px), so asking for a
+                // full-viewport image would fetch a size nothing ever shows.
+                sizes="(max-width: 896px) 100vw, 896px"
                 className="rounded-lg object-contain"
               />
             </div>

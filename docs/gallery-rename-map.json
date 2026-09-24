@@ -1,0 +1,20 @@
+{
+  "note": "One-time migration map: Supabase 'gallery' bucket object -> repo filename. The slug is the basename of both images-src/<slug>.jpg (the full-resolution original, gitignored) and public/gallery/<slug>.jpg (the committed derivative). 1:1 in both directions.",
+  "map": {
+    "1787611312870-3B79EF1A-408B-4043-8F49-0F66D12C93D6.JPG": "farmhouse-and-barn",
+    "1787611262788-4D6B95E9-3EA1-4EBB-A24A-AB98A4AFCBF1.JPG": "front-entrance",
+    "1787611303604-7538DD97-BE5F-4899-9158-4FEB6940A73E.JPG": "picnic-area-and-porch-swing",
+    "1787611308165-C33A2308-9331-49CA-BC8F-AE5199B416AC.JPG": "fenced-yard-and-farmland-view",
+    "1787611271348-2A1EF0CA-9A17-4AF7-9DAF-BFF9E57E7C35.JPG": "front-room",
+    "1787611275658-56EEDA33-5A71-429A-99B7-8765E41F91B5.JPG": "front-room-seating",
+    "1787611299539-45E1ECC8-62D1-4ED9-ADE2-032FA0F482E1.JPG": "dining-nook",
+    "1787611267157-DA4EDDA7-DB9D-48AF-86E3-A700C8E9BA59.JPG": "kitchen",
+    "1787611279869-C88777C4-753D-4E99-BF6F-5A64ED74813E.JPG": "master-bedroom",
+    "1787611284264-B912C4F4-A669-4131-BF4E-FE84717D68BF.JPG": "master-bedroom-wardrobe",
+    "1787611254679-E24D085E-CE89-48A8-807B-06A9EF5805D8.JPG": "bathroom-tub-and-shower",
+    "1787611289316-FD6E1F34-7E6E-472D-964F-B89DF958EA16.JPG": "bathroom-washer-and-dryer",
+    "1787611294917-68E55AF9-E585-4A63-9397-DB79E47B841C.JPG": "loft",
+    "1787611258647-42AEF8AC-566D-43C3-A3E2-16509B37147C.JPG": "loft-sitting-area",
+    "1787611292779-3B0D37F3-21BC-4A5B-9AE0-6B70394AADE3.JPG": "welcome-sign"
+  }
+}

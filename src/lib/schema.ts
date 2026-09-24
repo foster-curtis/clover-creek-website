@@ -8,6 +8,7 @@
 //   - LodgingBusiness — the "local business" entity Google resolves site-wide
 //   - VacationRental — the rentable unit itself (Rich Results Test target)
 
+import { photoForRole } from "@/content/gallery";
 import type { Review } from "./data";
 import { SITE } from "./site";
 
@@ -15,8 +16,12 @@ const ORG_ID = `${SITE.url}/#organization`;
 const BUSINESS_ID = `${SITE.url}/#lodging`;
 const RENTAL_ID = `${SITE.url}/#vacation-rental`;
 
-/** The main exterior photo, used wherever a single representative image is wanted. */
-export const MAIN_IMAGE_URL = `${SITE.url}/guest-house-main.JPG`;
+/**
+ * The main exterior photo, used wherever a single representative image is wanted.
+ * It is the gallery's own hero photo rather than a second copy of the same shot, so
+ * the URL Google resolves is always one the site actually renders.
+ */
+export const MAIN_IMAGE_URL = `${SITE.url}${photoForRole("hero").src}`;
 
 /** 1200x630 social share card. Also the Organization logo stand-in until one exists. */
 export const OG_IMAGE_URL = `${SITE.url}/og-default.jpg`;

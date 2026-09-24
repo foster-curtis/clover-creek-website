@@ -11,10 +11,10 @@ export const metadata: Metadata = pageMetadata({
     "Photos of the Clover Creek Guest House — bedrooms, kitchen, patio, fire pit and the Rush Valley scenery.",
 });
 
-export const revalidate = 300;
+// No `revalidate` — the photos are committed files, so this page is fully static.
 
-export default async function GalleryPage() {
-  const images = await getGallery();
+export default function GalleryPage() {
+  const images = getGallery();
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
       <PageTitle>Photo Gallery</PageTitle>

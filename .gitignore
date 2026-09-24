@@ -41,3 +41,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Full-resolution photo originals. The owner keeps the masters in Google Drive;
+# drop a copy here and run `node scripts/optimize-images.mjs` to regenerate the
+# derivatives in public/gallery/. These are 5-6 MB each — never commit them.
+/images-src/

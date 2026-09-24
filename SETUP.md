@@ -42,6 +42,21 @@ and confirmation emails go out on payment.
 
 **DONE**
 
+Everything on that list is still edited in the Admin dashboard **except the photos**.
+Photos are no longer uploaded through the site — there is no Admin → Gallery screen any
+more. They live in the repository so their file sizes are fixed before they ship (a
+5 MB phone photo is the single biggest thing that can slow a page down) and so alt text
+and captions get reviewed like any other copy.
+
+Where things are now:
+
+- **Full-resolution originals** — Google Drive. That is the archive; the repository
+  deliberately keeps only downscaled copies.
+- **What the site serves** — `public/gallery/*.jpg`, about 2400px wide.
+- **Alt text, captions and order** — `src/content/gallery.ts`.
+
+See [README.md](README.md#adding-or-changing-photos) for the steps to add or change one.
+
 ## 6. Calendar sync (keep other listings from double-booking)
 
 - Set `ICAL_FEED_TOKEN` to any long random string. **DONE**

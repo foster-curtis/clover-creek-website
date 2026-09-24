@@ -201,31 +201,9 @@ export async function refundBooking(formData: FormData) {
   revalidatePath("/book");
 }
 
-// --- gallery ---------------------------------------------------------------
-
-export async function updateGalleryImage(formData: FormData) {
-  const db = await requireAdmin();
-  await db
-    .from("gallery_images")
-    .update({
-      caption: String(formData.get("caption") ?? "").trim() || null,
-      alt: String(formData.get("alt") ?? "").trim() || null,
-      sort_order: Number(formData.get("sortOrder") ?? 0),
-    })
-    .eq("id", String(formData.get("id")));
-  revalidatePublic();
-  revalidatePath("/admin/gallery");
-}
-
-export async function deleteGalleryImage(formData: FormData) {
-  const db = await requireAdmin();
-  const id = String(formData.get("id"));
-  const path = String(formData.get("storagePath"));
-  await db.storage.from("gallery").remove([path]);
-  await db.from("gallery_images").delete().eq("id", id);
-  revalidatePublic();
-  revalidatePath("/admin/gallery");
-}
+// Photos are no longer editable here — they live in src/content/gallery.ts and
+// public/gallery/, so alt text and captions are reviewed in a diff and image
+// weights are set at commit time. See README.md, "Adding or changing photos".
 
 // --- reviews ----------------------------------------------------------------
 
