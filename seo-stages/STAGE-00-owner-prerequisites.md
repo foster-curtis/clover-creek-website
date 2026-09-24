@@ -31,40 +31,51 @@ are ready and the site picks them up.
 
 These gate the off-site work in section D. None of them gate a code stage.
 
-- [ ] **Publish a phone number.** `SITE.phoneDisplay` reads `NEXT_PUBLIC_PHONE`, which is
-      unset, so no phone appears anywhere on the site and no `telephone` field appears in
-      the schema. Most directory listings in section D require one. A free Google Voice
-      number forwarding to a personal mobile solves this in ten minutes if publishing the
-      mobile is unacceptable. **The single biggest blocker in Stage 00** (§6.3).
-      Deliver as: the number in E.164 form, e.g. `+1-435-555-0134`.
-- [ ] **Decide the business email.** `clovercreek@gmail.com` works but reads as a hobby.
-      `stay@clovercreekguesthouse.com` forwarding to Gmail is free with most registrars
-      and is a real trust signal (§6.3). Deliver as: the address, plus confirmation that
-      mail actually arrives at it.
-- [ ] **Confirm the canonical host: `www` or apex.** Stage 01 assumes **`www`**, because
-      that is what the deployed `NEXT_PUBLIC_SITE_URL` already resolves to. If the apex
-      domain is preferred, say so *before* Stage 01 runs — changing it afterwards means
-      re-issuing every canonical tag and re-submitting the sitemap.
+- [ ] **Publish a phone number.** *Decided 2026-09-23: a Google Voice number, to be
+      provisioned and set as `NEXT_PUBLIC_PHONE` in Vercel. The `.env.example` entry is
+      already in place, so nothing else changes when the number lands.* Until it is set,
+      `SITE.phoneDisplay` is empty: no phone appears anywhere on the site and no
+      `telephone` field appears in the schema. Most directory listings in section D
+      require one, so this still gates section D. **The single biggest blocker in
+      Stage 00** (§6.3). Deliver as: the number in E.164 form, e.g. `+1-435-555-0134`.
+- [x] **Business email** — decided 2026-09-23, and it is **two addresses, not one** (§6.3):
+      - `stay@clovercreekguesthouse.com` is the domain `EMAIL_FROM` alias, verified in
+        Resend. It is **send-only — there is no inbox behind it**, which is why every send
+        in `src/lib/email.ts` sets `Reply-To` to a real address.
+      - `clovercreekguesthouse@gmail.com` is the monitored inbox and the value of
+        `OWNER_EMAIL` in Vercel. This is the one rendered publicly (footer, contact,
+        privacy, terms) and the one that must appear on every directory listing in
+        section D, so it is the address the byte-identical NAP rule applies to.
+- [x] **Canonical host** — confirmed 2026-09-23: **`www`**, already configured. Stage 01
+      proceeds on that assumption; `.env.example` still shows the apex host and Stage 01
+      §7 corrects it.
 - [x] **Street address** — decided 2026-09-08: `1475 W Hwy 199` is published in the schema.
       If that is ever reversed it must be pulled from `src/lib/schema.ts` and every
       external listing on the same day; a half-removed address is worse than either
       choice (§6.2).
-- [ ] **Gather verified distances and drive times** for the table in §6.4. Stage 09 builds
-      the page that displays them and ships with only the two figures already published on
-      the site; everything else stays hidden until measured. Deliver as: miles and driving
-      minutes for Grantsville, the Onaqui wild horse range, the Bonneville Salt Flats, the
-      Pony Express Trail trailhead, Dugway, Vernon, and SLC airport. **Measure them, do
-      not estimate them** — these are exactly the numbers an assistant quotes back.
+- [x] **Distances and drive times** — supplied by the owner 2026-09-23. Stage 09 fills
+      `src/lib/local.ts` from the table below and flips `verified: true` on these rows.
+      Drive times are the owner's mapped estimates, not stopwatch figures, so the copy
+      should round them ("about an hour") rather than quote them to the minute.
+
+      | Destination | Miles | Drive time |
+      |---|---|---|
+      | Grantsville | 22 | ~27 min |
+      | Onaqui wild horse range | 37 | ~60 min |
+      | Bonneville Salt Flats | 116 | ~1 hr 40 min |
+      | Pony Express Trail trailhead | 16 | ~16 min |
+      | Dugway | 19 | ~27 min |
+      | Vernon | 22 | ~21 min |
+      | Salt Lake City International Airport (SLC) | 51 | ~57 min |
 
 ## B. Measurement baseline — do this first (§13.2, §14.1)
 
 Nothing in this plan can be evaluated without a starting point, and the baseline has to be
 recorded *before* Stage 01 ships.
 
-- [ ] **[HUMAN]** Verify the site in **Google Search Console** (DNS TXT record via Vercel)
-      and submit `https://www.clovercreekguesthouse.com/sitemap.xml`.
-- [ ] **[HUMAN]** Verify in **Bing Webmaster Tools** and submit the same sitemap. Bing
-      feeds Microsoft Copilot.
+- [x] **[HUMAN]** Verified in **Google Search Console** and sitemap submitted (2026-09-23).
+- [x] **[HUMAN]** Verified in **Bing Webmaster Tools** and the same sitemap submitted
+      (2026-09-23). Bing feeds Microsoft Copilot.
 - [ ] **[HUMAN]** Record the baseline table from §14.1: indexed pages, 28-day impressions
       and clicks, branded query position, direct bookings per month, referral sources,
       backlink count.
@@ -77,12 +88,12 @@ recorded *before* Stage 01 ships.
 Browser work against the live database, in the site's own `/admin` panel. An agent cannot
 do this: it writes to Supabase.
 
-- [ ] **[HUMAN]** **Rewrite all fifteen gallery alt texts** in Admin → Gallery. Every photo
+- [x] **[HUMAN]** *(Done 2026-09-23.)* **Rewrite all fifteen gallery alt texts** in Admin → Gallery. Every photo
       currently carries the same alt text, `"Clover Creek Guest House"`, so fifteen real
       assets contribute nothing (§9.1). Patterns to adapt are in §9.3 — 80–140 characters,
       describe what is actually in the frame, location words only on exteriors and views.
       **Thirty minutes, and one of the top five items in the entire plan** (§16).
-- [ ] **[HUMAN]** Add a caption to each gallery photo while you are in there. Stage 07
+- [x] **[HUMAN]** *(Done 2026-09-23.)* Add a caption to each gallery photo while you are in there. Stage 07
       makes captions visible in the grid, and caption text is a real Google Images signal
       (§9.6).
 - [ ] **[HUMAN]** *After Stage 05 ships:* review the nine new FAQ answers in Admin → Site

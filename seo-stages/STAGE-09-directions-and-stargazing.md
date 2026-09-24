@@ -42,6 +42,14 @@ without a code change to its markup.
 
 ### 1. **[AGENT]** Create `src/lib/local.ts`
 
+> **Update 2026-09-23 — the figures now exist.** The owner supplied routed miles and drive
+> times for all seven outstanding destinations; they are tabulated in
+> [STAGE-00 §A](STAGE-00-owner-prerequisites.md#a-blocking-decisions-seo_planmd-phase-0).
+> Fill those rows in from that table and set `verified: true` on them, instead of shipping
+> the `verified: false` skeleton below. They are routed estimates rather than driven times,
+> so round them in prose ("about an hour"). Anything **not** in that table still follows
+> the original rule: no figure, no row.
+
 ```ts
 /**
  * Distances and drive times from the guest house (SEO_PLAN.md §6.4). These numbers get

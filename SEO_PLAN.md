@@ -372,7 +372,7 @@ Street:   1475 W Hwy 199        (owner chose to publish it — 2026-09-08, see n
 Locality: Rush Valley, UT 84069
 Region:   Tooele County, Utah
 Phone:    (set NEXT_PUBLIC_PHONE — see 6.3)
-Email:    clovercreek@gmail.com   (see 6.3)
+Email:    clovercreekguesthouse@gmail.com   (see 6.3)
 Website:  https://www.clovercreekguesthouse.com
 Geo:      40.3376757, -112.4813979
 ```
@@ -405,6 +405,14 @@ built without it.**
 **A real business email.** `clovercreek@gmail.com` works but reads as a hobby. A domain email
 (`stay@clovercreekguesthouse.com`, forwarding to Gmail — free with most registrars) is a
 meaningful trust signal to both directories and human guests.
+
+> **Resolved — 2026-09-23, and it came out as two addresses.**
+> `stay@clovercreekguesthouse.com` is verified in Resend and used as `EMAIL_FROM`, but it is
+> **send-only: no inbox receives it**, so every send in `src/lib/email.ts` sets `Reply-To` to
+> a real address. The monitored inbox is `clovercreekguesthouse@gmail.com` — that is
+> `OWNER_EMAIL`, that is what the site renders publicly, and **that is the address the NAP
+> block above and every Section 11 listing must use.** Publishing the send-only alias as a
+> contact address anywhere would give guests a reply route that silently goes nowhere.
 
 ### 6.4 On-site local signals to add
 

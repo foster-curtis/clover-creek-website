@@ -23,7 +23,7 @@ export const SITE = {
   name: "Clover Creek Guest House",
   tagline: "A quiet, serene farmhouse cottage in Rush Valley, Utah",
   url: resolveSiteUrl(),
-  ownerEmail: process.env.OWNER_EMAIL || "clovercreek@gmail.com",
+  ownerEmail: process.env.OWNER_EMAIL || "clovercreekguesthouse@gmail.com",
   phoneDisplay: process.env.NEXT_PUBLIC_PHONE ?? "", // optional, shown in footer if set
   checkInTime: "3:00 PM",
   checkOutTime: "11:00 AM",
