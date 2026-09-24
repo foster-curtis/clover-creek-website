@@ -23,6 +23,15 @@ export default async function HomePage() {
     getApprovedReviews(),
   ]);
 
+  // Which gallery photos the home page features, chosen by the "Order" number
+  // shown next to each photo in Admin → Gallery. If that number no longer exists,
+  // fall back to the nth photo so the page never renders a missing image.
+  const photo = (order: number, fallbackIndex: number) =>
+    gallery.find((g) => g.sortOrder === order) ??
+    gallery[Math.min(fallbackIndex, gallery.length - 1)];
+  const heroPhoto = photo(100, 0);
+  const introPhoto = photo(108, 1);
+
   const amenities = content.amenities.split("\n").map((a) => a.trim()).filter(Boolean);
   const topReviews = reviews.slice(0, 3);
   const avgRating =
@@ -56,8 +65,8 @@ export default async function HomePage() {
       <section className="relative">
         <div className="relative h-[52vh] min-h-[320px] w-full sm:h-[64vh]">
           <Image
-            src={gallery[0].src}
-            alt={gallery[0].alt}
+            src={heroPhoto.src}
+            alt={heroPhoto.alt}
             fill
             priority
             sizes="100vw"
@@ -87,8 +96,8 @@ export default async function HomePage() {
       <section className="grid lg:grid-cols-[6fr_5fr]">
         <div className="relative order-2 h-72 lg:order-1 lg:h-auto lg:min-h-[420px]">
           <Image
-            src={gallery[Math.min(1, gallery.length - 1)].src}
-            alt={gallery[Math.min(1, gallery.length - 1)].alt}
+            src={introPhoto.src}
+            alt={introPhoto.alt}
             fill
             sizes="(min-width: 1024px) 55vw, 100vw"
             className="object-cover"
@@ -207,30 +216,19 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Area — editorial pairing, alternating side from the intro section */}
-      <section className="grid lg:grid-cols-[5fr_6fr]">
-        <div className="flex items-center bg-surface">
-          <div className="px-4 py-12 sm:px-8 lg:px-12">
-            <SectionTitle rule>Out here, the stars still shine</SectionTitle>
-            <p className="mt-4 leading-relaxed text-stone-600">{content.area}</p>
-            <div className="mt-6">
-              <LocationMap />
-            </div>
+      {/* Area */}
+      <section className="bg-surface">
+        <div className="mx-auto max-w-5xl px-4 py-12">
+          <SectionTitle rule>Out here, the stars still shine</SectionTitle>
+          <p className="mt-4 max-w-2xl leading-relaxed text-stone-600">{content.area}</p>
+          <div className="mt-6">
+            <LocationMap />
           </div>
-        </div>
-        <div className="relative h-72 lg:h-auto lg:min-h-[420px]">
-          <Image
-            src={gallery[Math.min(3, gallery.length - 1)].src}
-            alt={gallery[Math.min(3, gallery.length - 1)].alt}
-            fill
-            sizes="(min-width: 1024px) 55vw, 100vw"
-            className="object-cover"
-          />
         </div>
       </section>
 
       {/* CTA */}
-      <section className="mx-auto max-w-5xl px-4 pb-4 text-center">
+      <section className="mx-auto max-w-5xl px-4 pb-4 pt-16 text-center">
         <div className="rounded-2xl bg-moss px-6 py-12 text-white">
           <SectionTitle className="!text-white sm:!text-3xl">Ready for some quiet?</SectionTitle>
           <p className="mx-auto mt-2 max-w-md text-white/85">
