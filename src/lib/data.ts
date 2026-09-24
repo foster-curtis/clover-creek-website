@@ -2,7 +2,13 @@
 // isn't configured yet, so the site builds and previews before any accounts
 // are set up.
 
-import { GALLERY, type GalleryPhoto, type GalleryRole, photoForRole } from "@/content/gallery";
+import {
+  GALLERY,
+  type GalleryPhoto,
+  type GalleryRole,
+  homeStripPhotos,
+  photoForRole,
+} from "@/content/gallery";
 import { holidayMap } from "./holidays";
 import { DEFAULT_PRICING, type PricingConfig, addDays } from "./pricing";
 import { hasServiceRole, hasSupabase, supabaseAdmin, supabaseServer } from "./supabase/server";
@@ -107,9 +113,14 @@ export function getGallery(): GalleryImage[] {
   return [...GALLERY].sort((a, b) => a.order - b.order).map(toGalleryImage);
 }
 
-/** The single photo filling a named slot on the home page (hero, intro). */
+/** The single photo filling a named slot on the home page (hero, amenities). */
 export function getGalleryPhotoForRole(role: GalleryRole): GalleryImage {
   return toGalleryImage(photoForRole(role));
+}
+
+/** The photos in the home page's gallery strip, in display order. */
+export function getHomeStripPhotos(): GalleryImage[] {
+  return homeStripPhotos().map(toGalleryImage);
 }
 
 // --- availability -------------------------------------------------------

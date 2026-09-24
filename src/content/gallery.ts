@@ -235,3 +235,29 @@ export function photoForRole(role: GalleryRole): GalleryPhoto {
   }
   return match[0];
 }
+
+/**
+ * The photos the home page shows between the reviews and the area guide, in
+ * the order they appear. A deliberate mix of living space, both sleeping areas
+ * and the yard — the hero and the amenities photo already cover the outside of
+ * the house and the kitchen.
+ */
+export const HOME_STRIP_IDS = [
+  "front-room",
+  "master-bedroom",
+  "loft",
+  "picnic-area-and-porch-swing",
+] as const;
+
+/** The home page's gallery strip, in HOME_STRIP_IDS order. */
+export function homeStripPhotos(): GalleryPhoto[] {
+  return HOME_STRIP_IDS.map((id) => {
+    const photo = GALLERY.find((p) => p.id === id);
+    if (!photo) {
+      // Same reasoning as photoForRole — a stale id here is a build-time
+      // mistake, so fail rather than quietly rendering a shorter strip.
+      throw new Error(`No gallery photo with id "${id}" for the home page strip`);
+    }
+    return photo;
+  });
+}

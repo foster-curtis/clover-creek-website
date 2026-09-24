@@ -10,7 +10,7 @@ import { readdirSync, readFileSync, existsSync } from "node:fs";
 import path from "node:path";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { GALLERY, type GalleryRole } from "./gallery";
+import { GALLERY, type GalleryRole, HOME_STRIP_IDS, homeStripPhotos } from "./gallery";
 
 const PUBLIC_DIR = path.join(process.cwd(), "public");
 const GALLERY_DIR = path.join(PUBLIC_DIR, "gallery");
@@ -103,6 +103,20 @@ describe("gallery manifest", () => {
     for (const role of ["hero", "amenities"] satisfies GalleryRole[]) {
       expect(GALLERY.filter((p) => p.role === role), `role "${role}"`).toHaveLength(1);
     }
+  });
+
+  it("resolves every photo in the home page strip", () => {
+    expect(homeStripPhotos().map((p) => p.id)).toEqual([...HOME_STRIP_IDS]);
+  });
+
+  it("keeps the home page strip free of repeats", () => {
+    // The strip sits on the same page as the hero and the amenities photo, so a
+    // repeat there would show the same picture twice within one scroll.
+    const onPage = [
+      ...HOME_STRIP_IDS,
+      ...GALLERY.filter((p) => p.role).map((p) => p.id),
+    ];
+    expect(new Set(onPage).size, onPage.join(", ")).toBe(onPage.length);
   });
 
   it("leaves no unreferenced files in public/gallery", () => {
