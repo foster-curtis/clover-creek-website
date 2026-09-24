@@ -120,6 +120,16 @@ a, button, input, select, textarea, [role="button"] {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/* Scrollers that carry their own controls (e.g. the home page photo strip).
+   The content stays scrollable by touch and keyboard — only the bar is hidden. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 /* Simple typography for admin-authored markdown (blog posts) */
 .prose-simple { max-width: var(--w-prose); }
 .prose-simple h2 { font-size: 1.4rem; font-weight: 700; margin: 1.5em 0 0.5em; }

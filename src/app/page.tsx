@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import LocationMap from "@/components/LocationMap";
+import PhotoStrip from "@/components/PhotoStrip";
 import RatingSummary from "@/components/RatingSummary";
 import Stars from "@/components/Stars";
 import Card from "@/components/ui/Card";
@@ -228,36 +229,11 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* A look around — a horizontal scroller on small screens rather than a tall
-          stack, so the photos stay one glance wide however narrow the viewport. */}
+      {/* A look around — PhotoStrip scrolls sideways on small screens rather than
+          stacking, so the photos stay one glance wide however narrow the viewport. */}
       <section className="mx-auto max-w-5xl px-4 py-12">
         <SectionTitle rule>A look around</SectionTitle>
-        <ul
-          className="-mx-4 mt-6 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 lg:mx-0 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 lg:pb-0"
-          // Scrollable regions need to be reachable by keyboard, and a focusable
-          // region needs a name. Harmless once it becomes a grid at lg.
-          tabIndex={0}
-          aria-label="Photos of the house"
-        >
-          {stripPhotos.map((img) => (
-            <li key={img.id} className="w-64 shrink-0 snap-start sm:w-72 lg:w-auto">
-              <Link href="/gallery" className="group block">
-                <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-surface-sunken">
-                  <Image
-                    src={img.src}
-                    alt={img.alt}
-                    fill
-                    placeholder="blur"
-                    blurDataURL={img.blurDataURL}
-                    sizes="(min-width: 1024px) 25vw, 18rem"
-                    className="object-cover transition group-hover:scale-105"
-                  />
-                </div>
-                <p className="mt-2 text-sm text-stone-600">{img.caption}</p>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <PhotoStrip images={stripPhotos} href="/gallery" />
         <Link href="/gallery" className="mt-6 inline-flex items-center gap-1 text-moss underline">
           See all {gallery.length} photos <ArrowRightIcon className="h-4 w-4" />
         </Link>
