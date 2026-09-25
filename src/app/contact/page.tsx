@@ -20,6 +20,14 @@ export default function ContactPage() {
         <a href={`mailto:${SITE.ownerEmail}`} className="text-moss underline">
           {SITE.ownerEmail}
         </a>
+        {SITE.phoneDisplay && (
+          <>
+            {" "}or call{" "}
+            <a href={`tel:${SITE.phoneHref}`} className="text-moss underline">
+              {SITE.phoneDisplay}
+            </a>
+          </>
+        )}
         .
       </p>
       <div className="mt-8">

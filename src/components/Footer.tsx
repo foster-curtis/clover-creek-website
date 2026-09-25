@@ -12,13 +12,20 @@ export default function Footer() {
             {SITE.name}
           </p>
           <p className="mt-2">
-            {SITE.location.town}, {SITE.location.region}
+            {SITE.location.town}, {SITE.location.regionCode} {SITE.location.postalCode}
           </p>
           <p className="mt-1">
             <a href={`mailto:${SITE.ownerEmail}`} className="hover:text-moss-dark">
               {SITE.ownerEmail}
             </a>
           </p>
+          {SITE.phoneDisplay && (
+            <p className="mt-1">
+              <a href={`tel:${SITE.phoneHref}`} className="hover:text-moss-dark">
+                {SITE.phoneDisplay}
+              </a>
+            </p>
+          )}
         </div>
         <div>
           <p className="font-semibold text-ink">The house</p>

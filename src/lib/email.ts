@@ -43,7 +43,11 @@ function layout(body: string): string {
     ${body}
     <p style="margin-top:32px; font-size: 13px; color: #78716c;">
       ${SITE.name} · ${SITE.location.town}, ${SITE.location.region} ·
-      <a href="mailto:${SITE.ownerEmail}">${SITE.ownerEmail}</a>
+      <a href="mailto:${SITE.ownerEmail}">${SITE.ownerEmail}</a>${
+        SITE.phoneDisplay
+          ? ` · <a href="tel:${SITE.phoneHref}">${SITE.phoneDisplay}</a>`
+          : ""
+      }
     </p>
   </div>`;
 }

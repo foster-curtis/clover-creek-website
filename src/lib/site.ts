@@ -28,7 +28,12 @@ export const SITE = {
   tagline: "A quiet, serene farmhouse cottage in Rush Valley, Utah",
   url: resolveSiteUrl(),
   ownerEmail: process.env.OWNER_EMAIL || "clovercreekguesthouse@gmail.com",
-  phoneDisplay: process.env.NEXT_PUBLIC_PHONE ?? "", // optional, shown in footer if set
+  // Optional. When set it is shown verbatim wherever the phone appears (footer, contact,
+  // terms) and emitted as `telephone` in the schema, so the one string is also the phone
+  // used on every external listing — the NAP has to match byte for byte.
+  phoneDisplay: process.env.NEXT_PUBLIC_PHONE ?? "",
+  // Same number as a tel: target, e.g. "+13852046622".
+  phoneHref: (process.env.NEXT_PUBLIC_PHONE ?? "").replace(/[^+\d]/g, ""),
   checkInTime: "3:00 PM",
   checkOutTime: "11:00 AM",
   location: {

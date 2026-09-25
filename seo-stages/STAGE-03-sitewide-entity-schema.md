@@ -210,7 +210,13 @@ In [src/app/page.tsx](../src/app/page.tsx):
 - Keep the `schemaImages` construction exactly as it is. The eight-image minimum for
   `VacationRental` depends on it.
 
-### 6. **[AGENT]** Add the phone to the footer (§6.4)
+### 6. **[AGENT]** Add the phone to the footer (§6.4) — ✅ **done 2026-09-24**
+
+> Shipped ahead of the rest of this stage, on the day the number landed (Stage 00 §A), so
+> that the phone was not reaching crawlers while staying invisible to guests. The code below
+> is what went in, except that the `tel:` target now comes from `SITE.phoneHref` rather than
+> being re-derived inline, because the contact page, the terms page and
+> `src/lib/email.ts` render the phone too. Nothing to redo here.
 
 In [src/components/Footer.tsx](../src/components/Footer.tsx), under the locality line:
 
@@ -274,8 +280,8 @@ cannot run these — they fetch the deployed URL.
       repeat the full `Organization` or `LodgingBusiness`.
 - [ ] Schema description text comes from `SITE.description` everywhere.
 - [ ] `sameAs` is absent from the output while `SITE.sameAs` is empty.
-- [ ] The footer shows `Rush Valley, UT 84069`, and shows a phone number only when
-      `NEXT_PUBLIC_PHONE` is set.
+- [x] The footer shows `Rush Valley, UT 84069`, and shows a phone number only when
+      `NEXT_PUBLIC_PHONE` is set. *(2026-09-24, with step 6.)*
 - [ ] `npm run lint && npm run typecheck && npm test && npm run build` all pass.
 - [ ] The site renders with no `.env.local` present.
 

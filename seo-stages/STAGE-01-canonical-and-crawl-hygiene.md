@@ -200,13 +200,14 @@ is recorded as out of scope in [README.md](README.md).
 
 - Change `NEXT_PUBLIC_SITE_URL` to `https://www.clovercreekguesthouse.com` so the example
   matches the canonical host.
-- Add the missing `NEXT_PUBLIC_PHONE` entry — `src/lib/site.ts` reads it but it is not
-  documented anywhere:
+- ~~Add the missing `NEXT_PUBLIC_PHONE` entry — `src/lib/site.ts` reads it but it is not
+  documented anywhere.~~ **Already done.** The entry exists, and since the number landed on
+  2026-09-24 it carries the real value rather than a blank:
 
   ```
-  # Publicly displayed phone number, e.g. +1-435-555-0134. Shown in the footer and
-  # emitted as `telephone` in the structured data. Leave blank until decided (Stage 00).
-  NEXT_PUBLIC_PHONE=
+  # Publicly displayed phone number: the Google Voice line, emitted as `telephone` in the
+  # structured data. Must match the phone on every external listing byte for byte (§6.2).
+  NEXT_PUBLIC_PHONE=+1-385-204-6622
   ```
 
 ### 8. **[AGENT]** Verify locally

@@ -35,7 +35,14 @@ export default function TermsPage() {
       <p className="mt-4">
         Contact us as early as possible if your plans change — use your{" "}
         <Link href="/account" className="text-moss underline">booking page</Link> or email{" "}
-        <a href={`mailto:${SITE.ownerEmail}`} className="text-moss underline">{SITE.ownerEmail}</a>.
+        <a href={`mailto:${SITE.ownerEmail}`} className="text-moss underline">{SITE.ownerEmail}</a>
+        {SITE.phoneDisplay && (
+          <>
+            , or call{" "}
+            <a href={`tel:${SITE.phoneHref}`} className="text-moss underline">{SITE.phoneDisplay}</a>
+          </>
+        )}
+        .
         Refunds are returned to the original payment method and typically appear within 5–10
         business days.
       </p>
