@@ -31,13 +31,28 @@ are ready and the site picks them up.
 
 These gate the off-site work in section D. None of them gate a code stage.
 
-- [ ] **Publish a phone number.** *Decided 2026-09-23: a Google Voice number, to be
-      provisioned and set as `NEXT_PUBLIC_PHONE` in Vercel. The `.env.example` entry is
-      already in place, so nothing else changes when the number lands.* Until it is set,
-      `SITE.phoneDisplay` is empty: no phone appears anywhere on the site and no
-      `telephone` field appears in the schema. Most directory listings in section D
-      require one, so this still gates section D. **The single biggest blocker in
-      Stage 00** (§6.3). Deliver as: the number in E.164 form, e.g. `+1-435-555-0134`.
+- [x] **Publish a phone number** — **landed 2026-09-24**: `385-204-6622`, the Google Voice
+      number decided on 2026-09-23. `NEXT_PUBLIC_PHONE` is now set in **every environment**
+      (local `.env.local` and Vercel development, preview and production), and the same
+      value is the default in `.env.example`. This was **the single biggest blocker in
+      Stage 00** (§6.3) and it no longer gates section D: every listing there can now be
+      filed with a phone number, and the number becomes the fourth field of the
+      byte-identical NAP rule (§6.2).
+
+      Two things the landing does *not* settle:
+
+      - [ ] **[HUMAN]** Consider re-setting the value to E.164 form, `+1-385-204-6622`.
+            §6.3 asked for E.164 and `src/lib/schema.ts` emits `telephone` verbatim, so the
+            country code is what lets an engine match the site's entity to the directory
+            listings. Change it in Vercel and `.env.local` together and update
+            `.env.example` to match — whichever form is chosen has to be the form used on
+            every listing in section D.
+      - [ ] **[AGENT]** **The number is currently invisible to human visitors.**
+            `SITE.phoneDisplay` is read in `src/lib/schema.ts` and nowhere else, so the
+            number reaches the JSON-LD but not the page. **Stage 03 step 6** — the footer
+            NAP block (§6.4) — has not shipped, and Stage 08's About-page NAP block reads
+            the same value. Until step 6 runs, a crawler sees the phone and a guest does
+            not.
 - [x] **Business email** — decided 2026-09-23, and it is **two addresses, not one** (§6.3):
       - `stay@clovercreekguesthouse.com` is the domain `EMAIL_FROM` alias, verified in
         Resend. It is **send-only — there is no inbox behind it**, which is why every send
@@ -188,7 +203,7 @@ When a decision lands, the code change is small and an agent can make it:
 
 | Decision | What changes, and who |
 |---|---|
-| Phone number | Set `NEXT_PUBLIC_PHONE` in Vercel **[HUMAN]**; add it to `.env.example` **[AGENT]**. `SITE.phoneDisplay` and the schema pick it up automatically. |
+| Phone number | **Done 2026-09-24** — set in Vercel **[HUMAN]** and added to `.env.example` **[AGENT]**. The schema picks it up automatically; the footer does not until Stage 03 step 6 ships. |
 | Domain email | Set `OWNER_EMAIL` in Vercel **[HUMAN]**; update the `.env.example` default **[AGENT]**. |
 | Canonical host | Handled in Stage 01. If the answer is "apex", say so before Stage 01 runs. |
 | Verified distances | Fill in `src/lib/local.ts` and flip `verified: true` **[AGENT]**, using figures the owner measured. |
@@ -201,8 +216,12 @@ When a decision lands, the code change is small and an agent can make it:
 
 This stage is never "done" — sections E, F and G are ongoing. It is **ready enough** for
 the code stages when section A's phone-number and canonical-host decisions are made and
-section B's Search Console verification is complete.
+section B's Search Console verification is complete. **All three of those conditions have
+been met as of 2026-09-24**, so no code stage is waiting on this page any longer; what is
+left here is the off-site work in sections D–G.
 
 ## Commit
 
-Nothing to commit — no files in this repository change.
+Nothing to commit — no files in this repository change. The one exception has now been
+taken: the phone number landing on 2026-09-24 put a real default into `.env.example`, which
+is the `[AGENT]` half of the handing-back row above.
