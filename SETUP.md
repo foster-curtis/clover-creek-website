@@ -90,3 +90,8 @@ npm run dev    # http://localhost:3000
 npm test       # pricing engine + cancellation policy unit tests
 npm run build  # production build (what Vercel runs)
 ```
+
+That runs the site against whatever `.env.local` points at. For a full local stack —
+Supabase in Docker, a local inbox that catches every sign-in email, seed data, and
+migrations you can test without touching production — see
+[docs/LOCAL_DEV.md](docs/LOCAL_DEV.md).

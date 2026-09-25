@@ -6,6 +6,8 @@ on Vercel.
 
 - **[SETUP.md](SETUP.md)** — how to connect the accounts (Supabase, Stripe, domain, email)
   and launch. Start here.
+- **[docs/LOCAL_DEV.md](docs/LOCAL_DEV.md)** — running the whole stack locally: Supabase in
+  Docker, the local inbox, seed data, migrations, and Stripe webhook forwarding.
 - **[DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md)** — the original feature plan and
   architecture decisions.
 - **[GIT_WORKFLOW.md](GIT_WORKFLOW.md)** — branches, CI/CD, and the `working` → `stg` →
@@ -37,6 +39,9 @@ npm run build  # production build
 
 The site runs with zero configuration (booking disabled) and each integration switches
 on as its environment variables are added — see [.env.example](.env.example).
+
+To work against a real database — bookings, sign-in, the admin dashboard — run Supabase
+locally rather than pointing at production: [docs/LOCAL_DEV.md](docs/LOCAL_DEV.md).
 
 ## Adding or changing photos
 
