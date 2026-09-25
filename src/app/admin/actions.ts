@@ -181,7 +181,17 @@ export async function refundBooking(formData: FormData) {
   const note = overridden
     ? `cancelled · refunded ${formatUSD(refundCents / 100)} (override; policy said ${outcome.percent}%)`
     : `cancelled · ${outcome.percent}% refund ${formatUSD(refundCents / 100)} (${outcome.tier.label} before check-in)`;
-  await db.from("bookings").update({ status: "cancelled", notes: note }).eq("id", id);
+  // `notes` stays human-readable prose; refund_cents/refunded_at are what the
+  // tax report reads, and the date decides which return the refund reduces.
+  await db
+    .from("bookings")
+    .update({
+      status: "cancelled",
+      notes: note,
+      refund_cents: refundCents,
+      refunded_at: refundCents > 0 ? new Date().toISOString() : null,
+    })
+    .eq("id", id);
 
   // Matches the booking flow: the guest gets a confirmation, the owner a record.
   const emailInfo = {
