@@ -38,11 +38,11 @@ These were configured in Checkout Studio and are now set in the code.
 | automatic_tax | `{ enabled: false }` — **deliberately overridden**, see below |
 | allow_promotion_codes | `true` |
 | submit_type | `auto` |
-| saved_payment_method_options | `{ payment_method_save: "enabled" }` |
+| saved_payment_method_options | `{ payment_method_save: "disabled" }` — **deliberately overridden**, see below |
 | integration_identifier | `hosted_web_0001` |
 | origin_context | `web` |
 
-### Notes on two parameters
+### Notes on three parameters
 
 - **`ui_mode: "hosted_page"`** — correct for the installed SDK. `stripe@22.3.2` is at or above
   21.0.0, which is the cutoff where `hosted` became `hosted_page`. If you ever downgrade the SDK
@@ -50,6 +50,10 @@ These were configured in Checkout Studio and are now set in the code.
 - **`payment_method_collection: "always"` was deliberately omitted.** This parameter only applies
   when `mode` is `"subscription"`. This session is `mode: "payment"`, so including it would be
   rejected by the API. If the site ever sells a recurring product, add it there.
+- **`payment_method_save` is `"disabled"`**, overriding the Checkout Studio value. **Decided: we
+  do not save payment information.** Offering to save a card in `payment` mode requires creating
+  and storing a Stripe Customer for every booking, which is not worth it for one-off guests. No
+  Customer is created; `customer_email` only prefills the email field and addresses the receipt.
 
 ---
 
@@ -69,12 +73,7 @@ them would silently break the site. Please confirm you want them kept.
 
 ## Blocking setup steps before going live
 
-1. **Confirm `saved_payment_method_options` behaves as you expect.** Saving a payment method in
-   `payment` mode attaches it to a Customer. This call passes `customer_email` but does not create
-   a Customer, so the save prompt may not appear. If you want guests to be able to save a card,
-   that needs a Customer on the session — say the word and it can be wired up.
-
-2. **Verify the promotion codes decision.** `allow_promotion_codes: true` adds a discount box to
+1. **Verify the promotion codes decision.** `allow_promotion_codes: true` adds a discount box to
    checkout. Any code redeemed there reduces the Stripe charge but **not** `total_cents` in the
    bookings table, so payouts and booking records would disagree. Create codes in
    Dashboard → Products → Coupons, or set this to `false` if you do not plan to use them.

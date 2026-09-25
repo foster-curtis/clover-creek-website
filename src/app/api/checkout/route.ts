@@ -101,13 +101,16 @@ export async function POST(request: NextRequest) {
       mode: "payment",
       billing_address_collection: "auto",
       phone_number_collection: { enabled: false },
-      // Off by design: rates are tax-inclusive and the transient room tax is
-      // backed out of the total in src/lib/pricing.ts for the owner's records.
+      // Off by design: rates are tax-inclusive and the lodging tax is backed
+      // out of the total in src/lib/pricing.ts for the owner's records.
       // Letting Stripe Tax calculate on top would charge the guest twice.
       automatic_tax: { enabled: false },
       allow_promotion_codes: true,
       submit_type: "auto",
-      saved_payment_method_options: { payment_method_save: "enabled" },
+      // Guests are one-off bookers, not repeat subscribers, so we don't offer
+      // to save cards — that would mean creating and storing a Stripe Customer
+      // for every booking, for no benefit.
+      saved_payment_method_options: { payment_method_save: "disabled" },
       integration_identifier: "hosted_web_0001",
       origin_context: "web",
       customer_email: email,
