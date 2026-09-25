@@ -97,7 +97,19 @@ export async function POST(request: NextRequest) {
     const nightsLabel = `${quote.nightCount} night${quote.nightCount > 1 ? "s" : ""}, ${guests} guest${guests > 1 ? "s" : ""}${pets ? `, ${pets} dog${pets > 1 ? "s" : ""}` : ""}`;
 
     const session = await stripe.checkout.sessions.create({
+      ui_mode: "hosted_page",
       mode: "payment",
+      billing_address_collection: "auto",
+      phone_number_collection: { enabled: false },
+      // Off by design: rates are tax-inclusive and the transient room tax is
+      // backed out of the total in src/lib/pricing.ts for the owner's records.
+      // Letting Stripe Tax calculate on top would charge the guest twice.
+      automatic_tax: { enabled: false },
+      allow_promotion_codes: true,
+      submit_type: "auto",
+      saved_payment_method_options: { payment_method_save: "enabled" },
+      integration_identifier: "hosted_web_0001",
+      origin_context: "web",
       customer_email: email,
       expires_at: Math.floor(Date.now() / 1000) + HOLD_MINUTES * 60,
       line_items: [

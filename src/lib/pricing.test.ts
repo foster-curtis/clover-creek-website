@@ -1,6 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { holidayMap } from "./holidays";
-import { DEFAULT_PRICING, parseStay, quoteStay, validateStay } from "./pricing";
+import {
+  computeLodgingTax,
+  DEFAULT_PRICING,
+  parseStay,
+  quoteStay,
+  TAX_RATE,
+  TAX_RATES,
+  validateStay,
+} from "./pricing";
 
 // 2026 reference dates: 2026-01-05 is a Monday; 2026-01-09 is a Friday.
 const holidays = holidayMap(2026, 2027, [{ day: "2026-07-24", label: "Pioneer Day" }]);
@@ -184,5 +192,85 @@ describe("parseStay", () => {
   it("yields empty strings rather than throwing on junk", () => {
     expect(parseStay("")).toEqual({ checkIn: "", checkOut: "" });
     expect(parseStay("not a range")).toEqual({ checkIn: "", checkOut: "" });
+  });
+});
+
+describe("computeLodgingTax", () => {
+  it("backs the tax out of the total instead of adding to it", () => {
+    // $150.00 gross at 12.17% inclusive: base 133.73, tax 16.27.
+    const t = computeLodgingTax(15000);
+    expect(t.grossCents).toBe(15000);
+    expect(t.taxableBaseCents).toBe(13373);
+    expect(t.totalTaxCents).toBe(1627);
+  });
+
+  it("splits the tax into sales tax and the two TRT shares", () => {
+    const t = computeLodgingTax(15000);
+    expect(t.salesTaxCents).toBe(883); // 13373 * 6.6%
+    expect(t.stateTrtCents).toBe(143); // 13373 * 1.07%
+    expect(t.countyTrtCents).toBe(601); // the remainder, 13373 * 4.5%
+  });
+
+  it("reports the TRT subtotal separately from sales tax", () => {
+    const t = computeLodgingTax(15000);
+    // The two taxes go on different returns, so the TRT figure stands alone.
+    expect(t.trtTotalCents).toBe(t.stateTrtCents + t.countyTrtCents);
+    expect(t.trtTotalCents).toBe(744);
+    expect(t.trtTotalCents + t.salesTaxCents).toBe(t.totalTaxCents);
+  });
+
+  it("always reconciles exactly, with no rounding drift", () => {
+    for (let gross = 0; gross <= 20000; gross += 3) {
+      const t = computeLodgingTax(gross);
+      expect(t.taxableBaseCents + t.totalTaxCents).toBe(gross);
+      expect(t.salesTaxCents + t.stateTrtCents + t.countyTrtCents).toBe(t.totalTaxCents);
+      expect(t.countyTrtCents).toBeGreaterThanOrEqual(0);
+    }
+  });
+
+  it("handles a zero total", () => {
+    expect(computeLodgingTax(0)).toMatchObject({
+      grossCents: 0,
+      taxableBaseCents: 0,
+      totalTaxCents: 0,
+      salesTaxCents: 0,
+      stateTrtCents: 0,
+      countyTrtCents: 0,
+      trtTotalCents: 0,
+    });
+  });
+
+  it("never returns a negative amount", () => {
+    const t = computeLodgingTax(-500);
+    expect(t.grossCents).toBe(0);
+    expect(t.totalTaxCents).toBe(0);
+  });
+
+  it("keeps the headline rate equal to the sum of its components", () => {
+    expect(TAX_RATES.salesTax + TAX_RATES.stateTrt + TAX_RATES.countyTrt).toBe(TAX_RATE);
+    expect(TAX_RATE).toBe(0.1217);
+  });
+});
+
+describe("quoteStay tax", () => {
+  it("records the tax without changing what the guest pays", () => {
+    const quote = quoteStay(
+      { checkIn: "2026-01-05", checkOut: "2026-01-07", guests: 2, pets: 0 },
+      holidays
+    );
+    // Two weekday nights at $75 — the total is untouched by the tax split.
+    expect(quote.totalCents).toBe(15000);
+    expect(quote.tax.grossCents).toBe(quote.totalCents);
+    expect(quote.tax.taxableBaseCents + quote.tax.totalTaxCents).toBe(quote.totalCents);
+  });
+
+  it("taxes the pet fee along with the lodging", () => {
+    const quote = quoteStay(
+      { checkIn: "2026-01-05", checkOut: "2026-01-06", guests: 2, pets: 1 },
+      holidays
+    );
+    expect(quote.petFee).toBe(20);
+    expect(quote.tax.grossCents).toBe(9500); // $75 + $20, both taxed
+    expect(quote.tax.totalTaxCents).toBe(1031);
   });
 });

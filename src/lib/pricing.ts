@@ -51,6 +51,79 @@ export interface Quote {
   petFee: number;
   total: number;
   totalCents: number;
+  tax: TaxBreakdown;
+}
+
+// --- lodging tax -----------------------------------------------------------
+// Every published rate is tax-inclusive ("the price you see is the price you
+// pay"), so tax is backed *out* of the total rather than added to it. This
+// changes neither what the guest pays nor what we receive — it exists so the
+// owner has a per-booking tax figure for filing.
+//
+// Applied to the whole stay total, pet fee included: Utah levies these on the
+// full charge for the accommodation, not just the room line.
+//
+// Sales tax and TRT go on separate returns, so the breakdown keeps them apart
+// and reports a TRT subtotal alongside the combined figure.
+
+/** Decimal rates on lodging. No municipal TRT applies in Rush Valley. */
+export const TAX_RATES = {
+  salesTax: 0.066, // Utah statewide sales tax on accommodations
+  stateTrt: 0.0107, // Utah state transient room tax
+  countyTrt: 0.045, // Tooele County transient room tax
+} as const;
+
+/**
+ * Combined rate: 12.17%. Stated as a literal so the headline rate is greppable;
+ * a test asserts it stays equal to the sum of the three components above.
+ */
+export const TAX_RATE = 0.1217;
+
+export interface TaxBreakdown {
+  /** What the guest paid, tax included. Unchanged by this split. */
+  grossCents: number;
+  /** The gross less tax — the taxable receipt to report. */
+  taxableBaseCents: number;
+  salesTaxCents: number;
+  stateTrtCents: number;
+  countyTrtCents: number;
+  /** State + county TRT. Filed separately from sales tax. */
+  trtTotalCents: number;
+  totalTaxCents: number;
+  /** The combined rate used, so historical records stay readable if it changes. */
+  rate: number;
+}
+
+/**
+ * Backs the lodging tax out of a tax-inclusive total.
+ *
+ * Works from any gross amount, so it can be applied to bookings taken before
+ * the tax was recorded on the quote — pass `total_cents` straight from the row.
+ *
+ * Rounding is arranged so the parts always reconcile exactly:
+ * `taxableBase + totalTax === gross`, and the three components sum to
+ * `totalTax` with no cent lost to drift.
+ */
+export function computeLodgingTax(grossCents: number): TaxBreakdown {
+  const gross = Math.max(0, Math.round(grossCents));
+  const taxableBaseCents = Math.round(gross / (1 + TAX_RATE));
+  const totalTaxCents = gross - taxableBaseCents;
+  // Two shares are rounded and the county takes the remainder, so the three
+  // always sum to the total rather than drifting a cent apart.
+  const salesTaxCents = Math.round(taxableBaseCents * TAX_RATES.salesTax);
+  const stateTrtCents = Math.round(taxableBaseCents * TAX_RATES.stateTrt);
+  const countyTrtCents = totalTaxCents - salesTaxCents - stateTrtCents;
+
+  return {
+    grossCents: gross,
+    taxableBaseCents,
+    salesTaxCents,
+    stateTrtCents,
+    countyTrtCents,
+    trtTotalCents: stateTrtCents + countyTrtCents,
+    totalTaxCents,
+    rate: TAX_RATE,
+  };
 }
 
 // --- date helpers (local-time safe: dates are plain YYYY-MM-DD strings) ---
@@ -161,6 +234,7 @@ export function quoteStay(
   const lodgingSubtotal = nights.reduce((sum, n) => sum + n.subtotal, 0);
   const petFee = req.pets * config.petFeePerDay * nights.length;
   const total = lodgingSubtotal + petFee;
+  const totalCents = Math.round(total * 100);
 
   return {
     nights,
@@ -170,7 +244,8 @@ export function quoteStay(
     lodgingSubtotal,
     petFee,
     total,
-    totalCents: Math.round(total * 100),
+    totalCents,
+    tax: computeLodgingTax(totalCents),
   };
 }
 
