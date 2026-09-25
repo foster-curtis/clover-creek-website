@@ -1,7 +1,9 @@
 import Link from "next/link";
 import Card from "@/components/ui/Card";
 import { PageTitle, SectionTitle } from "@/components/ui/Heading";
+import { propertyToday } from "@/lib/cancellation";
 import { formatUSD, parseStay } from "@/lib/pricing";
+import { REPORTED_STATUSES, reportRows, summarize, type ReportableBooking } from "@/lib/taxReport";
 import { supabaseAdmin, hasServiceRole } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +15,7 @@ export default async function AdminDashboard() {
   const db = supabaseAdmin();
   const today = new Date().toISOString().slice(0, 10);
 
-  const [upcoming, pendingReviews, unread, inquiries, revenue] = await Promise.all([
+  const [upcoming, pendingReviews, unread, inquiries, revenue, taxable] = await Promise.all([
     db
       .from("bookings")
       .select("id, stay, guest_name, guests, pets, status, total_cents")
@@ -32,22 +34,39 @@ export default async function AdminDashboard() {
       .select("id", { count: "exact", head: true })
       .eq("archived", false),
     db.from("bookings").select("total_cents").eq("status", "confirmed"),
+    db
+      .from("bookings")
+      .select(
+        "id, stay, guest_name, status, total_cents, created_at, stripe_payment_intent, refund_cents, refunded_at"
+      )
+      .in("status", REPORTED_STATUSES),
   ]);
 
   const totalRevenue = (revenue.data ?? []).reduce((s, b) => s + b.total_cents, 0) / 100;
+
+  // Tax owed on this calendar year so far, on exactly the basis /admin/taxes
+  // reports: receipts dated when paid, refunds netted off when issued, both at
+  // the property's clock. See @/lib/taxReport.
+  const thisYear = propertyToday().slice(0, 4);
+  const taxYtdCents = summarize(
+    reportRows((taxable.data ?? []) as ReportableBooking[]).filter((r) =>
+      r.date.startsWith(thisYear)
+    )
+  ).totalTaxCents;
 
   const cards = [
     { label: "Unread guest messages", value: unread.count ?? 0, href: "/admin/messages" },
     { label: "Reviews awaiting approval", value: pendingReviews.count ?? 0, href: "/admin/reviews" },
     { label: "Open inquiries", value: inquiries.count ?? 0, href: "/admin/messages" },
     { label: "Confirmed revenue (all time)", value: formatUSD(totalRevenue), href: "/admin/calendar" },
+    { label: "Tax collected, year to date", value: formatUSD(taxYtdCents / 100), href: "/admin/taxes" },
   ];
 
   return (
     <div>
       <PageTitle>Dashboard</PageTitle>
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {cards.map((c) => (
           <Link key={c.label} href={c.href} className="block">
             <Card variant="interactive" className="p-4">

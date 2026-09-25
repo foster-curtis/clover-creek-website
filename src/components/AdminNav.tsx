@@ -7,6 +7,7 @@ import { activeNavHref } from "@/lib/nav";
 const ADMIN_LINKS = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/calendar", label: "Calendar & Bookings" },
+  { href: "/admin/taxes", label: "Taxes & Revenue" },
   { href: "/admin/messages", label: "Messages" },
   { href: "/admin/content", label: "Site Content" },
   { href: "/admin/pricing", label: "Pricing & Holidays" },

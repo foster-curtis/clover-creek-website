@@ -3,7 +3,7 @@ import Card from "@/components/ui/Card";
 import { Field, Input } from "@/components/ui/Field";
 import { PageTitle, SectionTitle } from "@/components/ui/Heading";
 import { propertyToday, refundFor } from "@/lib/cancellation";
-import { formatUSD, parseStay } from "@/lib/pricing";
+import { computeLodgingTax, formatUSD, parseStay } from "@/lib/pricing";
 import { SITE } from "@/lib/site";
 import { hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
 import {
@@ -158,7 +158,13 @@ export default async function AdminCalendarPage() {
                   <td className="px-3 py-2">
                     {b.guests}g{b.pets ? ` ${b.pets}d` : ""}
                   </td>
-                  <td className="px-3 py-2">{formatUSD(b.total_cents / 100)}</td>
+                  <td className="px-3 py-2 whitespace-nowrap">
+                    {formatUSD(b.total_cents / 100)}
+                    {/* Tax is inside the total, never on top of it — see @/lib/pricing. */}
+                    <span className="block text-xs text-ink-subtle">
+                      incl. {formatUSD(computeLodgingTax(b.total_cents).totalTaxCents / 100)} tax
+                    </span>
+                  </td>
                   <td className="px-3 py-2">
                     {b.status}
                     {b.notes && <p className="text-xs text-ink-subtle">{b.notes}</p>}
