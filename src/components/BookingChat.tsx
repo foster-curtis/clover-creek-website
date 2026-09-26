@@ -15,6 +15,8 @@ interface Message {
   created_at: string;
 }
 
+const MAX_ROWS = 5;
+
 interface Props {
   bookingId: string;
   asAdmin: boolean;
@@ -26,7 +28,9 @@ export default function BookingChat({ bookingId, asAdmin, userId }: Props) {
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const pinnedOnce = useRef(false);
 
   const load = useCallback(async () => {
     const supabase = supabaseBrowser();
@@ -61,9 +65,29 @@ export default function BookingChat({ bookingId, asAdmin, userId }: Props) {
     };
   }, [bookingId, load]);
 
+  // Pin the thread to the newest message by scrolling the list itself —
+  // scrollIntoView drags the whole page along with it.
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const list = listRef.current;
+    if (!list) return;
+    list.scrollTo({
+      top: list.scrollHeight,
+      behavior: pinnedOnce.current ? "smooth" : "auto",
+    });
+    if (messages.length > 0) pinnedOnce.current = true;
   }, [messages.length]);
+
+  // Grow the composer with the draft, up to MAX_ROWS, then let it scroll.
+  useEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    const style = window.getComputedStyle(el);
+    const lineHeight = parseFloat(style.lineHeight) || 20;
+    const padding = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
+    const border = parseFloat(style.borderTopWidth) + parseFloat(style.borderBottomWidth);
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight + border, lineHeight * MAX_ROWS + padding + border)}px`;
+  }, [draft]);
 
   async function send() {
     const body = draft.trim();
@@ -98,7 +122,7 @@ export default function BookingChat({ bookingId, asAdmin, userId }: Props) {
 
   return (
     <Card variant="flat" className="!p-0 flex h-96 flex-col overflow-hidden">
-      <div className="flex-1 space-y-2 overflow-y-auto p-4">
+      <div ref={listRef} className="flex-1 space-y-2 overflow-y-auto p-4">
         {messages.length === 0 && (
           <p className="text-center text-sm text-ink-subtle">
             No messages yet — say hello!
@@ -126,11 +150,11 @@ export default function BookingChat({ bookingId, asAdmin, userId }: Props) {
             </div>
           );
         })}
-        <div ref={bottomRef} />
       </div>
       {error && <p className="px-4 text-xs text-red-700">{error}</p>}
-      <div className="flex gap-2 border-t border-line p-3">
+      <div className="flex items-end gap-2 border-t border-line p-3">
         <Textarea
+          ref={inputRef}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
@@ -141,7 +165,7 @@ export default function BookingChat({ bookingId, asAdmin, userId }: Props) {
           }}
           rows={1}
           placeholder="Write a message…"
-          className="flex-1 resize-none"
+          className="flex-1 resize-none overflow-y-auto"
         />
         <Button type="button" variant="primary" size="md" onClick={send} disabled={sending || !draft.trim()}>
           Send
