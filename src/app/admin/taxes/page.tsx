@@ -114,6 +114,29 @@ export default async function AdminTaxesPage({
         out of it for filing. Nothing here is ever added on top of a price a guest saw.
       </p>
 
+      {/* What this page is, and is not. Placed above the figures on purpose. */}
+      <Card variant="flat" className="mt-6 border-l-4 border-l-clay p-5 text-sm">
+        <h2 className="font-bold text-ink">An estimate to plan with — not a filed return</h2>
+        <p className="mt-2 text-ink-muted">
+          This site works these figures out itself, from Utah&apos;s{" "}
+          {pct(TAX_RATES.salesTax)} state sales tax on accommodations plus the transient room tax —{" "}
+          {pct(TAX_RATES.stateTrt)} state and {pct(TAX_RATES.countyTrt)} Tooele County. They are
+          not an official assessment, and nobody has checked them against your registration.
+        </p>
+        <p className="mt-2 text-ink-muted">
+          <strong className="text-ink">Nothing here has been withheld or paid to anyone.</strong>{" "}
+          Every dollar a guest paid, tax included, landed in your account — so the tax shown is
+          money still to set aside and remit yourself. The point of the page is that the bill is
+          never a surprise.
+        </p>
+        <p className="mt-2 text-ink-muted">
+          Have your accountant, or the Utah State Tax Commission, confirm the rates and the amounts
+          before you file anything. Rates change, and your registration may put you on different
+          ones or on a different filing schedule. These two lodging taxes are all this page covers —
+          income tax and everything else sit outside it.
+        </p>
+      </Card>
+
       {/* Period selector */}
       <Card variant="flat" className="mt-6 p-4">
         <form method="get" className="flex flex-wrap items-end gap-3">
