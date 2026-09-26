@@ -5,7 +5,7 @@ import Card from "@/components/ui/Card";
 import { PageTitle } from "@/components/ui/Heading";
 import { ArrowLeftIcon } from "@/components/ui/icons";
 import { fullRefundDeadline, propertyToday, refundFor } from "@/lib/cancellation";
-import { formatUSD, parseStay, type Quote } from "@/lib/pricing";
+import { formatStayRange, formatUSD, parseStay, rateLines, type Quote } from "@/lib/pricing";
 import { SITE } from "@/lib/site";
 import { currentUser, supabaseServer } from "@/lib/supabase/server";
 
@@ -57,13 +57,13 @@ export default async function BookingDetailPage({
           <h2 className="font-bold text-stone-800">Price breakdown</h2>
           {quote ? (
             <ul className="mt-3 space-y-1 text-stone-600">
-              {quote.nights.map((n) => (
-                <li key={n.date} className="flex justify-between">
+              <li className="font-medium text-stone-800">{formatStayRange(quote)}</li>
+              {rateLines(quote.nights).map((line) => (
+                <li key={line.rate} className="flex justify-between">
                   <span>
-                    {n.date}
-                    {n.holiday ? ` · ${n.holiday}` : n.weekendRate ? " · weekend" : ""}
+                    {formatUSD(line.rate)} × {line.nights} night{line.nights > 1 ? "s" : ""}
                   </span>
-                  <span>{formatUSD(n.subtotal)}</span>
+                  <span>{formatUSD(line.total)}</span>
                 </li>
               ))}
               {quote.petFee > 0 && (

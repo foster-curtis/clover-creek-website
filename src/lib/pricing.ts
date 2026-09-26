@@ -256,3 +256,46 @@ export function formatUSD(amount: number): string {
     minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
   });
 }
+
+// --- summary helpers -------------------------------------------------------
+
+export interface RateLine {
+  /** The nightly price every night on this line was charged. */
+  rate: number;
+  nights: number;
+  /** rate × nights */
+  total: number;
+}
+
+/**
+ * Collapses a quote's nights into one line per distinct nightly price, so a
+ * summary reads "$75 × 2 · $150" instead of listing every date. Lines come back
+ * in the order their rate first appears in the stay.
+ *
+ * Nights are grouped by what they cost, not by why: a weekend night and a
+ * holiday night at the same rate share a line, which is what the guest sees on
+ * the bill anyway.
+ */
+export function rateLines(nights: NightQuote[]): RateLine[] {
+  const lines = new Map<number, RateLine>();
+  for (const night of nights) {
+    const line = lines.get(night.subtotal);
+    if (line) {
+      line.nights += 1;
+      line.total += night.subtotal;
+    } else {
+      lines.set(night.subtotal, { rate: night.subtotal, nights: 1, total: night.subtotal });
+    }
+  }
+  return [...lines.values()];
+}
+
+/**
+ * The whole stay as one line: "2026-08-17 – 2026-08-20". Derived from the
+ * quote's own nights so a summary can't disagree with the prices beside it.
+ */
+export function formatStayRange(quote: Quote): string {
+  const nights = quote.nights;
+  if (nights.length === 0) return "";
+  return `${nights[0].date} – ${addDays(nights[nights.length - 1].date, 1)}`;
+}

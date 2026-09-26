@@ -3,8 +3,10 @@
 import { useMemo, useState } from "react";
 import StayCalendar from "./StayCalendar";
 import {
+  formatStayRange,
   formatUSD,
   quoteStay,
+  rateLines,
   toISODate,
   validateStay,
   type PricingConfig,
@@ -142,14 +144,14 @@ export default function BookingWidget({ pricing, unavailable, holidays, prefill 
 
           {quote && (
             <div className="mt-4 border-t border-stone-200 pt-3 text-sm">
-              <ul className="space-y-1">
-                {quote.nights.map((n) => (
-                  <li key={n.date} className="flex justify-between text-stone-600">
+              <p className="font-medium text-stone-800">{formatStayRange(quote)}</p>
+              <ul className="mt-2 space-y-1">
+                {rateLines(quote.nights).map((line) => (
+                  <li key={line.rate} className="flex justify-between text-stone-600">
                     <span>
-                      {n.date}
-                      {n.holiday ? ` · ${n.holiday}` : n.weekendRate ? " · weekend" : ""}
+                      {formatUSD(line.rate)} × {line.nights} night{line.nights > 1 ? "s" : ""}
                     </span>
-                    <span>{formatUSD(n.subtotal)}</span>
+                    <span>{formatUSD(line.total)}</span>
                   </li>
                 ))}
                 {quote.petFee > 0 && (

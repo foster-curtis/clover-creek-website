@@ -3,7 +3,7 @@
 // instead — email must never take down checkout.
 
 import { SITE } from "./site";
-import { formatUSD, type Quote } from "./pricing";
+import { formatStayRange, formatUSD, rateLines, type Quote } from "./pricing";
 
 const FROM = process.env.EMAIL_FROM ?? `${SITE.name} <onboarding@resend.dev>`;
 
@@ -64,17 +64,18 @@ export interface BookingEmailInfo {
 }
 
 function quoteTable(quote: Quote): string {
-  const rows = quote.nights
+  const stay = `<tr><td colspan="2" style="padding:4px 12px 8px 0;font-weight:bold;">${formatStayRange(quote)}</td></tr>`;
+  const rows = rateLines(quote.nights)
     .map(
-      (n) =>
-        `<tr><td style="padding:4px 12px 4px 0;">${n.date}${n.holiday ? ` (${n.holiday})` : n.weekendRate ? " (weekend)" : ""}</td>
-         <td style="text-align:right;">${formatUSD(n.subtotal)}</td></tr>`
+      (line) =>
+        `<tr><td style="padding:4px 12px 4px 0;">${formatUSD(line.rate)} × ${line.nights} night${line.nights > 1 ? "s" : ""}</td>
+         <td style="text-align:right;">${formatUSD(line.total)}</td></tr>`
     )
     .join("");
   const pets = quote.petFee
     ? `<tr><td style="padding:4px 12px 4px 0;">Pet fee (${quote.pets} × ${quote.nightCount} nights)</td><td style="text-align:right;">${formatUSD(quote.petFee)}</td></tr>`
     : "";
-  return `<table style="font-size:14px;">${rows}${pets}
+  return `<table style="font-size:14px;">${stay}${rows}${pets}
     <tr><td style="padding-top:8px;font-weight:bold;">Total (cleaning &amp; taxes included)</td>
     <td style="padding-top:8px;text-align:right;font-weight:bold;">${formatUSD(quote.total)}</td></tr></table>`;
 }

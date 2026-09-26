@@ -3,8 +3,10 @@ import { holidayMap } from "./holidays";
 import {
   computeLodgingTax,
   DEFAULT_PRICING,
+  formatStayRange,
   parseStay,
   quoteStay,
+  rateLines,
   TAX_RATE,
   TAX_RATES,
   validateStay,
@@ -171,6 +173,31 @@ describe("quoteStay", () => {
     expect(() =>
       quoteStay({ checkIn: "2026-01-05", checkOut: "2026-01-05", guests: 2, pets: 0 }, holidays)
     ).toThrow();
+  });
+});
+
+describe("rateLines", () => {
+  // Mon 2026-01-05 → Sat 2026-01-10: four weekday nights at $75 and Fri + Sat
+  // at $105, which should collapse to two lines.
+  const quote = quoteStay(
+    { checkIn: "2026-01-05", checkOut: "2026-01-11", guests: 2, pets: 0 },
+    holidays
+  );
+
+  it("groups nights by nightly price, in the order they first occur", () => {
+    expect(rateLines(quote.nights)).toEqual([
+      { rate: 75, nights: 4, total: 300 },
+      { rate: 105, nights: 2, total: 210 },
+    ]);
+  });
+
+  it("totals the lines to the lodging subtotal", () => {
+    const sum = rateLines(quote.nights).reduce((n, line) => n + line.total, 0);
+    expect(sum).toBe(quote.lodgingSubtotal);
+  });
+
+  it("spans the whole stay in one range", () => {
+    expect(formatStayRange(quote)).toBe("2026-01-05 – 2026-01-11");
   });
 });
 
