@@ -107,10 +107,11 @@ export async function POST(request: NextRequest) {
       automatic_tax: { enabled: false },
       allow_promotion_codes: true,
       submit_type: "auto",
-      // Guests are one-off bookers, not repeat subscribers, so we don't offer
-      // to save cards — that would mean creating and storing a Stripe Customer
-      // for every booking, for no benefit.
-      saved_payment_method_options: { payment_method_save: "disabled" },
+      // No saved_payment_method_options here: guests are one-off bookers, so we
+      // never create a Stripe Customer, and Stripe rejects that parameter
+      // outright on a customerless session ("requires a customer"). With no
+      // Customer there is nowhere to save a card, so not offering to is already
+      // the behaviour — customer_email only prefills the field and the receipt.
       integration_identifier: "hosted_web_0001",
       origin_context: "web",
       customer_email: email,

@@ -38,7 +38,7 @@ These were configured in Checkout Studio and are now set in the code.
 | automatic_tax | `{ enabled: false }` — **deliberately overridden**, see below |
 | allow_promotion_codes | `true` |
 | submit_type | `auto` |
-| saved_payment_method_options | `{ payment_method_save: "disabled" }` — **deliberately overridden**, see below |
+| saved_payment_method_options | **deliberately omitted**, see below |
 | integration_identifier | `hosted_web_0001` |
 | origin_context | `web` |
 
@@ -50,10 +50,13 @@ These were configured in Checkout Studio and are now set in the code.
 - **`payment_method_collection: "always"` was deliberately omitted.** This parameter only applies
   when `mode` is `"subscription"`. This session is `mode: "payment"`, so including it would be
   rejected by the API. If the site ever sells a recurring product, add it there.
-- **`payment_method_save` is `"disabled"`**, overriding the Checkout Studio value. **Decided: we
-  do not save payment information.** Offering to save a card in `payment` mode requires creating
-  and storing a Stripe Customer for every booking, which is not worth it for one-off guests. No
-  Customer is created; `customer_email` only prefills the email field and addresses the receipt.
+- **`saved_payment_method_options` was deliberately omitted.** **Decided: we do not save payment
+  information.** Setting `payment_method_save` either way requires a Customer on the session — the
+  API rejects the parameter on a customerless one — and this call passes only `customer_email`, so
+  no Customer is ever created. With nowhere to save a card, not offering to is already the
+  behaviour, and passing `"disabled"` to say so only buys a rejected call. If the owner ever wants
+  guests to save cards, that needs `customer` or `customer_creation` on the session first, and
+  then this parameter. `customer_email` only prefills the email field and addresses the receipt.
 
 ---
 
