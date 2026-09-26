@@ -1,3 +1,4 @@
+import { cookies } from "next/headers";
 import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { Field, Select } from "@/components/ui/Field";
@@ -19,6 +20,7 @@ import {
   type FilingPeriod,
   type ReportableBooking,
 } from "@/lib/taxReport";
+import EstimateNotice, { NOTICE_COOKIE } from "./EstimateNotice";
 
 export const dynamic = "force-dynamic";
 
@@ -81,6 +83,10 @@ export default async function AdminTaxesPage({
 
   const periods = periodsPresent(rows);
   const requested = parsePeriodKey((await searchParams).period);
+
+  // Read server-side so a page the owner has already dismissed the notice on
+  // never flashes the tall card up before hydration collapses it.
+  const noticeDismissed = (await cookies()).get(NOTICE_COOKIE)?.value === "1";
   const selected: FilingPeriod | null = requested ?? periods[0] ?? null;
 
   // A quarter with nothing in it is a legitimate thing to ask for — you still
@@ -115,8 +121,11 @@ export default async function AdminTaxesPage({
       </p>
 
       {/* What this page is, and is not. Placed above the figures on purpose. */}
-      <Card variant="flat" className="mt-6 border-l-4 border-l-clay p-5 text-sm">
-        <h2 className="font-bold text-ink">An estimate to plan with — not a filed return</h2>
+      <EstimateNotice
+        defaultOpen={!noticeDismissed}
+        title="An estimate to plan with — not a filed return"
+        summary="Estimate only — verify the amounts before filing."
+      >
         <p className="mt-2 text-ink-muted">
           This site works these figures out itself, from Utah&apos;s{" "}
           {pct(TAX_RATES.salesTax)} state sales tax on accommodations plus the transient room tax —{" "}
@@ -135,7 +144,7 @@ export default async function AdminTaxesPage({
           ones or on a different filing schedule. These two lodging taxes are all this page covers —
           income tax and everything else sit outside it.
         </p>
-      </Card>
+      </EstimateNotice>
 
       {/* Period selector */}
       <Card variant="flat" className="mt-6 p-4">

@@ -148,6 +148,17 @@ export function SpinnerIcon(props: IconProps) {
   return base(<path d="M12 3a9 9 0 109 9" />, props);
 }
 
+export function HelpIcon(props: IconProps) {
+  return base(
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M9.6 9.4a2.5 2.5 0 014.9.7c0 1.6-2.5 2.1-2.5 3.8" />
+      <circle cx="12" cy="17.1" r="0.9" fill="currentColor" stroke="none" />
+    </>,
+    props,
+  );
+}
+
 export function CloverIcon(props: IconProps) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
