@@ -128,7 +128,7 @@ export default async function BookingDetailPage({
 
         <div>
           <h2 className="mb-2 font-bold text-stone-800">Message the host</h2>
-          <BookingChat bookingId={booking.id} asAdmin={false} userId={user.id} />
+          <BookingChat bookingId={booking.id} asAdmin={false} />
         </div>
       </div>
     </div>

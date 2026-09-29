@@ -13,7 +13,11 @@ import {
   type RefundInstruction,
 } from "@/lib/cancellation";
 import { getHolidays, getPricing } from "@/lib/data";
-import { notifyOwnerCancellation, sendCancellationConfirmation } from "@/lib/email";
+import {
+  notifyOwnerCancellation,
+  sendCancellationConfirmation,
+  PLACEHOLDER_GUEST_EMAIL,
+} from "@/lib/email";
 import { formatUSD, parseStay, quoteStay, validateStay } from "@/lib/pricing";
 import { isAdminUser, supabaseAdmin } from "@/lib/supabase/server";
 
@@ -111,7 +115,7 @@ export async function createManualBooking(formData: FormData) {
   const guests = Number(formData.get("guests") ?? 2);
   const pets = Number(formData.get("pets") ?? 0);
   const name = String(formData.get("name") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim() || "manual@booking.local";
+  const email = String(formData.get("email") ?? "").trim() || PLACEHOLDER_GUEST_EMAIL;
 
   const pricing = await getPricing();
   const stay = { checkIn, checkOut, guests, pets };

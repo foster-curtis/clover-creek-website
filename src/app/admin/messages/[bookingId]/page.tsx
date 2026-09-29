@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import BookingChat from "@/components/BookingChat";
+import { canEmail } from "@/lib/email";
 import { parseStay } from "@/lib/pricing";
 import { currentUser, hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
 import { ArrowLeftIcon } from "@/components/ui/icons";
@@ -28,6 +29,7 @@ export default async function AdminChatPage({
 
   await markMessagesRead(bookingId);
   const { checkIn, checkOut } = parseStay(booking.stay);
+  const reachable = canEmail(booking.guest_email);
 
   return (
     <div>
@@ -40,14 +42,25 @@ export default async function AdminChatPage({
       <PageTitle className="mt-3">{booking.guest_name}</PageTitle>
       <p className="mt-1 text-sm text-ink-muted">
         {checkIn} → {checkOut} · {booking.guests} guests
-        {booking.pets ? ` · ${booking.pets} dogs` : ""} · {booking.status} ·{" "}
-        <a href={`mailto:${booking.guest_email}`} className="text-moss underline">
-          {booking.guest_email}
-        </a>
+        {booking.pets ? ` · ${booking.pets} dogs` : ""} · {booking.status}
+        {reachable && (
+          <>
+            {" · "}
+            <a href={`mailto:${booking.guest_email}`} className="text-moss underline">
+              {booking.guest_email}
+            </a>
+          </>
+        )}
         {booking.guest_phone && ` · ${booking.guest_phone}`}
       </p>
+      {!reachable && (
+        <p className="mt-3 max-w-2xl rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-stone-700">
+          No email on file for this guest, so a message here won&apos;t reach them —{" "}
+          {booking.guest_phone ? `call ${booking.guest_phone} instead.` : "call them instead."}
+        </p>
+      )}
       <div className="mt-6 max-w-2xl">
-        <BookingChat bookingId={booking.id} asAdmin userId={user.id} />
+        <BookingChat bookingId={booking.id} asAdmin />
       </div>
     </div>
   );

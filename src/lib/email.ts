@@ -27,6 +27,24 @@ import {
 
 const FROM = process.env.EMAIL_FROM ?? `${SITE.name} <onboarding@resend.dev>`;
 
+/**
+ * Stand-in address for a manual booking taken over the phone, where the owner
+ * has a name and a number but no email. Nothing behind it accepts mail.
+ */
+export const PLACEHOLDER_GUEST_EMAIL = "manual@booking.local";
+
+/**
+ * Whether an address can actually receive mail. Worth asking before a send
+ * that a person is waiting on: a guest who can't be emailed has to be phoned
+ * instead, and the owner can only know that if we say so.
+ */
+export function canEmail(address: string | null | undefined): boolean {
+  if (!address) return false;
+  const trimmed = address.trim().toLowerCase();
+  if (trimmed === PLACEHOLDER_GUEST_EMAIL) return false;
+  return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(trimmed);
+}
+
 // `replyTo` matters because the from-address is a send-only alias with no inbox behind
 // it: without it, hitting Reply on any of these bounces. Owner notifications reply to the
 // guest, guest notifications reply to the owner.

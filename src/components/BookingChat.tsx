@@ -19,11 +19,12 @@ const MAX_ROWS = 5;
 
 interface Props {
   bookingId: string;
+  /** Which side of the conversation this view is. The server decides who the
+   *  sender really is; this only picks which bubbles sit on the right. */
   asAdmin: boolean;
-  userId: string;
 }
 
-export default function BookingChat({ bookingId, asAdmin, userId }: Props) {
+export default function BookingChat({ bookingId, asAdmin }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
   const [sending, setSending] = useState(false);
@@ -94,24 +95,20 @@ export default function BookingChat({ bookingId, asAdmin, userId }: Props) {
     if (!body || sending) return;
     setSending(true);
     setError(null);
-    const supabase = supabaseBrowser();
-    const { error: err } = await supabase.from("messages").insert({
-      booking_id: bookingId,
-      sender_id: userId,
-      from_admin: asAdmin,
-      body,
-    });
-    if (err) {
-      setError("Message failed to send — please try again.");
-    } else {
-      setDraft("");
-      // Realtime will append it; notify the other side by email too.
-      fetch("/api/messages/notify", {
+    // The server writes the message and emails the other side in one go, so
+    // the send isn't finished until both are — hence the wait on this.
+    try {
+      const res = await fetch("/api/messages", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookingId, fromAdmin: asAdmin, preview: body }),
-      }).catch(() => {});
+        body: JSON.stringify({ bookingId, body }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      setDraft("");
+      // Realtime appends it for anyone watching; reload for whoever isn't.
       load();
+    } catch {
+      setError("Message failed to send — please try again.");
     }
     setSending(false);
   }
@@ -167,7 +164,14 @@ export default function BookingChat({ bookingId, asAdmin, userId }: Props) {
           placeholder="Write a message…"
           className="flex-1 resize-none overflow-y-auto"
         />
-        <Button type="button" variant="primary" size="md" onClick={send} disabled={sending || !draft.trim()}>
+        <Button
+          type="button"
+          variant="primary"
+          size="md"
+          onClick={send}
+          loading={sending}
+          disabled={!draft.trim()}
+        >
           Send
         </Button>
       </div>
