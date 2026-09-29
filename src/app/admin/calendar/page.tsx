@@ -1,4 +1,5 @@
-import Button from "@/components/ui/Button";
+import Link from "next/link";
+import Button, { buttonClasses } from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { Field, Input } from "@/components/ui/Field";
 import { PageTitle, SectionTitle } from "@/components/ui/Heading";
@@ -170,6 +171,12 @@ export default async function AdminCalendarPage() {
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex flex-wrap gap-1">
+                      <Link
+                        href={`/admin/messages/${b.id}`}
+                        className={buttonClasses("secondary", "sm")}
+                      >
+                        Message
+                      </Link>
                       {b.status === "pending" && (
                         <form action={setBookingStatus}>
                           <input type="hidden" name="id" value={b.id} />
