@@ -50,6 +50,11 @@ export default async function FaqPage() {
             ))}
           </ul>
           <p className="mt-3">
+            That schedule is the least we&apos;ll refund, not the most. We&apos;re a small family
+            place, not a chain — if something serious has happened, tell us, and we can refund more
+            than the schedule requires, up to everything you paid.
+          </p>
+          <p className="mt-3">
             Please contact us as soon as your plans change — reach out via your{" "}
             <Link href="/account" className="text-moss underline">
               booking page

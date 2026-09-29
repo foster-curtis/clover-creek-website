@@ -150,6 +150,8 @@ export interface CancellationEmailInfo {
   /** null when the owner overrode the policy — we don't quote a tier we didn't apply. */
   percent: number | null;
   tierLabel: string;
+  /** The whole payment went back, whether by policy or by the owner's choice. */
+  full: boolean;
 }
 
 export async function sendCancellationConfirmation(info: CancellationEmailInfo): Promise<void> {
@@ -157,7 +159,11 @@ export async function sendCancellationConfirmation(info: CancellationEmailInfo):
   const paid = formatUSD(info.totalCents / 100);
   const basis =
     info.percent === null
-      ? `We've refunded <strong>${refund}</strong> of the ${paid} paid.`
+      ? info.full
+        ? // An owner's exception, not the tier the guest booked under — say what
+          // was done and don't cite a policy that would have paid them less.
+          `We've refunded your payment of <strong>${paid}</strong> in full.`
+        : `We've refunded <strong>${refund}</strong> of the ${paid} paid.`
       : info.percent === 0
         ? `Because the cancellation falls within ${info.tierLabel.toLowerCase()} of check-in, our
            cancellation policy does not provide a refund, so no money has been returned.`
@@ -190,7 +196,13 @@ export async function notifyOwnerCancellation(info: CancellationEmailInfo): Prom
     Check-in was ${info.checkIn}<br/>
     Paid: ${formatUSD(info.totalCents / 100)} ·
     Refunded: <strong>${formatUSD(info.refundCents / 100)}</strong>
-    ${info.percent === null ? "(manual override)" : `(${info.percent}% — ${info.tierLabel})`}</p>
+    ${
+      info.percent === null
+        ? info.full
+          ? "(full refund — override)"
+          : "(manual override)"
+        : `(${info.percent}% — ${info.tierLabel})`
+    }</p>
     <p>Stripe's processing fee on the original charge is not returned.</p>
     <p><a href="${SITE.url}/admin/calendar">Open the booking calendar</a></p>
   `);

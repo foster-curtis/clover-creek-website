@@ -46,6 +46,11 @@ export default function TermsPage() {
         Refunds are returned to the original payment method and typically appear within 5–10
         business days.
       </p>
+      <p className="mt-4">
+        The schedule above is the minimum you are owed. We may refund more than it requires — up to
+        the full amount paid — at our discretion, and we will when circumstances warrant it. Doing
+        so in one case does not change the policy or oblige us to do the same in another.
+      </p>
 
       <SectionTitle as="h2" className="mt-8 !text-xl">House rules &amp; liability</SectionTitle>
       <p className="mt-2">

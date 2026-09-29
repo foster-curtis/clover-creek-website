@@ -2,17 +2,17 @@ import Button from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { Field, Input } from "@/components/ui/Field";
 import { PageTitle, SectionTitle } from "@/components/ui/Heading";
-import { propertyToday, refundFor } from "@/lib/cancellation";
+import { propertyToday } from "@/lib/cancellation";
 import { computeLodgingTax, formatUSD, parseStay } from "@/lib/pricing";
 import { SITE } from "@/lib/site";
 import { hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
 import {
   blockDates,
   createManualBooking,
-  refundBooking,
   setBookingStatus,
   unblockDates,
 } from "../actions";
+import RefundControls from "./RefundControls";
 
 export const dynamic = "force-dynamic";
 
@@ -140,7 +140,6 @@ export default async function AdminCalendarPage() {
           <tbody>
             {(bookings ?? []).map((b) => {
               const { checkIn, checkOut } = parseStay(b.stay);
-              const refund = refundFor(checkIn, today, b.total_cents);
               return (
                 <tr key={b.id} className="border-t border-line align-top">
                   <td className="px-3 py-2 whitespace-nowrap">{checkIn} → {checkOut}</td>
@@ -187,25 +186,13 @@ export default async function AdminCalendarPage() {
                       )}
                       {(b.status === "pending" || b.status === "confirmed") &&
                         (b.stripe_payment_intent ? (
-                          <form action={refundBooking} className="flex flex-col gap-1">
-                            <input type="hidden" name="id" value={b.id} />
-                            <Button type="submit" variant="danger" size="sm">
-                              Cancel &amp; refund {formatUSD(refund.refundCents / 100)}
-                            </Button>
-                            <span className="text-[11px] text-ink-subtle">
-                              {refund.percent}% · {refund.tier.label} out
-                            </span>
-                            <input
-                              type="number"
-                              name="override"
-                              step="0.01"
-                              min={0}
-                              max={b.total_cents / 100}
-                              placeholder="override $"
-                              title="Refund a different amount instead of the policy amount"
-                              className="w-24 rounded border border-line px-1 py-0.5 text-[11px]"
-                            />
-                          </form>
+                          <RefundControls
+                            id={b.id}
+                            guestName={b.guest_name}
+                            checkIn={checkIn}
+                            today={today}
+                            totalCents={b.total_cents}
+                          />
                         ) : (
                           <form action={setBookingStatus}>
                             <input type="hidden" name="id" value={b.id} />
