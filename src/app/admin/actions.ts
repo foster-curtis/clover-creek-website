@@ -14,6 +14,12 @@ import {
 } from "@/lib/cancellation";
 import { getHolidays, getPricing } from "@/lib/data";
 import {
+  normalizeFeedUrl,
+  syncAllFeeds,
+  syncFeed,
+  type IcalFeed,
+} from "@/lib/icalSync";
+import {
   notifyOwnerCancellation,
   sendCancellationConfirmation,
   PLACEHOLDER_GUEST_EMAIL,
@@ -101,9 +107,17 @@ export async function blockDates(formData: FormData) {
   revalidatePath("/book");
 }
 
+// Only the owner's own blocks can be lifted here. An imported one would be
+// re-created by the next sync — the other site still has the stay — so the
+// `.is("feed_id", null)` filter enforces at the data layer what the UI already
+// says, rather than leaving an unblock that silently undoes itself.
 export async function unblockDates(formData: FormData) {
   const db = await requireAdmin();
-  await db.from("blocked_dates").delete().eq("id", String(formData.get("id")));
+  await db
+    .from("blocked_dates")
+    .delete()
+    .eq("id", String(formData.get("id")))
+    .is("feed_id", null);
   revalidatePath("/admin/calendar");
   revalidatePath("/book");
 }
@@ -304,6 +318,101 @@ export async function refundBooking(formData: FormData) {
 
   revalidatePath("/admin/calendar");
   revalidatePath("/account");
+  revalidatePath("/book");
+}
+
+// --- calendar: imported feeds ----------------------------------------------
+// Subscriptions to the other sites the house is listed on. Their events become
+// blocked_dates rows tagged with the feed; see @/lib/icalSync.
+
+/**
+ * Add a feed and import it straight away.
+ *
+ * The first sync runs inline rather than waiting for the daily one, because
+ * pasting a link and watching nothing happen reads as a failure — and if the
+ * link is wrong, this is the moment to find out.
+ *
+ * A bad link comes back as a redirect carrying the reason, not a thrown error
+ * like the rest of this file. Throwing would be right for a Stripe refusal and
+ * is wrong here: production replaces a thrown message with a generic one (see
+ * admin/error.tsx), and mistyping a URL is an everyday slip that has to say
+ * what was wrong with it, next to the field, with the page still there.
+ */
+export async function addIcalFeed(formData: FormData) {
+  const db = await requireAdmin();
+  const label = String(formData.get("label") ?? "").trim();
+  const normalized = normalizeFeedUrl(String(formData.get("url") ?? ""));
+
+  if (!label) return feedError("Give the feed a name, like “Airbnb”.");
+  if ("error" in normalized) return feedError(normalized.error);
+
+  const { data: feed, error } = await db
+    .from("ical_feeds")
+    .insert({ label, url: normalized.url })
+    .select("id, label, url")
+    .single();
+  if (error || !feed) return feedError(error?.message ?? "Could not save the feed.");
+
+  // Whether this first sync succeeds is shown on the feed's own row, where
+  // every later sync reports too — one place to look rather than two.
+  await syncFeed(db, feed as IcalFeed);
+  revalidateCalendar();
+  // Clear any error left in the URL from a previous attempt.
+  redirect("/admin/calendar");
+}
+
+function feedError(message: string): never {
+  redirect(`/admin/calendar?feedError=${encodeURIComponent(message)}`);
+}
+
+export async function removeIcalFeed(formData: FormData) {
+  const db = await requireAdmin();
+  // The blocks go with it — `on delete cascade` on blocked_dates.feed_id — so
+  // removing a listing reopens the nights only that listing was holding.
+  await db.from("ical_feeds").delete().eq("id", String(formData.get("id")));
+  revalidateCalendar();
+}
+
+/**
+ * Pause or resume a feed.
+ *
+ * Pausing stops syncing and leaves the nights it has already blocked alone,
+ * which is what you want while a feed is misbehaving: stop believing it, but
+ * don't throw open dates that may well still be sold.
+ */
+export async function setIcalFeedActive(formData: FormData) {
+  const db = await requireAdmin();
+  await db
+    .from("ical_feeds")
+    .update({ active: formData.get("active") === "true" })
+    .eq("id", String(formData.get("id")));
+  revalidateCalendar();
+}
+
+/** Sync one feed, or all of them when no id is given. */
+export async function syncIcalFeeds(formData: FormData) {
+  const db = await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+
+  if (id) {
+    const { data: feed } = await db
+      .from("ical_feeds")
+      .select("id, label, url")
+      .eq("id", id)
+      .single();
+    if (feed) await syncFeed(db, feed as IcalFeed);
+  } else {
+    await syncAllFeeds(db);
+  }
+
+  // Failures are recorded on the feed row and shown on the page rather than
+  // thrown: with several feeds, one being down shouldn't replace the whole
+  // screen with an error boundary and hide the others' results.
+  revalidateCalendar();
+}
+
+function revalidateCalendar() {
+  revalidatePath("/admin/calendar");
   revalidatePath("/book");
 }
 
