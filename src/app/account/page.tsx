@@ -4,13 +4,9 @@ import { buttonClasses } from "@/components/ui/Button";
 import Card from "@/components/ui/Card";
 import { PageTitle } from "@/components/ui/Heading";
 import { ArrowRightIcon } from "@/components/ui/icons";
+import { claimGuestBookings } from "@/lib/bookings";
 import { formatUSD, parseStay } from "@/lib/pricing";
-import {
-  currentUser,
-  hasServiceRole,
-  supabaseAdmin,
-  supabaseServer,
-} from "@/lib/supabase/server";
+import { currentUser, supabaseServer } from "@/lib/supabase/server";
 import SignOutButton from "./SignOutButton";
 
 export const dynamic = "force-dynamic";
@@ -27,13 +23,7 @@ export default async function AccountPage() {
   if (!user) redirect("/login?next=/account");
 
   // Link any bookings made as a guest (before signing in) to this account.
-  if (hasServiceRole() && user.email) {
-    await supabaseAdmin()
-      .from("bookings")
-      .update({ user_id: user.id })
-      .is("user_id", null)
-      .eq("guest_email", user.email);
-  }
+  await claimGuestBookings(user);
 
   const supabase = await supabaseServer();
   const { data: bookings } = await supabase

@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { claimGuestBookings } from "@/lib/bookings";
 import { hasSupabase, supabaseServer } from "@/lib/supabase/server";
 
 // The magic-link redirect URL must match an entry in Supabase's redirect
@@ -15,8 +16,11 @@ export async function GET(request: NextRequest) {
 
   if (code && hasSupabase()) {
     const supabase = await supabaseServer();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
+      // Every sign-in claims the bookings made under this address, not just a
+      // visit to /account — `next` often points straight at a single stay.
+      await claimGuestBookings(data.user);
       const response = NextResponse.redirect(
         `${origin}${next.startsWith("/") ? next : "/account"}`
       );

@@ -4,6 +4,7 @@ import BookingChat from "@/components/BookingChat";
 import Card from "@/components/ui/Card";
 import { PageTitle } from "@/components/ui/Heading";
 import { ArrowLeftIcon } from "@/components/ui/icons";
+import { claimGuestBookings } from "@/lib/bookings";
 import { fullRefundDeadline, propertyToday, refundFor } from "@/lib/cancellation";
 import { formatStayRange, formatUSD, parseStay, rateLines, type Quote } from "@/lib/pricing";
 import { SITE } from "@/lib/site";
@@ -19,6 +20,12 @@ export default async function BookingDetailPage({
   const { id } = await params;
   const user = await currentUser();
   if (!user) redirect(`/login?next=/account/bookings/${id}`);
+
+  // A guest following a "new message" email may never have opened /account,
+  // so claim their bookings here too — the lookup below is by user_id, and an
+  // unclaimed booking would 404 them out of the conversation they were
+  // invited into.
+  await claimGuestBookings(user);
 
   const supabase = await supabaseServer();
   const { data: booking } = await supabase
