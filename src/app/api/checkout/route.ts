@@ -4,11 +4,16 @@
 
 import { NextResponse, type NextRequest } from "next/server";
 import { getHolidays, getPricing } from "@/lib/data";
+import { syncAllFeeds } from "@/lib/icalSync";
 import { quoteStay, toISODate, validateStay } from "@/lib/pricing";
 import { SITE } from "@/lib/site";
+import { withDeadline } from "@/lib/supabase/deadline";
 import { hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
 
 const HOLD_MINUTES = 30;
+
+/** How long the pre-checkout calendar refresh may hold up the guest. */
+const SYNC_DEADLINE_MS = 2500;
 
 export async function POST(request: NextRequest) {
   let body: Record<string, unknown>;
@@ -58,6 +63,13 @@ export async function POST(request: NextRequest) {
 
   const db = supabaseAdmin();
   await db.rpc("expire_stale_holds");
+
+  // Last chance to hear about a stay booked on another site before we take
+  // money for the same nights. Only feeds older than STALE_AFTER_MS are
+  // refetched, and the whole thing is capped: a listing site being slow must
+  // not stall a checkout. If the deadline passes we proceed on what we have —
+  // the same position we were in before any of this existed.
+  await withDeadline(syncAllFeeds(db, { onlyStale: true }), SYNC_DEADLINE_MS, []);
 
   // Insert the pending booking; the exclusion constraint rejects overlaps.
   const { data: booking, error: insertError } = await db

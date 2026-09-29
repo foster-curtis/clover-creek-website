@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
+import { after } from "next/server";
 import BookingWidget from "@/components/BookingWidget";
 import { PageTitle } from "@/components/ui/Heading";
 import { expandRanges, getHolidays, getPricing, getUnavailableRanges } from "@/lib/data";
+import { syncAllFeeds } from "@/lib/icalSync";
 import { pageMetadata } from "@/lib/seo";
 import { SITE } from "@/lib/site";
-import { currentUser } from "@/lib/supabase/server";
+import { currentUser, hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
 
 export const metadata: Metadata = pageMetadata({
   path: "/book",
@@ -16,6 +18,24 @@ export const metadata: Metadata = pageMetadata({
 export const dynamic = "force-dynamic"; // availability must always be fresh
 
 export default async function BookPage() {
+  // Refresh the other sites' calendars after this page has been sent, not
+  // before: availability that is minutes stale is fine to show, and a slow
+  // Airbnb must never be something a guest waits on. The next visitor sees the
+  // result, and /api/checkout refreshes again — blocking, briefly — before any
+  // money moves. `after` runs once the response is flushed, so nothing here is
+  // on the render path.
+  if (hasServiceRole()) {
+    after(async () => {
+      try {
+        await syncAllFeeds(supabaseAdmin(), { onlyStale: true });
+      } catch (e) {
+        // Nobody is waiting on this; a throw here would only litter the logs
+        // with an unhandled rejection. syncFeed already records each failure.
+        console.error("Background calendar sync failed:", e);
+      }
+    });
+  }
+
   const [pricing, holidays, ranges, user] = await Promise.all([
     getPricing(),
     getHolidays(),

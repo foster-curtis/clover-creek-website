@@ -63,10 +63,16 @@ See [README.md](README.md#adding-or-changing-photos) for the steps to add or cha
 - **Owner's phone**: in Google Calendar → Settings → _Add calendar → From URL_, paste
   `https://clovercreekguesthouse.com/api/ical?key=<your token>`. Bookings appear
   automatically with guest names. **DONE**
-- **Airbnb/VRBO/DirectStay**: in their calendar-sync settings, import
-  `https://clovercreekguesthouse.com/api/ical` (no key — busy dates only), and export
-  _their_ iCal URL. Currently their bookings must be blocked manually in Admin → Calendar
-  (an automatic importer is a good next feature if the other listings stay active).
+- **Airbnb/VRBO/DirectStay**: copy _their_ iCal export URL and paste it into
+  Admin → Calendar → _Import calendars from other sites_. Stays booked there then block
+  these dates automatically. Each feed you add gets its own outbound link shown beside
+  it (`/api/ical?source=…`) — give that site **that** link rather than the plain one, so
+  it isn't handed back its own reservations.
+- Set `CRON_SECRET` to any long random string. It authorises the daily refresh at
+  `/api/cron/sync-ical`, which Vercel runs from the `crons` entry in `vercel.json`.
+  Without it the endpoint refuses to run, and the calendars will only refresh when the
+  booking page is opened, before a guest pays, or when you click _Sync now_.
+  (The Hobby plan allows one cron run a day, which is why the schedule is daily.)
 
 ## 7. Nice-to-haves (any time)
 
