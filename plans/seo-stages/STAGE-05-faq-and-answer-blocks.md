@@ -33,7 +33,7 @@ Onaqui range, no Bortle numbers, no winter activity claims it cannot source.
 
 ### 1. **[AGENT]** Add six new content slugs
 
-In [src/lib/content.ts](../src/lib/content.ts), add to `CONTENT_SLUGS` and
+In [src/lib/content.ts](../../src/lib/content.ts), add to `CONTENT_SLUGS` and
 `DEFAULT_CONTENT`. Adding a slug automatically adds a field to Admin → Site Content — no
 admin-page change is needed.
 
@@ -115,7 +115,7 @@ Give it the stable id `minimum-stay` and place it after `fees`. Include it in th
 
 ### 4. **[AGENT]** Rebuild `/faq` (defect A10)
 
-Rewrite [src/app/faq/page.tsx](../src/app/faq/page.tsx):
+Rewrite [src/app/faq/page.tsx](../../src/app/faq/page.tsx):
 
 - **Every question becomes an `<h2>`** with `id={item.id}` and `scroll-mt-24` so anchor
   links land cleanly below the sticky header.
@@ -139,7 +139,7 @@ Layout suggestion, matching the site's existing card style:
 
 ### 5. **[AGENT]** Add `FAQPage` markup (§8.3)
 
-In [src/lib/schema.ts](../src/lib/schema.ts):
+In [src/lib/schema.ts](../../src/lib/schema.ts):
 
 ```ts
 export function faqPageSchema(items: Array<{ question: string; answer: string }>) {

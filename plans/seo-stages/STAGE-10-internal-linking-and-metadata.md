@@ -112,7 +112,7 @@ does not match a file in `src/content/blog/` does not belong here.
 
 ### 3. **[AGENT]** Related posts and a booking CTA on every post
 
-In [src/app/blog/\[slug\]/page.tsx](../src/app/blog/[slug]/page.tsx), after the rendered
+In [src/app/blog/\[slug\]/page.tsx](../../src/app/blog/[slug]/page.tsx), after the rendered
 body:
 
 - **"More from the Area Guide"** — up to three sibling posts from `relatedPosts()`, each as
@@ -141,7 +141,7 @@ Area Guide" heading is worse than no heading.
 
 ### 4. **[AGENT]** Homepage: link down to the strongest posts (§10.3 rule 4)
 
-Add a **"Guides to the valley"** section to [src/app/page.tsx](../src/app/page.tsx),
+Add a **"Guides to the valley"** section to [src/app/page.tsx](../../src/app/page.tsx),
 between the reviews teaser and the area/map section, linking to three or four posts *by
 name*. This passes real authority to the pages most likely to earn AI citations.
 

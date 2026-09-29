@@ -121,7 +121,7 @@ The home page is the root of the trail, and the rest are not indexable pages.
 
 ### 4. **[AGENT]** Replace the blog post back-link
 
-[src/app/blog/\[slug\]/page.tsx](../src/app/blog/[slug]/page.tsx) currently opens with a
+[src/app/blog/\[slug\]/page.tsx](../../src/app/blog/[slug]/page.tsx) currently opens with a
 `← Area Guide` link. The breadcrumb replaces it — remove the old link rather than having
 two ways back stacked on top of each other (§10.3 rule 7 calls the current single link out
 by name).

@@ -38,7 +38,7 @@ If the owner has said they want the apex domain instead, stop and confirm before
 
 ### 1. **[AGENT]** Align the default host
 
-In [src/lib/site.ts](../src/lib/site.ts):
+In [src/lib/site.ts](../../src/lib/site.ts):
 
 ```ts
 const DEFAULT_SITE_URL = "https://www.clovercreekguesthouse.com";
@@ -110,18 +110,18 @@ and mixing them in here makes this stage hard to review.
 
 | File | `path` | Note |
 |---|---|---|
-| [src/app/page.tsx](../src/app/page.tsx) | `/` | **Has no `metadata` export today** — add one. Title and description come from the root layout defaults, so pass neither; only `path`. |
-| [src/app/gallery/page.tsx](../src/app/gallery/page.tsx) | `/gallery` | |
-| [src/app/book/page.tsx](../src/app/book/page.tsx) | `/book` | |
-| [src/app/reviews/page.tsx](../src/app/reviews/page.tsx) | `/reviews` | |
-| [src/app/blog/page.tsx](../src/app/blog/page.tsx) | `/blog` | |
-| [src/app/faq/page.tsx](../src/app/faq/page.tsx) | `/faq` | |
-| [src/app/contact/page.tsx](../src/app/contact/page.tsx) | `/contact` | |
-| [src/app/house-rules/page.tsx](../src/app/house-rules/page.tsx) | `/house-rules` | |
-| [src/app/terms/page.tsx](../src/app/terms/page.tsx) | `/terms` | Currently `{ title: "Terms of Service" }` |
-| [src/app/privacy/page.tsx](../src/app/privacy/page.tsx) | `/privacy` | Currently `{ title: "Privacy Policy" }` |
+| [src/app/page.tsx](../../src/app/page.tsx) | `/` | **Has no `metadata` export today** — add one. Title and description come from the root layout defaults, so pass neither; only `path`. |
+| [src/app/gallery/page.tsx](../../src/app/gallery/page.tsx) | `/gallery` | |
+| [src/app/book/page.tsx](../../src/app/book/page.tsx) | `/book` | |
+| [src/app/reviews/page.tsx](../../src/app/reviews/page.tsx) | `/reviews` | |
+| [src/app/blog/page.tsx](../../src/app/blog/page.tsx) | `/blog` | |
+| [src/app/faq/page.tsx](../../src/app/faq/page.tsx) | `/faq` | |
+| [src/app/contact/page.tsx](../../src/app/contact/page.tsx) | `/contact` | |
+| [src/app/house-rules/page.tsx](../../src/app/house-rules/page.tsx) | `/house-rules` | |
+| [src/app/terms/page.tsx](../../src/app/terms/page.tsx) | `/terms` | Currently `{ title: "Terms of Service" }` |
+| [src/app/privacy/page.tsx](../../src/app/privacy/page.tsx) | `/privacy` | Currently `{ title: "Privacy Policy" }` |
 
-For [src/app/blog/\[slug\]/page.tsx](../src/app/blog/[slug]/page.tsx), the metadata is
+For [src/app/blog/\[slug\]/page.tsx](../../src/app/blog/[slug]/page.tsx), the metadata is
 generated per post — update `generateMetadata` to return
 `pageMetadata({ path: `/blog/${slug}`, title: post.title, description: post.excerpt ?? undefined, type: "article" })`.
 Keep the existing `if (!post) return { title: "Post not found" }` branch, but add
@@ -130,10 +130,10 @@ indexed.
 
 ### 4. **[AGENT]** `noindex` the three routes that need it (defect A13, §10.5)
 
-- **`/book/success`** — [src/app/book/success/page.tsx](../src/app/book/success/page.tsx)
+- **`/book/success`** — [src/app/book/success/page.tsx](../../src/app/book/success/page.tsx)
   is a server component. Add
   `export const metadata = pageMetadata({ path: "/book/success", title: "Booking confirmed", noindex: true });`
-- **`/login`** — [src/app/login/page.tsx](../src/app/login/page.tsx) is a **client
+- **`/login`** — [src/app/login/page.tsx](../../src/app/login/page.tsx) is a **client
   component** (`"use client"`), and client components cannot export `metadata`. Create
   **`src/app/login/layout.tsx`**:
 
@@ -155,9 +155,9 @@ indexed.
   ```
 
 - **`/auth/callback`** — a route handler
-  ([src/app/auth/callback/route.ts](../src/app/auth/callback/route.ts)), so there is no
+  ([src/app/auth/callback/route.ts](../../src/app/auth/callback/route.ts)), so there is no
   metadata to export. Add an `X-Robots-Tag` response header in
-  [next.config.ts](../next.config.ts) instead:
+  [next.config.ts](../../next.config.ts) instead:
 
   ```ts
   async headers() {
@@ -177,7 +177,7 @@ indexed.
 
 ### 5. **[AGENT]** Sitemap: `lastModified` and the two missing pages (defect A14)
 
-In [src/app/sitemap.ts](../src/app/sitemap.ts):
+In [src/app/sitemap.ts](../../src/app/sitemap.ts):
 
 - Add `lastModified: new Date()` to the static entries. Blog posts already carry theirs.
 - Add `/terms` and `/privacy` to the static list at `priority: 0.3`.
@@ -186,7 +186,7 @@ In [src/app/sitemap.ts](../src/app/sitemap.ts):
 
 ### 6. **[AGENT]** `/reviews`: `force-dynamic` → `revalidate` (defect A15)
 
-In [src/app/reviews/page.tsx](../src/app/reviews/page.tsx), replace
+In [src/app/reviews/page.tsx](../../src/app/reviews/page.tsx), replace
 `export const dynamic = "force-dynamic";` with `export const revalidate = 300;`.
 
 **Be honest about what this does.** The page calls `currentUser()` (to decide whether to

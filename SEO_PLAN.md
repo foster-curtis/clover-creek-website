@@ -1104,7 +1104,7 @@ rather than a news feed, and the content push ahead is developer-assisted. The
 gallery photos and alt text, pricing, holidays and review moderation all stay owner-editable
 in the admin panel. Only the blog moves.
 
-Implementation is Stage 06 in [seo-stages/](seo-stages/README.md).
+Implementation is Stage 06 in [plans/seo-stages/](plans/seo-stages/README.md).
 
 ---
 
@@ -1150,9 +1150,9 @@ work will not.
 ## 15. Phased roadmap
 
 > **Execution plans:** the phases below are broken into eleven independently runnable,
-> reviewable and committable stages in [seo-stages/](seo-stages/README.md), each marked for
+> reviewable and committable stages in [plans/seo-stages/](plans/seo-stages/README.md), each marked for
 > whether it is developer work or owner work. Start at
-> [seo-stages/README.md](seo-stages/README.md).
+> [plans/seo-stages/README.md](plans/seo-stages/README.md).
 
 ### Phase 0 — Prerequisites (owner decisions, blocks everything else)
 

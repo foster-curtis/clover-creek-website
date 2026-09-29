@@ -28,7 +28,7 @@ same 1200×630 size.
 ### 1. **[AGENT]** Compress `public/guest-house-main.JPG`
 
 It is 5.3 MB, it is referenced by `MAIN_IMAGE_URL` in
-[src/lib/schema.ts](../src/lib/schema.ts), and §9.6 asks for ≤ 500 KB.
+[src/lib/schema.ts](../../src/lib/schema.ts), and §9.6 asks for ≤ 500 KB.
 
 `sharp` is already present in `node_modules` (Next.js depends on it). Use a throwaway
 script in the scratchpad directory — **do not add a script file to the repo**:
@@ -97,7 +97,7 @@ try `position: "centre"` or `position: sharp.strategy.entropy`. Target under 300
 
 ### 3. **[AGENT]** Wire the image into the root layout
 
-In [src/app/layout.tsx](../src/app/layout.tsx), extend the metadata export:
+In [src/app/layout.tsx](../../src/app/layout.tsx), extend the metadata export:
 
 ```ts
 openGraph: {
@@ -128,7 +128,7 @@ URL automatically. `summary_large_image` replaces the current implicit `summary`
 
 ### 4. **[AGENT]** Let `pageMetadata()` carry per-page images
 
-In [src/lib/seo.ts](../src/lib/seo.ts), make the `image` field from Stage 01 real:
+In [src/lib/seo.ts](../../src/lib/seo.ts), make the `image` field from Stage 01 real:
 
 ```ts
 export const DEFAULT_OG_IMAGE = "/og-default.jpg";
@@ -147,7 +147,7 @@ and Stage 06 will override it where a post has its own cover photo.
 
 ### 5. **[AGENT]** Add an OG image constant to the schema module
 
-In [src/lib/schema.ts](../src/lib/schema.ts), next to `MAIN_IMAGE_URL`:
+In [src/lib/schema.ts](../../src/lib/schema.ts), next to `MAIN_IMAGE_URL`:
 
 ```ts
 /** 1200x630 social share card. Also the Organization logo stand-in until one exists. */

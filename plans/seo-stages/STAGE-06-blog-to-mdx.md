@@ -84,7 +84,7 @@ Four decisions worth stating, because the obvious alternatives are worse here:
 npm install @next/mdx @mdx-js/loader @mdx-js/react @types/mdx
 ```
 
-In [next.config.ts](../next.config.ts), wrap the existing config with `withMDX`. Keep every
+In [next.config.ts](../../next.config.ts), wrap the existing config with `withMDX`. Keep every
 existing setting — the `remotePatterns` logic for Supabase Storage and the SVG CSP are both
 load-bearing:
 
@@ -101,7 +101,7 @@ this design keeps the existing `[slug]` route.
 
 Create `mdx-components.tsx` in the **project root** (required by `@next/mdx`) mapping
 markdown elements onto the site's styles. The `.prose-simple` class in
-[src/app/globals.css](../src/app/globals.css) already handles the basics — the component map
+[src/app/globals.css](../../src/app/globals.css) already handles the basics — the component map
 is where `a` becomes `next/link` and `img` becomes `next/image`:
 
 ```tsx
@@ -158,10 +158,10 @@ export const ALL_POSTS = MODULES.map((m) => ({ meta: m.meta, Content: m.default 
 ```
 
 Then rewrite `getPublishedPosts()` and `getPost()` in
-[src/lib/data.ts](../src/lib/data.ts) to read from the registry. **Keep the exported
+[src/lib/data.ts](../../src/lib/data.ts) to read from the registry. **Keep the exported
 `BlogPost` shape as close to the current one as possible** — `slug`, `title`, `excerpt`,
-`publishedAt` all stay, so [src/app/sitemap.ts](../src/app/sitemap.ts) and
-[src/app/blog/page.tsx](../src/app/blog/page.tsx) need almost no change. Replace the `body:
+`publishedAt` all stay, so [src/app/sitemap.ts](../../src/app/sitemap.ts) and
+[src/app/blog/page.tsx](../../src/app/blog/page.tsx) need almost no change. Replace the `body:
 string` field with `Content: ComponentType` and add `cover` and `author`.
 
 Both functions become synchronous, but **leave them `async`**. They are awaited in four
@@ -202,7 +202,7 @@ is a dead URL and a lost ranking.**
 
 ### 5. **[AGENT]** Update the post page
 
-In [src/app/blog/\[slug\]/page.tsx](../src/app/blog/[slug]/page.tsx):
+In [src/app/blog/\[slug\]/page.tsx](../../src/app/blog/[slug]/page.tsx):
 
 - Replace `marked.parse()` + `dangerouslySetInnerHTML` with `<post.Content />` wrapped in
   the existing `.prose-simple` container. Remove the `marked` import — and drop the
@@ -221,7 +221,7 @@ The existing `notFound()` behaviour stays — an unknown slug still 404s.
 
 ### 6. **[AGENT]** Update the blog index
 
-[src/app/blog/page.tsx](../src/app/blog/page.tsx) reads from the registry. Show a thumbnail
+[src/app/blog/page.tsx](../../src/app/blog/page.tsx) reads from the registry. Show a thumbnail
 on cards that have a cover, and keep the card height stable whether or not one exists — a
 grid that reflows on data is a CLS problem on the page that links to everything else.
 
@@ -230,9 +230,9 @@ grid that reflows on data is a CLS problem on the page that links to everything 
 Delete, in one commit with the rest so the tree is never half-migrated:
 
 - `src/app/admin/blog/page.tsx` and `src/app/admin/blog/[id]/page.tsx`
-- `savePost` and `deletePost` from [src/app/admin/actions.ts](../src/app/admin/actions.ts),
+- `savePost` and `deletePost` from [src/app/admin/actions.ts](../../src/app/admin/actions.ts),
   plus the now-unused `slugify` helper if nothing else calls it
-- The Blog link in the admin nav ([src/app/admin/layout.tsx](../src/app/admin/layout.tsx))
+- The Blog link in the admin nav ([src/app/admin/layout.tsx](../../src/app/admin/layout.tsx))
 
 Add a short note in place of the nav item, or in the admin dashboard, saying Area Guide
 posts now live in the repository. An admin panel with a silently missing section reads as

@@ -127,7 +127,7 @@ field saying so.
   the property.
 - The `directions_route` and `directions_arrival` sections under `<h2>` headings.
 - `<LocationMap />` — the existing component
-  ([src/components/LocationMap.tsx](../src/components/LocationMap.tsx)) already handles the
+  ([src/components/LocationMap.tsx](../../src/components/LocationMap.tsx)) already handles the
   HERE-key-or-OpenStreetMap fallback. Reuse it; do not write a second map.
 - "Open in Maps" links built from `SITE.location.lat/lng`:
   - `https://maps.google.com/?q=<lat>,<lng>`
@@ -184,7 +184,7 @@ Revisit once the distances are verified.
 
 The distance answer on `/faq` should link to `/directions` with the anchor text
 *"full turn-by-turn directions"* (§10.4). That is a one-line change to the `faq_distance`
-rendering in [src/app/faq/page.tsx](../src/app/faq/page.tsx) — use the same `extra` pattern
+rendering in [src/app/faq/page.tsx](../../src/app/faq/page.tsx) — use the same `extra` pattern
 Stage 05 established for the pets and cancellation answers rather than putting a link in
 the content slug.
 

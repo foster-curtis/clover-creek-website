@@ -36,7 +36,7 @@ the moment the owner supplies a name it all switches on.
 
 ### 1. **[AGENT]** Add the owner identity to `SITE`
 
-In [src/lib/site.ts](../src/lib/site.ts):
+In [src/lib/site.ts](../../src/lib/site.ts):
 
 ```ts
 // The named human behind the business. E-E-A-T and AI entity resolution both weight
@@ -56,7 +56,7 @@ to literal `""` types, or every comparison against it becomes a type error.
 
 ### 2. **[AGENT]** Add three content slugs
 
-In [src/lib/content.ts](../src/lib/content.ts), added to `CONTENT_SLUGS` and
+In [src/lib/content.ts](../../src/lib/content.ts), added to `CONTENT_SLUGS` and
 `DEFAULT_CONTENT`:
 
 | Slug | Label | Default |
@@ -90,7 +90,7 @@ like an abandoned site.
 
 ### 4. **[AGENT]** `Person` and `AboutPage` schema
 
-In [src/lib/schema.ts](../src/lib/schema.ts):
+In [src/lib/schema.ts](../../src/lib/schema.ts):
 
 ```ts
 const PERSON_ID = `${SITE.url}/about#person`;
@@ -143,7 +143,7 @@ cases. That is what connects the human to the business across the whole site.
 
 *"Nav placement is what distinguishes a legitimate location page from a doorway page."*
 
-In `NAV_LINKS` in [src/lib/site.ts](../src/lib/site.ts):
+In `NAV_LINKS` in [src/lib/site.ts](../../src/lib/site.ts):
 
 - **Remove `{ href: "/", label: "Home" }`.** The logo in `<Header>` already links home, and
   three new pages are arriving across this stage and Stage 09 — the desktop nav will not
@@ -158,10 +158,10 @@ restructure the nav here.
 ### 6. **[AGENT]** Wire the page in
 
 - **Sitemap** — add `/about` to the static list in
-  [src/app/sitemap.ts](../src/app/sitemap.ts) at `priority: 0.8`. It is a top-level trust
+  [src/app/sitemap.ts](../../src/app/sitemap.ts) at `priority: 0.8`. It is a top-level trust
   page, more important than a blog post.
 - **Footer** — add "About us" to the first column in
-  [src/components/Footer.tsx](../src/components/Footer.tsx).
+  [src/components/Footer.tsx](../../src/components/Footer.tsx).
 - Home-page and cross-page links to `/about` are Stage 10 (§10.4).
 
 ### 7. **[AGENT]** Verify

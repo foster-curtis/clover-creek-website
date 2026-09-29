@@ -1,6 +1,6 @@
 # SEO Implementation Stages
 
-Executable breakdown of [SEO_PLAN.md](../SEO_PLAN.md). The strategy document explains
+Executable breakdown of [SEO_PLAN.md](../../SEO_PLAN.md). The strategy document explains
 *why*; these files say *what to change, in what order, and who does it*.
 
 Each stage is a self-contained unit of work: one agent runs it, one reviewer reviews it,
@@ -90,11 +90,11 @@ These apply to all code stages. Re-read them before starting one.
    and `src/lib/content.ts` already degrade to placeholders when Supabase is absent, and
    from Stage 06 the blog does not need Supabase at all. Any new page must render sensibly
    in that state.
-3. **NAP lives in exactly two places** — `SITE` in [src/lib/site.ts](../src/lib/site.ts)
-   and the builders in [src/lib/schema.ts](../src/lib/schema.ts). Never hardcode the name,
+3. **NAP lives in exactly two places** — `SITE` in [src/lib/site.ts](../../src/lib/site.ts)
+   and the builders in [src/lib/schema.ts](../../src/lib/schema.ts). Never hardcode the name,
    address, phone, or URL anywhere else (SEO_PLAN.md §6.2).
 4. **Structural text stays in code; descriptive paragraphs go through `CONTENT_SLUGS`**
-   in [src/lib/content.ts](../src/lib/content.ts) so the owner can edit them in
+   in [src/lib/content.ts](../../src/lib/content.ts) so the owner can edit them in
    Admin → Site Content. Adding a slug automatically adds a field to the admin form — no
    admin-page changes needed.
 5. **Match the existing house style.** Tailwind classes only, existing palette tokens

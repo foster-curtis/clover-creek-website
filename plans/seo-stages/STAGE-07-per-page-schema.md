@@ -29,7 +29,7 @@ Search Console's Enhancements reports for two weeks afterwards."*
 
 ## Steps
 
-All builders go in [src/lib/schema.ts](../src/lib/schema.ts) and all rendering goes through
+All builders go in [src/lib/schema.ts](../../src/lib/schema.ts) and all rendering goes through
 `<JsonLd>`. Each page gets **one** additional JSON-LD block on top of the site-wide graph
 and its breadcrumb.
 
@@ -61,7 +61,7 @@ export function reviewsPageGraph(opts: {
 }
 ```
 
-Render it in [src/app/reviews/page.tsx](../src/app/reviews/page.tsx) from the reviews it
+Render it in [src/app/reviews/page.tsx](../../src/app/reviews/page.tsx) from the reviews it
 already fetches. Emit **all** approved reviews here (the home page caps at 12 deliberately;
 this is the reviews page, so the full set belongs).
 
@@ -226,7 +226,7 @@ claim a total price the booking engine would not quote.
 
 Not schema, but it belongs with the `/gallery` work above and it is a ten-line change.
 
-In [src/components/GalleryGrid.tsx](../src/components/GalleryGrid.tsx), show the caption
+In [src/components/GalleryGrid.tsx](../../src/components/GalleryGrid.tsx), show the caption
 under each thumbnail when one exists — captions currently appear only in the lightbox, and
 *"caption text is a real ranking signal for Google Images."*
 

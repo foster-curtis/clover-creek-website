@@ -43,7 +43,7 @@ That merge-node pattern is reused on `/reviews` in Stage 07.
 
 ### 1. **[AGENT]** Add the canonical description and `sameAs` to `SITE`
 
-In [src/lib/site.ts](../src/lib/site.ts), inside the `SITE` object:
+In [src/lib/site.ts](../../src/lib/site.ts), inside the `SITE` object:
 
 ```ts
 // The canonical one-sentence description of the business. Used verbatim in every
@@ -191,7 +191,7 @@ export default function JsonLd({ data }: { data: object }) {
 
 ### 4. **[AGENT]** Render the graph in the root layout
 
-In [src/app/layout.tsx](../src/app/layout.tsx), inside `<body>` before `<Header />`:
+In [src/app/layout.tsx](../../src/app/layout.tsx), inside `<body>` before `<Header />`:
 
 ```tsx
 <JsonLd data={siteGraph()} />
@@ -202,7 +202,7 @@ need to be in `<head>`, and Google reads it either way.
 
 ### 5. **[AGENT]** Simplify the home page
 
-In [src/app/page.tsx](../src/app/page.tsx):
+In [src/app/page.tsx](../../src/app/page.tsx):
 
 - Replace the inline `<script type="application/ld+json">` with `<JsonLd data={jsonLd} />`.
 - Drop the `description` argument from the `homeGraph()` call — the description now comes
@@ -218,7 +218,7 @@ In [src/app/page.tsx](../src/app/page.tsx):
 > being re-derived inline, because the contact page, the terms page and
 > `src/lib/email.ts` render the phone too. Nothing to redo here.
 
-In [src/components/Footer.tsx](../src/components/Footer.tsx), under the locality line:
+In [src/components/Footer.tsx](../../src/components/Footer.tsx), under the locality line:
 
 ```tsx
 {SITE.phoneDisplay && (

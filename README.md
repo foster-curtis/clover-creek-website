@@ -12,6 +12,9 @@ on Vercel.
   architecture decisions.
 - **[GIT_WORKFLOW.md](GIT_WORKFLOW.md)** — branches, CI/CD, and the `working` → `stg` →
   `master` promotion flow.
+- **[plans/](plans/)** — staged implementation plans, each one stage per commit:
+  [plans/seo-stages/](plans/seo-stages/README.md) breaks down SEO_PLAN.md, and
+  [plans/stripe/](plans/stripe/README.md) breaks down the payments audit.
 
 ## Features
 
