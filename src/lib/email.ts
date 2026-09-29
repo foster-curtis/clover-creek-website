@@ -1,9 +1,29 @@
 // Transactional email via Resend. Every send is fire-and-forget: if Resend
 // isn't configured (or a send fails) the booking still succeeds and we log
 // instead — email must never take down checkout.
+//
+// The branded shell and its building blocks live in ./emailLayout; this file is
+// only the messages.
 
 import { SITE } from "./site";
 import { formatStayRange, formatUSD, rateLines, type Quote } from "./pricing";
+import {
+  blockquote,
+  button,
+  detailRows,
+  divider,
+  esc,
+  escLines,
+  heading,
+  link,
+  panel,
+  paragraph,
+  renderEmail,
+  stackedRows,
+  subheading,
+  type DetailRow,
+  type EmailMessage,
+} from "./emailLayout";
 
 const FROM = process.env.EMAIL_FROM ?? `${SITE.name} <onboarding@resend.dev>`;
 
@@ -13,7 +33,7 @@ const FROM = process.env.EMAIL_FROM ?? `${SITE.name} <onboarding@resend.dev>`;
 export async function sendEmail(
   to: string,
   subject: string,
-  html: string,
+  message: EmailMessage,
   replyTo?: string
 ): Promise<void> {
   const key = process.env.RESEND_API_KEY;
@@ -28,28 +48,16 @@ export async function sendEmail(
       from: FROM,
       to,
       subject,
-      html,
+      html: message.html,
+      // Sending a text part alongside the HTML keeps us out of the filters that
+      // score HTML-only mail as bulk.
+      text: message.text,
       ...(replyTo ? { replyTo } : {}),
     });
     if (error) console.error("Resend error:", error);
   } catch (err) {
     console.error("Email send failed:", err);
   }
-}
-
-function layout(body: string): string {
-  return `<div style="font-family: Georgia, serif; max-width: 560px; margin: 0 auto; color: #2d2a26;">
-    <h2 style="color:#3f6212;">${SITE.name}</h2>
-    ${body}
-    <p style="margin-top:32px; font-size: 13px; color: #78716c;">
-      ${SITE.name} · ${SITE.location.town}, ${SITE.location.region} ·
-      <a href="mailto:${SITE.ownerEmail}">${SITE.ownerEmail}</a>${
-        SITE.phoneDisplay
-          ? ` · <a href="tel:${SITE.phoneHref}">${SITE.phoneDisplay}</a>`
-          : ""
-      }
-    </p>
-  </div>`;
 }
 
 export interface BookingEmailInfo {
@@ -63,65 +71,119 @@ export interface BookingEmailInfo {
   arrivalNotes?: string;
 }
 
-function quoteTable(quote: Quote): string {
-  const stay = `<tr><td colspan="2" style="padding:4px 12px 8px 0;font-weight:bold;">${formatStayRange(quote)}</td></tr>`;
-  const rows = rateLines(quote.nights)
-    .map(
-      (line) =>
-        `<tr><td style="padding:4px 12px 4px 0;">${formatUSD(line.rate)} × ${line.nights} night${line.nights > 1 ? "s" : ""}</td>
-         <td style="text-align:right;">${formatUSD(line.total)}</td></tr>`
-    )
-    .join("");
+/** The priced stay, as the booking widget shows it: rate lines, then the total. */
+function quoteRows(quote: Quote): DetailRow[] {
+  const nights = rateLines(quote.nights).map((line) => ({
+    label: `${formatUSD(line.rate)} &times; ${line.nights} night${line.nights > 1 ? "s" : ""}`,
+    value: formatUSD(line.total),
+  }));
   const pets = quote.petFee
-    ? `<tr><td style="padding:4px 12px 4px 0;">Pet fee (${quote.pets} × ${quote.nightCount} nights)</td><td style="text-align:right;">${formatUSD(quote.petFee)}</td></tr>`
-    : "";
-  return `<table style="font-size:14px;">${stay}${rows}${pets}
-    <tr><td style="padding-top:8px;font-weight:bold;">Total (cleaning &amp; taxes included)</td>
-    <td style="padding-top:8px;text-align:right;font-weight:bold;">${formatUSD(quote.total)}</td></tr></table>`;
+    ? [
+        {
+          label: `Pet fee (${quote.pets} &times; ${quote.nightCount} night${quote.nightCount > 1 ? "s" : ""})`,
+          value: formatUSD(quote.petFee),
+        },
+      ]
+    : [];
+  return [
+    ...nights,
+    ...pets,
+    {
+      label: "Total <span style=\"font-weight:400;\">(cleaning &amp; taxes included)</span>",
+      value: formatUSD(quote.total),
+      strong: true,
+      rule: true,
+    },
+  ];
 }
 
 export async function sendBookingConfirmation(info: BookingEmailInfo): Promise<void> {
-  const html = layout(`
-    <p>Hi ${info.guestName},</p>
-    <p>Your stay at ${SITE.name} is confirmed. We're looking forward to hosting you!</p>
-    <p><strong>Check-in:</strong> ${info.checkIn} from ${SITE.checkInTime}<br/>
-       <strong>Check-out:</strong> ${info.checkOut} by ${SITE.checkOutTime}<br/>
-       <strong>Guests:</strong> ${info.guests}${info.pets ? ` · <strong>Dogs:</strong> ${info.pets}` : ""}</p>
-    ${quoteTable(info.quote)}
-    ${info.arrivalNotes ? `<p>${info.arrivalNotes}</p>` : ""}
-    <p>House rules are on the website: <a href="${SITE.url}/house-rules">${SITE.url}/house-rules</a>.
-    A quick recap for checkout morning: leave used beds unmade (please don't pile bedding on the
-    floor), put used towels in the bathtub, leave perishables in the fridge, turn off lights,
-    heaters, fans and A/C, and lock the door as you leave.</p>
-    <p>Questions before your stay? Just reply to this email or message us from your
-    <a href="${SITE.url}/account">booking page</a>.</p>
-  `);
-  await sendEmail(info.guestEmail, `Booking confirmed — ${SITE.name}`, html, SITE.ownerEmail);
+  const guest = esc(info.guestName);
+  const message = renderEmail({
+    title: `Booking confirmed — ${SITE.name}`,
+    preheader: `${formatStayRange(info.quote)} · ${info.quote.nightCount} night${
+      info.quote.nightCount > 1 ? "s" : ""
+    } · ${formatUSD(info.quote.total)} paid in full.`,
+    body: `
+      ${heading("Your stay is confirmed")}
+      ${paragraph(`Hi ${guest}, we're looking forward to hosting you at ${esc(SITE.name)}.`)}
+      ${panel(
+        stackedRows([
+          { label: "Check-in", value: `${esc(info.checkIn)}<br/>from ${SITE.checkInTime}` },
+          { label: "Check-out", value: `${esc(info.checkOut)}<br/>by ${SITE.checkOutTime}` },
+          {
+            label: "Guests",
+            value: `${info.guests} guest${info.guests > 1 ? "s" : ""}${
+              info.pets ? ` &middot; ${info.pets} dog${info.pets > 1 ? "s" : ""}` : ""
+            }`,
+          },
+        ])
+      )}
+      ${subheading("What you paid")}
+      ${panel(detailRows(quoteRows(info.quote)))}
+      ${info.arrivalNotes ? `${subheading("Before you arrive")}${paragraph(escLines(info.arrivalNotes))}` : ""}
+      ${subheading("On checkout morning")}
+      ${paragraph(
+        `Leave used beds unmade (please don't pile bedding on the floor), put used towels in the
+         bathtub, leave perishables in the fridge, turn off lights, heaters, fans and A/C, and lock
+         the door as you leave. The full house rules are
+         ${link(`${SITE.url}/house-rules`, "on the website")}.`
+      )}
+      ${divider()}
+      ${paragraph("Questions before your stay? Reply to this email, or message us from your booking page.")}
+      ${button(`${SITE.url}/account`, "View your booking")}`,
+  });
+  await sendEmail(info.guestEmail, `Booking confirmed — ${SITE.name}`, message, SITE.ownerEmail);
 }
 
 export async function notifyOwnerNewBooking(info: BookingEmailInfo): Promise<void> {
-  const html = layout(`
-    <p><strong>New booking!</strong></p>
-    <p>${info.guestName} (${info.guestEmail})<br/>
-    ${info.checkIn} → ${info.checkOut} · ${info.guests} guests${info.pets ? ` · ${info.pets} dog(s)` : ""}<br/>
-    Total paid: <strong>${formatUSD(info.quote.total)}</strong></p>
-    <p><a href="${SITE.url}/admin/calendar">Open the booking calendar</a></p>
-  `);
+  const message = renderEmail({
+    title: `New booking — ${SITE.name}`,
+    preheader: `${info.guestName} booked ${info.checkIn} to ${info.checkOut} · ${formatUSD(info.quote.total)}`,
+    body: `
+      ${heading("New booking")}
+      ${panel(
+        stackedRows([
+          {
+            label: "Guest",
+            value: `${esc(info.guestName)}<br/>${link(`mailto:${esc(info.guestEmail)}`, esc(info.guestEmail))}`,
+          },
+          { label: "Stay", value: `${esc(info.checkIn)}<br/>to ${esc(info.checkOut)}` },
+          {
+            label: "Party",
+            value: `${info.guests} guest${info.guests > 1 ? "s" : ""}${
+              info.pets ? ` &middot; ${info.pets} dog${info.pets > 1 ? "s" : ""}` : ""
+            }`,
+          },
+        ]) +
+          divider() +
+          detailRows([{ label: "Total paid", value: formatUSD(info.quote.total), strong: true }])
+      )}
+      ${button(`${SITE.url}/admin/calendar`, "Open the calendar")}
+      ${paragraph("Replying to this email goes straight to the guest.", { muted: true })}`,
+  });
   await sendEmail(
     SITE.ownerEmail,
     `New booking: ${info.checkIn} (${info.guestName})`,
-    html,
+    message,
     info.guestEmail
   );
 }
 
 export async function notifyOwnerInquiry(name: string, email: string, body: string): Promise<void> {
-  const html = layout(`
-    <p><strong>New inquiry from the website</strong></p>
-    <p><strong>${name}</strong> · <a href="mailto:${email}">${email}</a></p>
-    <p style="white-space:pre-wrap;">${body.replace(/</g, "&lt;")}</p>
-  `);
-  await sendEmail(SITE.ownerEmail, `Website inquiry from ${name}`, html, email);
+  const message = renderEmail({
+    title: `Website inquiry — ${SITE.name}`,
+    preheader: `${name} sent a message from the contact form.`,
+    body: `
+      ${heading("New inquiry from the website")}
+      ${paragraph(
+        `<strong>${esc(name)}</strong> &middot;
+         ${link(`mailto:${esc(email)}`, esc(email))}`
+      )}
+      ${blockquote(escLines(body))}
+      ${paragraph("Replying to this email goes straight to them.", { muted: true })}`,
+  });
+  await sendEmail(SITE.ownerEmail, `Website inquiry from ${name}`, message, email);
 }
 
 export async function notifyNewMessage(
@@ -131,14 +193,17 @@ export async function notifyNewMessage(
   link: string,
   replyTo?: string
 ): Promise<void> {
-  const html = layout(`
-    <p><strong>${fromName}</strong> sent you a message:</p>
-    <blockquote style="border-left:3px solid #d6d3d1;padding-left:12px;color:#57534e;">
-      ${preview.slice(0, 300).replace(/</g, "&lt;")}
-    </blockquote>
-    <p><a href="${link}">Reply on the website</a></p>
-  `);
-  await sendEmail(to, `New message — ${SITE.name}`, html, replyTo);
+  const trimmed = preview.slice(0, 300);
+  const message = renderEmail({
+    title: `New message — ${SITE.name}`,
+    preheader: `${fromName}: ${trimmed.slice(0, 140)}`,
+    body: `
+      ${heading("You have a new message")}
+      ${paragraph(`<strong>${esc(fromName)}</strong> wrote:`)}
+      ${blockquote(escLines(trimmed) + (preview.length > 300 ? "&hellip;" : ""))}
+      ${button(link, "Read and reply")}`,
+  });
+  await sendEmail(to, `New message — ${SITE.name}`, message, replyTo);
 }
 
 export interface CancellationEmailInfo {
@@ -171,45 +236,83 @@ export async function sendCancellationConfirmation(info: CancellationEmailInfo):
            <strong>${info.percent}% refund</strong> under our cancellation policy, so
            <strong>${refund}</strong> of the ${paid} paid is on its way back to you.`;
 
-  const html = layout(`
-    <p>Hi ${info.guestName},</p>
-    <p>Your stay at ${SITE.name} beginning ${info.checkIn} has been cancelled.</p>
-    <p>${basis}</p>
-    ${
+  const message = renderEmail({
+    title: `Booking cancelled — ${SITE.name}`,
+    preheader:
       info.refundCents > 0
-        ? `<p>Refunds return to your original payment method and usually appear within
-           5–10 business days, depending on your bank.</p>`
-        : ""
-    }
-    <p>The full policy is on our website:
-      <a href="${SITE.url}/faq">${SITE.url}/faq</a>.
-      If something about this doesn't look right, just reply to this email.</p>
-    <p>We're sorry to miss you, and we hope to host you another time.</p>
-  `);
-  await sendEmail(info.guestEmail, `Booking cancelled — ${SITE.name}`, html, SITE.ownerEmail);
+        ? `Your ${info.checkIn} stay is cancelled. ${refund} is on its way back to you.`
+        : `Your ${info.checkIn} stay is cancelled.`,
+    body: `
+      ${heading("Your booking has been cancelled")}
+      ${paragraph(
+        `Hi ${esc(info.guestName)}, your stay at ${esc(SITE.name)} beginning
+         ${esc(info.checkIn)} has been cancelled.`
+      )}
+      ${paragraph(basis)}
+      ${
+        info.refundCents > 0
+          ? panel(
+              detailRows([
+                { label: "Originally paid", value: paid },
+                { label: "Refunded", value: refund, strong: true, rule: true },
+              ])
+            ) +
+            paragraph(
+              "Refunds return to your original payment method and usually appear within 5–10 business days, depending on your bank.",
+              { muted: true }
+            )
+          : ""
+      }
+      ${divider()}
+      ${paragraph(
+        `The full policy is ${link(`${SITE.url}/faq`, "on our website")}.
+         If something here doesn't look right, just reply to this email.`
+      )}
+      ${paragraph("We're sorry to miss you, and we hope to host you another time.")}`,
+  });
+  await sendEmail(info.guestEmail, `Booking cancelled — ${SITE.name}`, message, SITE.ownerEmail);
 }
 
 export async function notifyOwnerCancellation(info: CancellationEmailInfo): Promise<void> {
-  const html = layout(`
-    <p><strong>Booking cancelled</strong></p>
-    <p>${info.guestName} (${info.guestEmail})<br/>
-    Check-in was ${info.checkIn}<br/>
-    Paid: ${formatUSD(info.totalCents / 100)} ·
-    Refunded: <strong>${formatUSD(info.refundCents / 100)}</strong>
-    ${
-      info.percent === null
-        ? info.full
-          ? "(full refund — override)"
-          : "(manual override)"
-        : `(${info.percent}% — ${info.tierLabel})`
-    }</p>
-    <p>Stripe's processing fee on the original charge is not returned.</p>
-    <p><a href="${SITE.url}/admin/calendar">Open the booking calendar</a></p>
-  `);
+  const basis =
+    info.percent === null
+      ? info.full
+        ? "Full refund — override"
+        : "Manual override"
+      : `${info.percent}% — ${info.tierLabel}`;
+
+  const message = renderEmail({
+    title: `Booking cancelled — ${SITE.name}`,
+    preheader: `${info.guestName} cancelled ${info.checkIn} · ${formatUSD(info.refundCents / 100)} refunded`,
+    body: `
+      ${heading("Booking cancelled")}
+      ${panel(
+        stackedRows([
+          {
+            label: "Guest",
+            value: `${esc(info.guestName)}<br/>${link(`mailto:${esc(info.guestEmail)}`, esc(info.guestEmail))}`,
+          },
+          { label: "Check-in was", value: esc(info.checkIn) },
+          { label: "Basis", value: esc(basis) },
+        ]) +
+          divider() +
+          detailRows([
+            { label: "Paid", value: formatUSD(info.totalCents / 100) },
+            {
+              label: "Refunded",
+              value: formatUSD(info.refundCents / 100),
+              strong: true,
+              rule: true,
+            },
+          ])
+      )}
+      ${paragraph("Stripe's processing fee on the original charge is not returned.", { muted: true })}
+      ${button(`${SITE.url}/admin/calendar`, "Open the calendar")}`,
+  });
   await sendEmail(
     SITE.ownerEmail,
     `Cancelled: ${info.checkIn} (${info.guestName})`,
-    html,
+    message,
     info.guestEmail
   );
 }
