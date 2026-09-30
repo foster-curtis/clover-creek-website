@@ -6,6 +6,7 @@ import { Field, Input } from "@/components/ui/Field";
 import { PageTitle, SectionTitle } from "@/components/ui/Heading";
 import { propertyToday } from "@/lib/cancellation";
 import { computeLodgingTax, formatUSD, parseStay } from "@/lib/pricing";
+import { refundLines } from "@/lib/refunds";
 import { SITE } from "@/lib/site";
 import { hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
 import {
@@ -54,11 +55,11 @@ export default async function AdminCalendarPage({
   const db = supabaseAdmin();
   await db.rpc("expire_stale_holds");
 
-  const [{ data: bookings }, { data: blocks }, { data: feeds }] = await Promise.all([
+  const [{ data: bookings, error: bookingsError }, { data: blocks }, { data: feeds }] = await Promise.all([
     db
       .from("bookings")
       .select(
-        "id, stay, guest_name, guest_email, guest_phone, guests, pets, status, total_cents, stripe_payment_intent, notes, created_at"
+        "id, stay, guest_name, guest_email, guest_phone, guests, pets, status, total_cents, stripe_payment_intent, notes, created_at, booking_refunds(amount_cents, issued_at, source)"
       )
       .order("stay", { ascending: false })
       .limit(100),
@@ -83,6 +84,13 @@ export default async function AdminCalendarPage({
 
       {/* Bookings table */}
       <SectionTitle className="mt-8">All bookings</SectionTitle>
+      {/* Without this an unreadable query (a migration not applied, a stale
+          schema cache) would render as an empty table, as if there were no bookings. */}
+      {bookingsError && (
+        <p role="alert" className="mt-3 text-sm text-clay">
+          Bookings couldn&apos;t be loaded: {bookingsError.message}
+        </p>
+      )}
       <Card variant="flat" className="mt-3 overflow-x-auto p-0">
         <table className="w-full text-sm">
           <thead className="bg-surface-sunken text-left text-xs uppercase text-ink-muted">
@@ -125,6 +133,13 @@ export default async function AdminCalendarPage({
                   <td className="px-3 py-2">
                     {b.status}
                     {b.notes && <p className="text-xs text-ink-subtle">{b.notes}</p>}
+                    {/* Every refund, however it was issued, so "was this refunded,
+                        and by whom?" is answered without opening Stripe. */}
+                    {refundLines(b.booking_refunds ?? []).map((line, i) => (
+                      <p key={i} className="text-xs text-ink-subtle">
+                        {line}
+                      </p>
+                    ))}
                   </td>
                   <td className="px-3 py-2">
                     <div className="flex flex-wrap gap-1">

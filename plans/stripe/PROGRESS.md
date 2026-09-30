@@ -26,7 +26,7 @@ Standing instructions: [ORCHESTRATOR.md](ORCHESTRATOR.md).
 | 0006 | (pre-existing: iCal feeds) | — |
 | 0007 | 01 `stripe_events` | committed (Stage 01) |
 | 0008 | 03 bookings respect blocks | committed (Stage 03) |
-| 0009 | 04 refunds as rows | allocated |
+| 0009 | 04 refunds as rows | committed (Stage 04) |
 | 0010 | 06 booking events | allocated |
 | 0011+ | 05 / 08 / 09 extras, in landing order | — |
 
@@ -37,8 +37,8 @@ Standing instructions: [ORCHESTRATOR.md](ORCHESTRATOR.md).
 | 00 | human only | — | not started (human) |
 | 01 | done | `0f6edfe` | details below |
 | 02 | done | `8b13228` | browser checks left for the human |
-| 03 | done | see git log ("Stop taking payment for dates the owner has blocked") | browser checks left for the human |
-| 04 | not started | — | |
+| 03 | done | `2bf6da3` | browser checks left for the human |
+| 04 | done | see git log ("Learn about refunds issued outside this site, and about disputes") | event subscription + browser check left for the human |
 | 07 | not started | — | |
 | 05 | not started | — | |
 | 06 | not started | — | |
@@ -242,3 +242,99 @@ Re-run the overlap back-check against production right before applying 0008 (see
 - The imported-block upsert takes no lock, so it can race a booking insert — the state
   deviation 1 already accepts.
 - Stage 07: add the route-level "blocked range → 409, no Stripe session" test.
+
+## Stage 04 — Dashboard refunds & disputes
+
+Usage at start: 5h 6%, 7d 28%. At commit: 5h 68% (resets 7:50 PM), 7d 37%.
+
+**Landed:** `0009_refunds_as_rows.sql` — `booking_refunds` (keyed on Stripe's `re_…`/`du_…`/`dp_…`
+id; service-role only), backfill of one `legacy:<booking_id>` row per refunded booking, a cache
+trigger keeping `bookings.refund_cents = sum` / `refunded_at = max(issued_at)`, RPCs
+`record_stripe_refunds()` (webhook) and `record_admin_refund()` (`refundBooking`), both
+service-role only; `bookings_refund_within_total` dropped; unique partial index on
+`bookings.stripe_payment_intent`. Webhook handlers for `charge.refunded`,
+`charge.dispute.created`, `charge.dispute.closed` (all through `claimEvent()`);
+`src/lib/refunds.ts` (+ tests); refund lines under each booking on `/admin/calendar`; the tax
+report files each `booking_refunds` row on its own date; the seed's b…02 refund is a row.
+
+**Deviations from the plan (deliberate, reviewed):**
+- **Refunds are listed from Stripe** (`refunds.list({charge})`): `charge.refunds` is not on the
+  Charge object on this API version (2026-06-24.dahlia). "Fully refunded" = Stripe's current
+  non-failed/non-canceled total ≥ `amount_captured`, so out-of-order events converge.
+- **Admin-wins:** an admin refund's own `charge.refunded` can land before `refundBooking()`
+  saves; the webhook inserts `on conflict do nothing`, `record_admin_refund()` upserts
+  `source='admin'` and its note replaces the webhook's. Either order ends as one admin row.
+- **Legacy rows are replaced by Stripe's list** (one transaction, under the booking lock) when a
+  `charge.refunded` arrives for a pre-0009 refunded booking, so the refund isn't counted twice.
+  Replacing rows at/before the legacy date are tagged `admin` (for 0005's undated rows the
+  cut-off is when 0009 ran).
+- **`refundBooking()`'s writes are one RPC** (refund row + cancel), so there is one failure mode.
+  A booking with no payment intent now records no refund (it used to write `refund_cents` with
+  no Stripe call; unreachable from the UI). A $0 outcome whose write fails is `blocked`.
+- **Review M1 — the tax report reads the rows now** (the minimal part of Stage 09 §3, brought
+  forward): `reportRows()` emits one refund line per `booking_refunds` row dated by its
+  `issued_at` when the caller loads them (all three readers do). Without it,
+  `refunded_at = max(issued_at)` put the whole sum on the latest refund's quarter — a Q3 refund
+  plus a Q4 lost dispute would take the Q3 refund off the Q4 return a second time. A legacy row
+  is dated exactly as `refundDateOf()` dated the cache, so no pre-existing line moves (tested).
+  Stage 09 still owns the CSV `source` column, the legacy-row flag, `paid_at`,
+  `amount_received_cents`.
+- **Review M2 — a refund/dispute before `confirm()` lands:** when no booking has the intent,
+  the webhook resolves it through the Checkout Session's `booking_id`; and `confirm()` refuses
+  (`ignored`, no emails) when the booking's recorded refunds already cover `amount_total`.
+  Otherwise a Dashboard refund during a failing `confirm()` retry was ignored for good, and a
+  later successful retry re-confirmed a refunded guest and emailed them.
+- Smaller: the note/reason use the clamped refund amount (was pre-clamp); `refundBooking` uses
+  the shared `countsAsRefunded`; the money-moved text says the webhook normally records the
+  refund within a minute; the calendar shows a bookings-query error instead of an empty table;
+  lost disputes read "Charged back $X · date · lost dispute".
+
+**Verified here** (`npm start` production build + `stripe listen`, sandbox account, local DB):
+- `stripe refunds create` half, then the rest, on a booking paid via triggered checkout → one
+  `dashboard` row, booking `confirmed`; then two rows, `refund_cents` 3000, `cancelled` "refunded
+  in the Stripe dashboard"; events `handled` + linked.
+- Replay: `stripe events resend` → 200 duplicate; forced `failed` + resend → the handler re-ran
+  (attempts 2), still 2 rows / 3000.
+- Real `refundBooking()` (scratch vitest, admin mocked) with the webhook live: full → exactly
+  one `re_…` row `admin`, 22500, `cancelled`, admin note; a $100 override then a Dashboard refund
+  of the rest → rows `[10000 admin, 12500 dashboard]`, `refund_cents` 22500, admin note kept.
+  Re-run after the review fixes: same.
+- `pm_card_createDispute` on a booking → `charge.dispute.created` `handled` + linked, booking
+  stays `confirmed`; `stripe disputes close` → `du_…` row `dispute` 20000, still `confirmed`;
+  replay of the close → no change. `stripe trigger charge.dispute.created` (not our charge) →
+  `ignored`. Re-run after the fixes: same.
+- M2 end to end: lapsed hold + dates resold → `completed` 500 (`failed`, intent never set); full
+  Dashboard refund → `charge.refunded` `handled`, linked via the session, one `dashboard` row,
+  booking left `cancelled`; dates freed + redelivery → `ignored` "Refunded before the payment
+  was confirmed; not confirmed", booking still `cancelled`, 0 emails attempted.
+- Implementer (psql/harness): cache sums/dates/duplicate/delete/move/cascade; two-session race —
+  with the lock the second writer waited and wrote the correct 8000, a control without it wrote
+  a stale 3000; admin-vs-webhook on one id in both orders → one admin row, no deadlock; the
+  legacy swap; anon denied on the table and both RPCs; the unique intent index refuses a
+  duplicate.
+- Backfill: 0009 applied with `migration up --local` over existing data (incl. an undated
+  0005-style refund) → every booking's `refund_cents`/`refunded_at` and the rendered tax report
+  identical. `db reset` replays 0001–0009 + seed; b…02 unchanged (10500).
+- Gate green (241 tests).
+
+**Left for the human:**
+- Subscribe `charge.refunded`, `charge.dispute.created`, `charge.dispute.closed` (Stage 00
+  step 3) **after** deploying this code (Stage 01: unhandled types settle `ignored` for good).
+- Deploy order: apply 0009 to hosted **right before** deploying — old code with 0009 applied
+  writes `refund_cents` with no row and the next recompute on that booking erases it; new code
+  without 0009 gets money-moved on every admin refund and 500s on `charge.refunded`. The hosted
+  0006 version mismatch must be reconciled first.
+- Browser: refund lines under a booking on `/admin/calendar` (admin panel / Stripe dashboard /
+  "Charged back … lost dispute"), and `/admin/taxes` + its CSV for a refunded booking.
+- A real 4242 payment through Stripe's hosted page, then a Dashboard refund (CLI equivalent
+  passed).
+
+**Open review findings (not acted on):**
+- A refund that fails or is cancelled *after* being recorded stays counted, and a `pending`
+  refund counts toward "fully refunded"; nothing handles `charge.refund.updated`. Rare for cards.
+- `refunds.list` is capped at 100 with no pagination (same as `refundBooking`).
+- An open dispute is visible only as a linked `stripe_events` row until Stage 05 alerts on it
+  (Stage 06 puts it on the timeline). `// Stage 05 alerts here` marks both places.
+- The legacy admin cut-off compares Stripe's `created` with our server clock (label only).
+- Stage 07 must cover: admin-wins in both orders, the legacy swap, the confirm-refund guard, the
+  session fallback, lost/won disputes, and `reportRows` per-row refunds.

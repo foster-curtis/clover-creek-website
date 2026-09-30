@@ -17,6 +17,7 @@ import {
   toCsv,
   wasPaid,
   type ReportableBooking,
+  type TaxReportRow,
 } from "./taxReport";
 
 function booking(over: Partial<ReportableBooking> = {}): ReportableBooking {
@@ -192,6 +193,45 @@ describe("reportRows", () => {
     ]);
     expect(rows[0].period).toEqual({ year: 2026, quarter: 3 });
     expect(rows[1].period).toEqual({ year: 2026, quarter: 4 });
+  });
+
+  it("files each refund row on its own date, not the total on the latest", () => {
+    // Refunded in part in Q3 (that return filed), charged back in Q4. The
+    // cache says 45,000 on 2026-11-10; filing that would take the Q3 refund
+    // off the Q4 return a second time.
+    const rows = reportRows([
+      booking({
+        status: "cancelled",
+        refund_cents: 45_000,
+        refunded_at: "2026-11-10T18:00:00.000Z",
+        booking_refunds: [
+          { id: "re_1", amount_cents: 25_000, issued_at: "2026-08-10T18:00:00.000Z" },
+          { id: "du_1", amount_cents: 20_000, issued_at: "2026-11-10T18:00:00.000Z" },
+        ],
+      }),
+    ]);
+    const refunds = rows.filter((r) => r.kind === "refund");
+    expect(refunds.map((r) => [r.period.quarter, r.tax.grossCents])).toEqual([
+      [3, -25_000],
+      [4, -20_000],
+    ]);
+    expect(new Set(rows.map((r) => r.key)).size).toBe(3);
+  });
+
+  it("files a legacy row exactly where the cache put it", () => {
+    // 0009's backfill: one row, dated refunded_at or else created_at.
+    for (const refunded_at of ["2026-10-02T18:00:00.000Z", null]) {
+      const b = booking({ status: "cancelled", refund_cents: 20_000, refunded_at });
+      const legacy = {
+        ...b,
+        booking_refunds: [
+          { id: "legacy:b1", amount_cents: 20_000, issued_at: refunded_at ?? b.created_at },
+        ],
+      };
+      // Keys differ (one per row now); every figure and date must not.
+      const lines = (rows: TaxReportRow[]) => rows.map((r) => ({ ...r, key: r.kind }));
+      expect(lines(reportRows([legacy]))).toEqual(lines(reportRows([b])));
+    }
   });
 });
 

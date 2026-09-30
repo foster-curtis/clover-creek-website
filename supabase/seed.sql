@@ -212,15 +212,14 @@ where id = 'a0000000-0000-4000-8000-000000000002';
 --         deliberately overlaps b…03: the exclusion constraint only covers
 --         pending and confirmed, which is exactly how the calendar frees up
 --
--- `refund_pct` is a fraction of the computed total rather than a fixed amount,
--- so the bookings_refund_within_total check constraint can never trip however
--- the rates change.
+-- b…02's refund is not written here. Since 0009, bookings.refund_cents and
+-- refunded_at are a cache the database derives from booking_refunds rows, so
+-- the refund is a row of its own, inserted after the bookings below.
 
 insert into public.bookings (
   id, user_id, guest_name, guest_email, guest_phone, stay, guests, pets,
   pet_details, quote, total_cents, status, stripe_session_id,
-  stripe_payment_intent, rules_accepted_at, notes, created_at, hold_expires_at,
-  refund_cents, refunded_at
+  stripe_payment_intent, rules_accepted_at, notes, created_at, hold_expires_at
 )
 select
   b.id, b.user_id, b.guest_name, b.guest_email, b.guest_phone, b.stay,
@@ -253,9 +252,7 @@ select
   b.created_at,
   b.notes,
   b.created_at,
-  b.hold_expires_at,
-  round(m.total_cents * b.refund_pct)::int,
-  b.refunded_at
+  b.hold_expires_at
 from (
   values
     (
@@ -270,8 +267,6 @@ from (
       'pi_seed_completed'::text,
       null::text,
       now() - interval '52 days',
-      null::timestamptz,
-      0::numeric,
       null::timestamptz
     ),
     (
@@ -286,9 +281,7 @@ from (
       'pi_seed_refunded',
       'cancelled · 50% refund (4 to 6 weeks before check-in)',
       now() - interval '70 days',
-      null,
-      0.50,
-      now() - interval '20 days'
+      null
     ),
     (
       'b0000000-0000-4000-8000-000000000003',
@@ -303,8 +296,6 @@ from (
       'pi_seed_upcoming',
       null,
       now() - interval '5 days',
-      null,
-      0,
       null
     ),
     (
@@ -319,8 +310,6 @@ from (
       'pi_seed_later',
       null,
       now() - interval '2 days',
-      null,
-      0,
       null
     ),
     (
@@ -335,9 +324,7 @@ from (
       null,
       null,
       now() - interval '10 minutes',
-      now() + interval '20 minutes',
-      0,
-      null
+      now() + interval '20 minutes'
     ),
     (
       'b0000000-0000-4000-8000-000000000006',
@@ -351,14 +338,11 @@ from (
       null,
       'hold expired',
       now() - interval '9 days',
-      now() - interval '9 days' + interval '30 minutes',
-      0,
-      null
+      now() - interval '9 days' + interval '30 minutes'
     )
 ) as b (
   id, user_id, guest_name, guest_email, guest_phone, stay, guests, pets,
-  pet_details, status, payment_intent, notes, created_at, hold_expires_at,
-  refund_pct, refunded_at
+  pet_details, status, payment_intent, notes, created_at, hold_expires_at
 )
 -- Pricing comes from the single pricing_config row, so the fixture follows any
 -- rate change made in the migrations rather than hard-coding $75/$105.
@@ -427,6 +411,23 @@ cross join lateral (
     round(round(m.total_cents / 1.1217)::int * 0.0107)::int as state_trt_cents
 ) t
 where cfg.id = 1
+on conflict (id) do nothing;
+
+-- b…02's 50% refund, as the admin panel would have recorded it. The trigger
+-- from 0009 derives the booking's refund_cents and refunded_at from this row,
+-- exactly as it does for a real refund. Half the computed total rather than a
+-- fixed amount, so it follows any rate change. The id is deliberately not
+-- Stripe-shaped (no re_ prefix), so nothing could look it up in Stripe.
+insert into public.booking_refunds (id, booking_id, amount_cents, reason, source, issued_at)
+select
+  'seed:b0000000-0000-4000-8000-000000000002',
+  b.id,
+  round(b.total_cents * 0.50)::int,
+  '50% refund (4 to 6 weeks before check-in)',
+  'admin',
+  now() - interval '20 days'
+from public.bookings b
+where b.id = 'b0000000-0000-4000-8000-000000000002'
 on conflict (id) do nothing;
 
 

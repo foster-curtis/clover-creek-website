@@ -28,6 +28,7 @@ import {
   PLACEHOLDER_GUEST_EMAIL,
 } from "@/lib/email";
 import { formatUSD, parseStay, quoteStay, validateStay } from "@/lib/pricing";
+import { countsAsRefunded } from "@/lib/refunds";
 import { SITE } from "@/lib/site";
 import { isAdminUser, supabaseAdmin } from "@/lib/supabase/server";
 
@@ -291,8 +292,8 @@ export async function refundBooking(
   // than bookkeeping: after a 50%-tier refund the policy amount equals what
   // Stripe still holds, so a second policy run passes the ceiling check below and
   // refunds.create fires again — a second real payout. (A second "in full" run
-  // would instead clamp to the $0 left and overwrite the first run's refund_cents
-  // with 0, so the tax report would count a refunded stay as a full receipt.)
+  // would instead clamp to the $0 left and overwrite the first run's note with
+  // "no refund".)
   if (booking.status !== "pending" && booking.status !== "confirmed")
     return blocked(
       `This booking is already ${booking.status} — nothing was refunded and no money moved.`
@@ -322,9 +323,8 @@ export async function refundBooking(
   let refundableCents: number | null = null;
 
   if (booking.stripe_payment_intent) {
-    // Without the key we cannot move the money, and writing refund_cents anyway
-    // would tell the guest their refund is coming and hand the lodging tax
-    // report a deduction that never happened. Fail instead.
+    // Without the key we cannot move the money, and cancelling anyway would
+    // tell the guest their refund is coming when it never will. Fail instead.
     if (!process.env.STRIPE_SECRET_KEY)
       return blocked("STRIPE_SECRET_KEY is not set — refusing to record a refund Stripe never issued");
     const { default: StripeSdk } = await import("stripe");
@@ -335,7 +335,7 @@ export async function refundBooking(
         stripe.refunds.list({ payment_intent: booking.stripe_payment_intent, limit: 100 }),
       ]);
       const alreadyRefunded = refunds.data
-        .filter((r) => r.status !== "failed" && r.status !== "canceled")
+        .filter(countsAsRefunded)
         .reduce((sum, r) => sum + r.amount, 0);
       basisCents = intent.amount_received;
       refundableCents = intent.amount_received - alreadyRefunded;
@@ -378,16 +378,16 @@ export async function refundBooking(
       );
   }
 
-  // Whether money actually left, as opposed to a $0 outcome or a booking with no
-  // payment on file — the success message below says only what happened.
-  let refunded = false;
+  // What Stripe handed back, so the record carries Stripe's id, amount and clock.
+  // Null for a $0 outcome or a booking with no payment on file: no money left,
+  // so nothing is recorded as refunded and the success message says so.
+  let refund: Stripe.Refund | null = null;
   if (refundCents > 0 && stripe && booking.stripe_payment_intent) {
     try {
-      await stripe.refunds.create({
+      refund = await stripe.refunds.create({
         payment_intent: booking.stripe_payment_intent,
         amount: refundCents,
       });
-      refunded = true;
     } catch (e) {
       // Stripe still refuses for reasons we can't see up front — a charge past
       // the ~180-day refund window, a dispute, insufficient balance. Say which,
@@ -401,40 +401,66 @@ export async function refundBooking(
     }
   }
 
-  const note = `cancelled · ${describeRefundAction(resolved)}`;
-  // `notes` stays human-readable prose; refund_cents/refunded_at are what the
-  // tax report reads, and the date decides which return the refund reduces.
-  const { error: writeError } = await db
-    .from("bookings")
-    .update({
-      status: "cancelled",
-      notes: note,
-      refund_cents: refundCents,
-      refunded_at: refundCents > 0 ? new Date().toISOString() : null,
-    })
-    .eq("id", id);
+  // The clamped amount: after an earlier partial refund "in full" sends less
+  // than resolved.refundCents, and the note and row must say what actually moved.
+  const described = describeRefundAction({ ...resolved, refundCents });
+  const note = `cancelled · ${described}`;
+  // One transaction: the refund row and the cancellation are saved together or
+  // not at all, so there is one way for this to fail and the message below can
+  // say exactly what is missing. `notes` stays human-readable prose; the row is
+  // what the tax report counts (bookings.refund_cents is summed from the rows by
+  // trigger now, and never written here), dated by Stripe's clock.
+  //
+  // The row is written admin-wins. This refund fires charge.refunded too, and
+  // if that webhook got here first it recorded the refund as a dashboard one
+  // and, for a full refund, cancelled the booking with the dashboard's note.
+  // This knows for certain it issued the id, so it claims the row and its note
+  // replaces that one. Whichever lands first, the end state is one admin row.
+  // See 0009_refunds_as_rows.sql, point 4.
+  const { error: writeError } = await db.rpc("record_admin_refund", {
+    p_booking_id: id,
+    p_notes: note,
+    ...(refund
+      ? {
+          p_refund_id: refund.id,
+          p_amount_cents: refund.amount,
+          p_issued_at: new Date(refund.created * 1000).toISOString(),
+          p_reason: described,
+        }
+      : {}),
+  });
 
   if (writeError) {
+    if (!refund) {
+      return blocked(
+        `Saving the cancellation failed: ${writeError.message}. The booking was not cancelled and no money moved.`
+      );
+    }
     // Every other failure in this action happens before Stripe and ends with
     // "no money moved". This one is the opposite: the guest has been refunded
     // and we failed to write it down. Left unsaid, the booking still reads
     // confirmed, the dates stay blocked, and the lodging tax report counts a
     // receipt that was handed back. There is no safe automatic recovery —
-    // re-refunding would send the money twice — so name the row and the amount
-    // and hand it to the owner. The server log keeps the full error; returning
-    // the message (rather than throwing it) is what gets it past production's
-    // redaction, and the `money-moved` severity is what makes the form lock its
-    // buttons.
-    console.error("Refund succeeded but the booking write failed", {
+    // re-refunding would send the money twice — so name the row, the amount and
+    // Stripe's refund id, and hand it to the owner. The server log keeps the
+    // full error; returning the message (rather than throwing it) is what gets
+    // it past production's redaction, and the `money-moved` severity is what
+    // makes the form lock its buttons.
+    console.error("Refund succeeded but recording it failed", {
       bookingId: id,
+      refundId: refund.id,
       refundCents,
       writeError,
     });
     return moneyMoved(
-      `The refund of ${formatUSD(refundCents / 100)} WENT THROUGH, but saving it to the ` +
-        `booking failed: ${writeError.message}. The guest has their money. Booking ${id} still ` +
-        `shows as confirmed and its dates are still blocked — set it to cancelled by hand, and ` +
-        `do not refund it again. No cancellation email was sent, so tell the guest yourself.`
+      `The refund of ${formatUSD(refundCents / 100)} WENT THROUGH (Stripe refund ${refund.id}), ` +
+        `but saving it failed: ${writeError.message}. The guest has their money. Nothing was ` +
+        `saved here: booking ${id} still shows as confirmed, its dates are still blocked, and this ` +
+        `refund is not recorded here, so the tax report still counts it as money received. ` +
+        `Stripe's webhook normally records the refund within a minute, so check the booking's ` +
+        `refund lines on this page before changing anything. If it never appears, set the booking to ` +
+        `cancelled by hand. Do not refund it again. No cancellation email was sent, so tell ` +
+        `the guest yourself.`
     );
   }
 
@@ -460,7 +486,7 @@ export async function refundBooking(
   // outcome (nothing due under the policy, or Stripe already holds nothing)
   // never reached Stripe, so don't say money was refunded.
   return done(
-    refunded
+    refund
       ? `Refunded ${formatUSD(refundCents / 100)} and cancelled the booking.`
       : "Cancelled the booking. No refund was issued."
   );

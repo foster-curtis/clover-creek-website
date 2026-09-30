@@ -14,7 +14,8 @@
 //  2. A payment is filed in the quarter it was *received* (created_at), not the
 //     quarter of the stay — the cash basis "gross received" implies.
 //
-//  3. A refund is filed in the quarter it was *issued* (refunded_at), as a
+//  3. A refund is filed in the quarter it was *issued* (each booking_refunds
+//     row's issued_at; refunded_at for callers that don't load them), as a
 //     reduction of that quarter's receipts. It does not reach back and change
 //     the quarter the booking was paid for, so a return already filed stays
 //     correct as filed and never needs amending.
@@ -46,6 +47,20 @@ export interface ReportableBooking {
   stripe_payment_intent: string | null;
   refund_cents: number;
   refunded_at: string | null;
+  /**
+   * The rows refund_cents is summed from (0009), when the caller loads them.
+   * refund_cents and refunded_at are one total under the latest refund's date,
+   * so a booking refunded in Q3 and charged back in Q4 would put the Q3 refund
+   * on the Q4 return a second time. Each row is filed on its own date instead.
+   */
+  booking_refunds?: readonly ReportableRefund[];
+}
+
+/** One refund, or one lost dispute, as booking_refunds records it. */
+export interface ReportableRefund {
+  id: string;
+  amount_cents: number;
+  issued_at: string;
 }
 
 export interface FilingPeriod {
@@ -223,7 +238,21 @@ export function reportRows(bookings: readonly ReportableBooking[]): TaxReportRow
       });
     }
 
-    if (b.refund_cents > 0) {
+    if (b.booking_refunds) {
+      // A booking refunded before 0009 has one legacy row dated exactly as
+      // refundDateOf() dates it, so those lines are unchanged.
+      for (const r of b.booking_refunds) {
+        const date = propertyDateOf(r.issued_at);
+        rows.push({
+          ...common,
+          key: `${b.id}:refund:${r.id}`,
+          kind: "refund",
+          date,
+          period: periodOfDate(date),
+          tax: negate(computeLodgingTax(r.amount_cents)),
+        });
+      }
+    } else if (b.refund_cents > 0) {
       const date = refundDateOf(b);
       rows.push({
         ...common,

@@ -37,7 +37,7 @@ export default async function AdminDashboard() {
     db
       .from("bookings")
       .select(
-        "id, stay, guest_name, status, total_cents, created_at, stripe_payment_intent, refund_cents, refunded_at"
+        "id, stay, guest_name, status, total_cents, created_at, stripe_payment_intent, refund_cents, refunded_at, booking_refunds(id, amount_cents, issued_at)"
       )
       .in("status", REPORTED_STATUSES),
   ]);
