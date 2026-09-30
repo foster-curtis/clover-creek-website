@@ -1,6 +1,7 @@
 // Transactional email via Resend. Every send is fire-and-forget: if Resend
 // isn't configured (or a send fails) the booking still succeeds and we log
-// instead — email must never take down checkout.
+// instead — email must never take down checkout. A send never throws; it
+// returns what happened, for callers that need to record a failure.
 //
 // The branded shell and its building blocks live in ./emailLayout; this file is
 // only the messages.
@@ -45,6 +46,12 @@ export function canEmail(address: string | null | undefined): boolean {
   return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(trimmed);
 }
 
+/** What became of a send. `skipped` means Resend isn't configured, not that anything failed. */
+export type SendOutcome =
+  | { status: "sent" }
+  | { status: "skipped" }
+  | { status: "failed"; error: string };
+
 // `replyTo` matters because the from-address is a send-only alias with no inbox behind
 // it: without it, hitting Reply on any of these bounces. Owner notifications reply to the
 // guest, guest notifications reply to the owner.
@@ -53,11 +60,11 @@ export async function sendEmail(
   subject: string,
   message: EmailMessage,
   replyTo?: string
-): Promise<void> {
+): Promise<SendOutcome> {
   const key = process.env.RESEND_API_KEY;
   if (!key) {
     console.log(`[email skipped — RESEND_API_KEY not set] to=${to} subject=${subject}`);
-    return;
+    return { status: "skipped" };
   }
   try {
     const { Resend } = await import("resend");
@@ -72,9 +79,14 @@ export async function sendEmail(
       text: message.text,
       ...(replyTo ? { replyTo } : {}),
     });
-    if (error) console.error("Resend error:", error);
+    if (error) {
+      console.error("Resend error:", error);
+      return { status: "failed", error: error.name ? `${error.name}: ${error.message}` : error.message };
+    }
+    return { status: "sent" };
   } catch (err) {
     console.error("Email send failed:", err);
+    return { status: "failed", error: err instanceof Error ? err.message : String(err) };
   }
 }
 
@@ -115,7 +127,7 @@ function quoteRows(quote: Quote): DetailRow[] {
   ];
 }
 
-export async function sendBookingConfirmation(info: BookingEmailInfo): Promise<void> {
+export async function sendBookingConfirmation(info: BookingEmailInfo): Promise<SendOutcome> {
   const guest = esc(info.guestName);
   const message = renderEmail({
     title: `Booking confirmed — ${SITE.name}`,
@@ -151,10 +163,10 @@ export async function sendBookingConfirmation(info: BookingEmailInfo): Promise<v
       ${paragraph("Questions before your stay? Reply to this email, or message us from your booking page.")}
       ${button(`${SITE.url}/account`, "View your booking")}`,
   });
-  await sendEmail(info.guestEmail, `Booking confirmed — ${SITE.name}`, message, SITE.ownerEmail);
+  return sendEmail(info.guestEmail, `Booking confirmed — ${SITE.name}`, message, SITE.ownerEmail);
 }
 
-export async function notifyOwnerNewBooking(info: BookingEmailInfo): Promise<void> {
+export async function notifyOwnerNewBooking(info: BookingEmailInfo): Promise<SendOutcome> {
   const message = renderEmail({
     title: `New booking — ${SITE.name}`,
     preheader: `${info.guestName} booked ${info.checkIn} to ${info.checkOut} · ${formatUSD(info.quote.total)}`,
@@ -180,7 +192,7 @@ export async function notifyOwnerNewBooking(info: BookingEmailInfo): Promise<voi
       ${button(`${SITE.url}/admin/calendar`, "Open the calendar")}
       ${paragraph("Replying to this email goes straight to the guest.", { muted: true })}`,
   });
-  await sendEmail(
+  return sendEmail(
     SITE.ownerEmail,
     `New booking: ${info.checkIn} (${info.guestName})`,
     message,
