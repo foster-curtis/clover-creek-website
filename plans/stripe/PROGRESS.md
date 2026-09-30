@@ -35,8 +35,8 @@ Standing instructions: [ORCHESTRATOR.md](ORCHESTRATOR.md).
 | # | Status | Commit | Notes |
 |---|---|---|---|
 | 00 | human only | — | not started (human) |
-| 01 | done | see git log ("Stop the webhook reporting success over a failed write") | details below |
-| 02 | not started | — | |
+| 01 | done | `0f6edfe` | details below |
+| 02 | done | see git log ("Let the owner read why a refund failed, in production") | browser checks left for the human |
 | 03 | not started | — | |
 | 04 | not started | — | |
 | 07 | not started | — | |
@@ -114,3 +114,58 @@ without the table every webhook 500s (Stripe retries, so it recovers once applie
   `charge.dispute.*` are subscribed before Stage 04's code deploys, those events are recorded
   but never re-run (payload is kept, so they can be replayed by hand). Subscribe after deploying.
 - A `skipped` email (no `RESEND_API_KEY` in production) settles as a clean `handled`.
+
+## Stage 02 — Refund errors that reach the owner
+
+Usage at start: 5h 9%, 7d 19%. At commit: 5h 26%, 7d 22%.
+
+**Landed:** `src/lib/actionResult.ts` (+3 trivial tests); `refundBooking(prev, formData)` returns
+`ActionResult` (messages byte-identical to before; `requireAdmin()` still throws);
+`RefundControls` renders `blocked` inline and `money-moved` in a bordered, persistent panel that
+disables both buttons. No migration.
+
+**Deviations (deliberate, reviewed):**
+- **Server-side status guard** (behaviour change): `refundBooking` returns `blocked("This booking
+  is already <status> — nothing was refunded and no money moved.")` unless the booking is
+  `pending`/`confirmed`, before any Stripe call. Without it a queued double-submit (or a stale
+  second tab) after a partial-tier refund passes the Stripe ceiling again and sends the same
+  amount a second time; "in full" would instead clamp to $0 and overwrite `refund_cents` with 0.
+- `resolveRefund()` throwing (bad or oversized override — sized against Stripe, so the page's
+  own check can pass) is returned as `blocked` too, instead of reaching production as a digest.
+- Forms use `onSubmit` + `startTransition(() => formAction(data))`, not `action={…}`: React 19
+  resets a form after an action and skips a focused number input, which (now that failures
+  render inline) could blank the override box while the confirm text still named the typed
+  amount — the next submit would then refund the policy amount. A `useRef` flag closes the
+  same-frame double-submit gap; released when `isPending` falls.
+- Success message is keyed on whether `refunds.create` actually ran ("Refunded $X and cancelled
+  the booking." vs "Cancelled the booking. No refund was issued.").
+- `console.warn` on the two blocked Stripe paths so they still reach the server log.
+
+**Verified here** (scratch vitest calling the real `refundBooking` with `isAdminUser` mocked,
+local DB, Stripe test mode, PaymentIntents created with `pm_card_visa`):
+- policy refund → `done("Refunded $225 …")`, booking `cancelled`, `refund_cents` 22500;
+  a second run ("in full") → `blocked` before Stripe; Stripe still holds exactly one refund and
+  `refund_cents` is intact.
+- "in full" after a $100 Dashboard-style refund → clamps, refunds $125.
+- typed override of $200 when Stripe holds $125 → `blocked` "Stripe holds $125 … less than the
+  $200 requested …", no Stripe write, booking still `confirmed`.
+- bogus payment intent → `blocked` "Couldn't read the payment from Stripe: … no money moved."
+- temporary local trigger refusing the cancel write → `money-moved` "… WENT THROUGH …", one
+  refund in Stripe, booking still `confirmed`; a retry → `blocked`, still one refund.
+- Gate green (214 tests).
+
+**Left for the human** (needs the admin UI in a browser, on `npm run build && npm start`):
+see REPORT.md — each message readable in production, the money-moved panel + disabled buttons,
+double-click issues one refund, success flips the row to `cancelled`, the focused-override
+check, and `isPending` greying the buttons.
+
+**Open review findings (not acted on):**
+- The success line will rarely be seen: the revalidated row flips to `cancelled` and unmounts
+  the controls in the same commit. (The plan expects this.)
+- The money-moved lock lasts only until reload/navigation; the booking still reads `confirmed`,
+  so a reload re-enables the buttons. Stage 05's email is the durable notice.
+- `admin/error.tsx`'s header still cites "Stripe declining a refund" as a thrown error; left
+  untouched per the plan.
+- A process death between `refunds.create` and the booking write could still double-refund on
+  retry; closing that needs an idempotency key on `refunds.create` (a ground-rule-1 change).
+- Stage 07's DB fake must return `status`; add the status-guard and resolveRefund-throws branches.

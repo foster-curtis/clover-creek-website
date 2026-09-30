@@ -6,11 +6,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type Stripe from "stripe";
+import { blocked, done, moneyMoved, type ActionResult } from "@/lib/actionResult";
 import {
   describeRefundAction,
   propertyToday,
   resolveRefund,
   type RefundInstruction,
+  type ResolvedRefund,
 } from "@/lib/cancellation";
 import { getHolidays, getPricing } from "@/lib/data";
 import {
@@ -171,16 +173,40 @@ export async function setBookingStatus(formData: FormData) {
  * captured rather than the booking's recorded total — see the comment below.
  * Stripe's processing fee is not returned on a refund; that cost sits with the
  * owner either way.
+ *
+ * Failures are returned, not thrown: production redacts a thrown Server Action
+ * message to a digest, and these are the messages the owner most needs to read —
+ * above all the one saying the money moved. `blocked` means nothing happened;
+ * `money-moved` means the refund went out and must not be retried. Only
+ * requireAdmin() still throws, since an unauthorised call is not an outcome to
+ * show.
  */
-export async function refundBooking(formData: FormData) {
+export async function refundBooking(
+  _prev: ActionResult | null,
+  formData: FormData
+): Promise<ActionResult> {
   const db = await requireAdmin();
   const id = String(formData.get("id"));
   const { data: booking } = await db
     .from("bookings")
-    .select("stay, guest_name, guest_email, total_cents, stripe_payment_intent")
+    .select("stay, guest_name, guest_email, total_cents, stripe_payment_intent, status")
     .eq("id", id)
     .single();
-  if (!booking) throw new Error("Booking not found");
+  if (!booking) return blocked("Booking not found");
+
+  // The controls only appear on pending and confirmed bookings, but this action
+  // can run twice in a row — useActionState queues a second dispatch if a
+  // double-click slips past the disabled buttons, and two admin tabs can do the
+  // same. The second run must stop here, before Stripe, and this is money rather
+  // than bookkeeping: after a 50%-tier refund the policy amount equals what
+  // Stripe still holds, so a second policy run passes the ceiling check below and
+  // refunds.create fires again — a second real payout. (A second "in full" run
+  // would instead clamp to the $0 left and overwrite the first run's refund_cents
+  // with 0, so the tax report would count a refunded stay as a full receipt.)
+  if (booking.status !== "pending" && booking.status !== "confirmed")
+    return blocked(
+      `This booking is already ${booking.status} — nothing was refunded and no money moved.`
+    );
 
   const { checkIn } = parseStay(booking.stay);
   const cancelledOn = propertyToday();
@@ -210,7 +236,7 @@ export async function refundBooking(formData: FormData) {
     // would tell the guest their refund is coming and hand the lodging tax
     // report a deduction that never happened. Fail instead.
     if (!process.env.STRIPE_SECRET_KEY)
-      throw new Error("STRIPE_SECRET_KEY is not set — refusing to record a refund Stripe never issued");
+      return blocked("STRIPE_SECRET_KEY is not set — refusing to record a refund Stripe never issued");
     const { default: StripeSdk } = await import("stripe");
     stripe = new StripeSdk(process.env.STRIPE_SECRET_KEY);
     try {
@@ -225,13 +251,27 @@ export async function refundBooking(formData: FormData) {
       refundableCents = intent.amount_received - alreadyRefunded;
     } catch (e) {
       const why = e instanceof Error ? e.message : String(e);
-      throw new Error(
+      // A returned value is not logged the way a thrown error was.
+      console.warn("Refund blocked: couldn't read the payment from Stripe", {
+        bookingId: id,
+        reason: why,
+      });
+      return blocked(
         `Couldn't read the payment from Stripe: ${why}. The booking was not cancelled and no money moved.`
       );
     }
   }
 
-  const resolved = resolveRefund(instruction, checkIn, cancelledOn, basisCents);
+  // Sized against what Stripe holds, so an override the page accepted (it checks
+  // the booking's total) can still be too big here. That is the owner's to read
+  // too, and it happens before any Stripe write.
+  let resolved: ResolvedRefund;
+  try {
+    resolved = resolveRefund(instruction, checkIn, cancelledOn, basisCents);
+  } catch (e) {
+    const why = e instanceof Error ? e.message : String(e);
+    return blocked(`${why}. The booking was not cancelled and no money moved.`);
+  }
   const { policy: outcome, overridden, full } = resolved;
   let refundCents = resolved.refundCents;
 
@@ -242,25 +282,30 @@ export async function refundBooking(formData: FormData) {
     // this payment is not what they think it is.
     if (instruction.kind === "full") refundCents = refundableCents;
     else
-      throw new Error(
+      return blocked(
         `Stripe holds ${formatUSD(refundableCents / 100)} for this booking, less than the ` +
           `${formatUSD(refundCents / 100)} requested. The booking was not cancelled and no money moved.`
       );
   }
 
+  // Whether money actually left, as opposed to a $0 outcome or a booking with no
+  // payment on file — the success message below says only what happened.
+  let refunded = false;
   if (refundCents > 0 && stripe && booking.stripe_payment_intent) {
     try {
       await stripe.refunds.create({
         payment_intent: booking.stripe_payment_intent,
         amount: refundCents,
       });
+      refunded = true;
     } catch (e) {
       // Stripe still refuses for reasons we can't see up front — a charge past
       // the ~180-day refund window, a dispute, insufficient balance. Say which,
       // and say plainly that the booking is untouched, because the next question
       // is always "did it half happen?". Nothing below this line has run.
       const why = e instanceof Error ? e.message : String(e);
-      throw new Error(
+      console.warn("Refund blocked: Stripe refused the refund", { bookingId: id, reason: why });
+      return blocked(
         `Stripe refused the refund: ${why}. The booking was not cancelled and no money moved.`
       );
     }
@@ -286,15 +331,16 @@ export async function refundBooking(formData: FormData) {
     // confirmed, the dates stay blocked, and the lodging tax report counts a
     // receipt that was handed back. There is no safe automatic recovery —
     // re-refunding would send the money twice — so name the row and the amount
-    // and hand it to the owner. The server log keeps the full error; the
-    // message survives into production, where the error boundary shows only a
-    // digest.
+    // and hand it to the owner. The server log keeps the full error; returning
+    // the message (rather than throwing it) is what gets it past production's
+    // redaction, and the `money-moved` severity is what makes the form lock its
+    // buttons.
     console.error("Refund succeeded but the booking write failed", {
       bookingId: id,
       refundCents,
       writeError,
     });
-    throw new Error(
+    return moneyMoved(
       `The refund of ${formatUSD(refundCents / 100)} WENT THROUGH, but saving it to the ` +
         `booking failed: ${writeError.message}. The guest has their money. Booking ${id} still ` +
         `shows as confirmed and its dates are still blocked — set it to cancelled by hand, and ` +
@@ -319,6 +365,15 @@ export async function refundBooking(formData: FormData) {
   revalidatePath("/admin/calendar");
   revalidatePath("/account");
   revalidatePath("/book");
+
+  // Keyed on whether Stripe was actually called, not on the amount: a $0
+  // outcome (nothing due under the policy, or Stripe already holds nothing)
+  // never reached Stripe, so don't say money was refunded.
+  return done(
+    refunded
+      ? `Refunded ${formatUSD(refundCents / 100)} and cancelled the booking.`
+      : "Cancelled the booking. No refund was issued."
+  );
 }
 
 // --- calendar: imported feeds ----------------------------------------------
@@ -333,10 +388,10 @@ export async function refundBooking(formData: FormData) {
  * link is wrong, this is the moment to find out.
  *
  * A bad link comes back as a redirect carrying the reason, not a thrown error
- * like the rest of this file. Throwing would be right for a Stripe refusal and
- * is wrong here: production replaces a thrown message with a generic one (see
- * admin/error.tsx), and mistyping a URL is an everyday slip that has to say
- * what was wrong with it, next to the field, with the page still there.
+ * like most of this file: production replaces a thrown message with a generic
+ * one (see admin/error.tsx), and mistyping a URL is an everyday slip that has
+ * to say what was wrong with it, next to the field, with the page still there.
+ * refundBooking returns its failures for the first of those reasons.
  */
 export async function addIcalFeed(formData: FormData) {
   const db = await requireAdmin();
