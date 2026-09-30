@@ -39,7 +39,7 @@ Standing instructions: [ORCHESTRATOR.md](ORCHESTRATOR.md).
 | 02 | done | `8b13228` | browser checks left for the human |
 | 03 | done | `2bf6da3` | browser checks left for the human |
 | 04 | done | see git log ("Learn about refunds issued outside this site, and about disputes") | event subscription + browser check left for the human |
-| 07 | not started | — | |
+| 07 | in progress (paused) | WIP `70b518b` on `wip/stripe-stage-07` | implemented + mutation-checked; needs review, gate, commit |
 | 05 | not started | — | |
 | 06 | not started | — | |
 | 08 | not started | — | |
@@ -338,3 +338,32 @@ report files each `booking_refunds` row on its own date; the seed's b…02 refun
 - The legacy admin cut-off compares Stripe's `created` with our server clock (label only).
 - Stage 07 must cover: admin-wins in both orders, the legacy swap, the confirm-refund guard, the
   session fallback, lost/won disputes, and `reportRows` per-row refunds.
+
+## Stage 07 — Money-path tests (paused 2026-09-30, 17:23 local)
+
+Usage at start: 5h 69%, 7d 37%. Paused at 5h 79% (resets Wed Sep 30 7:50 PM), 7d 38%
+(resets Mon Oct 5 9:00 PM) — the stage could not be reviewed and gated under the 80% line.
+
+**On `wip/stripe-stage-07` (`70b518b`, one commit on top of `973e6df`):** `src/lib/stripe.ts`
+`getStripe(key)` seam replacing the three inline `import("stripe")` + `new …(key)` blocks
+(orchestrator read the diff: same dynamic import at the same point, same key, no options);
+`src/lib/__fixtures__/stripe.ts` (`fakeStripe`, `signedEvent` with a real signature via
+`generateTestHeaderString`) and `db.ts` (scripted DB fake); `actions.refund.test.ts` (25),
+`webhooks/stripe/route.test.ts` (35), `checkout/route.test.ts` (12, incl. the tampered-quote
+test asserting `unit_amount` 48500 hand-computed from `DEFAULT_PRICING`, clock pinned);
+new `vitest.config.mts` (only the `@` alias). Implementer's gate: lint ✅ typecheck ✅ test ✅
+313 passed + 1 todo, 18s. Not yet run by the orchestrator; build not run.
+
+**Mutation checks (implementer, hand edits restored):** every one caught — 01 200-on-write-error,
+01 claim-always-fresh, 02 throw-not-money-moved, 02 no status guard, 03 no pre-check, 03 CC001
+ignored, 04 our amount not Stripe's, 04 always cancel, 04 no confirm refund guard; plus client
+price trusted, no clamp, failed refunds counted, no session fallback, expired cancels any
+status, no compensating cancel, no payment_status check, wrong intent, failed settled handled,
+throw answered 200, dispute upsert without ignoreDuplicates, blocked-dates read error ignored.
+
+**Findings:** `refundBooking` emails the placeholder address of a manual booking (only a falsy
+`guest_email` is skipped) — that is Stage 05 item 5; the suite leaves an `it.todo` for it. The
+SQL-side behaviours (admin-wins in both orders, the legacy swap) can't be exercised by a hermetic
+suite; the tests assert what the TypeScript sends to those RPCs, and Stage 04's live
+verification above covers the SQL. `reportRows` per-row refunds are covered in
+`taxReport.test.ts` (Stage 04).
