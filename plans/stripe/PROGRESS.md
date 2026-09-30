@@ -25,7 +25,7 @@ Standing instructions: [ORCHESTRATOR.md](ORCHESTRATOR.md).
 |---|---|---|
 | 0006 | (pre-existing: iCal feeds) | — |
 | 0007 | 01 `stripe_events` | committed (Stage 01) |
-| 0008 | 03 bookings respect blocks | allocated |
+| 0008 | 03 bookings respect blocks | committed (Stage 03) |
 | 0009 | 04 refunds as rows | allocated |
 | 0010 | 06 booking events | allocated |
 | 0011+ | 05 / 08 / 09 extras, in landing order | — |
@@ -36,8 +36,8 @@ Standing instructions: [ORCHESTRATOR.md](ORCHESTRATOR.md).
 |---|---|---|---|
 | 00 | human only | — | not started (human) |
 | 01 | done | `0f6edfe` | details below |
-| 02 | done | see git log ("Let the owner read why a refund failed, in production") | browser checks left for the human |
-| 03 | not started | — | |
+| 02 | done | `8b13228` | browser checks left for the human |
+| 03 | done | see git log ("Stop taking payment for dates the owner has blocked") | browser checks left for the human |
 | 04 | not started | — | |
 | 07 | not started | — | |
 | 05 | not started | — | |
@@ -169,3 +169,76 @@ check, and `isPending` greying the buttons.
 - A process death between `refunds.create` and the booking write could still double-refund on
   retry; closing that needs an idempotency key on `refunds.create` (a ground-rule-1 change).
 - Stage 07's DB fake must return `status`; add the status-guard and resolveRefund-throws branches.
+
+## Stage 03 — Blocked dates enforced at checkout
+
+Usage at start: 5h 26%, 7d 22%. The first session stopped here when Claude Code's auto-mode
+classifier stopped returning verdicts (no Bash); resumed 2026-09-30 in a new session after
+restarting Docker. At commit: 5h 6% (window reset), 7d 28%.
+
+**Landed:** `0008_bookings_respect_blocks.sql` (two triggers + shared advisory lock),
+`src/lib/availability.ts` (`BLOCKED_DATES_CONFLICT = "CC001"`, `isDatesTaken()`,
+`rangesOverlap()`; +12 tests incl. a drift test that scans every migration's `errcode`),
+checkout pre-check, `blockDates()` → `ActionResult` with a new `BlockDatesForm` client
+component, `createManualBooking()` error reporting.
+
+**Deviations from the plan (deliberate, reviewed):** the plan predates the iCal import (0006).
+- **Imported blocks (`feed_id` set) are never refused** by the `blocked_dates` trigger: one
+  refusal would fail the feed's whole batch upsert, and what it refused is the cross-site double
+  sale the owner most needs on record. Only manual blocks are checked against bookings.
+- **The bookings trigger checks only when a row becomes active or its dates move while
+  active** — never on `pending → confirmed` (the hold passed the check at insert; an imported
+  block may land during the 30-minute hold) and never on a payment landing on a lapsed hold
+  (`cancelled → confirmed` in the write that sets `stripe_payment_intent`, which only the webhook
+  does): Stripe has the money by then, so refusing only hides it. A resold stay is still refused
+  by `bookings_no_overlap`. Any other reactivation (admin `cancelled → confirmed`) is checked.
+- **SQLSTATE `CC001`** (a class of the project's own; `PT…` avoided since PostgREST maps it to an
+  HTTP status). The route maps it with `23P01` to the same 409, by code only.
+- **Trigger messages are generic** ("Booking [a,b) overlaps blocked dates" / "Blocked dates
+  [a,b) overlap an active booking"): the trigger runs before RLS `WITH CHECK` as SECURITY
+  DEFINER and 0002 grants anon INSERT, so naming the row in the way would leak another booking's
+  id/status. `blockDates()` looks up and names the bookings itself.
+- `blockDates()` sweeps expired holds first; for a live pending hold it says the guest is paying
+  now and when the hold ends (cancelling wouldn't close their Stripe session).
+- `createManualBooking()` sweeps expired holds first and reports a refusal via
+  `?manualError=` (the `feedError` pattern — a thrown message is redacted in production); success
+  now redirects to `/admin/calendar` so a stale error doesn't linger. Still not an `ActionResult`.
+- The checkout pre-check runs after the pre-checkout feed refresh, against every block.
+
+**Verified here:**
+- `npm start` production build + curl (previous session): `/api/checkout` over the seed block,
+  over a block added after "page load", and over an imported block → 409, no booking row, no new
+  Stripe session; adjacent dates → 200 + session.
+- Real `blockDates()` (scratch vitest, admin mocked, local DB): over a confirmed booking → names
+  it, blocks nothing; adjacent → done; an expired-but-unswept hold → swept, block succeeds; bad
+  dates → blocked; over a live pending hold → "<name> is paying for … right now; their hold ends
+  at h:mm — try again after that."
+- Real `createManualBooking()`: over the seed block → redirect with the exact `manualError` text
+  and no row; free dates → redirect to `/admin/calendar`, row `confirmed`.
+- psql (implementer, rolled back): every trigger branch (29 cases) incl. the late-payment skip
+  (`pi_x` write allowed, the same write without an intent → CC001, a resold stay → 23P01),
+  imported-block upserts allowed, notes/refund updates never re-judged; both race orders
+  serialise on the lock and the second raises CC001 (control run with the function STABLE let
+  both commit). Anon PostgREST probe → 400 CC001 with no id/status in the message.
+- `npx supabase db reset` replays 0001–0008 + seed; the seed's block and bookings coexist
+  (0 active overlaps locally). Production back-check (2026-09-29, read-only): 0 overlaps.
+- Gate green (226 tests).
+
+**Left for the human** (admin UI in a browser, `npm run build && npm start`): the block form
+shows a refusal inline and keeps the typed dates, clears them after a success, and greys the
+button while pending; a refused manual booking shows the `manualError` line under its form;
+a real stale `/book` tab gets the "just booked" message at submit (curl equivalent passed).
+Re-run the overlap back-check against production right before applying 0008 (see REPORT.md).
+
+**Open review findings (not acted on):**
+- 0002's anon INSERT grants on `bookings`/`blocked_dates` stay; the CC001 message reveals only
+  that the dates are busy, which the public calendar already shows.
+- `setBookingStatus()` discards its update error, so a refused reactivation (CC001) vanishes
+  silently. Pre-existing; the UI offers no reactivation.
+- Re-running `seed.sql` by hand days after a reset can raise CC001 (BEFORE INSERT fires even for
+  rows `on conflict do nothing` then skips). Dev-only; `db reset` clears it.
+- An echo of our own booking re-imported from a listing site keeps its nights shut for a while
+  after it's cancelled. Predates this stage; 0008 only enforces what the calendar already greys.
+- The imported-block upsert takes no lock, so it can race a booking insert — the state
+  deviation 1 already accepts.
+- Stage 07: add the route-level "blocked range → 409, no Stripe session" test.

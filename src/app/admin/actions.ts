@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import type Stripe from "stripe";
 import { blocked, done, moneyMoved, type ActionResult } from "@/lib/actionResult";
+import { BLOCKED_DATES_CONFLICT, isDatesTaken } from "@/lib/availability";
 import {
   describeRefundAction,
   propertyToday,
@@ -27,6 +28,7 @@ import {
   PLACEHOLDER_GUEST_EMAIL,
 } from "@/lib/email";
 import { formatUSD, parseStay, quoteStay, validateStay } from "@/lib/pricing";
+import { SITE } from "@/lib/site";
 import { isAdminUser, supabaseAdmin } from "@/lib/supabase/server";
 
 async function requireAdmin() {
@@ -97,16 +99,83 @@ export async function deleteHoliday(formData: FormData) {
 
 // --- calendar: blocks, manual bookings, status changes ---------------------
 
-export async function blockDates(formData: FormData) {
+/**
+ * Block dates by hand. The database refuses a block over a live booking (the
+ * 0008 trigger), and the owner needs to hear which booking is in the way — so,
+ * like refundBooking, the outcome is returned rather than thrown past
+ * production's redaction.
+ */
+export async function blockDates(
+  _prev: ActionResult | null,
+  formData: FormData
+): Promise<ActionResult> {
   const db = await requireAdmin();
-  const from = String(formData.get("from"));
-  const to = String(formData.get("to"));
+  const from = String(formData.get("from") ?? "");
+  const to = String(formData.get("to") ?? "");
   const reason = String(formData.get("reason") ?? "").trim() || null;
-  if (/^\d{4}-\d{2}-\d{2}$/.test(from) && /^\d{4}-\d{2}-\d{2}$/.test(to) && from < to) {
-    await db.from("blocked_dates").insert({ span: `[${from},${to})`, reason });
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || !/^\d{4}-\d{2}-\d{2}$/.test(to))
+    return blocked("Choose both dates. Nothing was blocked.");
+  if (from >= to)
+    return blocked("The reopen date has to be after the first night. Nothing was blocked.");
+
+  // A hold that timed out but hasn't been swept yet still reads as pending, and
+  // would refuse the block for a guest who is long gone.
+  await db.rpc("expire_stale_holds");
+
+  const span = `[${from},${to})`;
+  const { error } = await db.from("blocked_dates").insert({ span, reason });
+  if (error) {
+    if (error.code === BLOCKED_DATES_CONFLICT) return blocked(await datesInUse(db, span, error.message));
+    return blocked(`Couldn't block those dates: ${error.message}. Nothing was blocked.`);
   }
+
   revalidatePath("/admin/calendar");
   revalidatePath("/book");
+  return done(`Blocked ${from} → ${to}.`);
+}
+
+/**
+ * Names every live booking on the dates, by guest, for the owner. The trigger's
+ * message deliberately says nothing about the row in the way (see 0008), so the
+ * detail comes from this lookup, made as the owner; the message is the fallback
+ * if it comes back empty (the booking was cancelled in between) or fails.
+ */
+async function datesInUse(
+  db: ReturnType<typeof supabaseAdmin>,
+  span: string,
+  triggerMessage: string
+): Promise<string> {
+  const { data: inTheWay } = await db
+    .from("bookings")
+    .select("guest_name, stay, status, hold_expires_at")
+    .in("status", ["pending", "confirmed"])
+    .overlaps("stay", span)
+    .order("stay");
+  if (!inTheWay?.length) return `Nothing was blocked: ${triggerMessage}.`;
+
+  const holdEnds = new Intl.DateTimeFormat("en-US", {
+    timeZone: SITE.location.timezone,
+    hour: "numeric",
+    minute: "2-digit",
+  });
+  const reasons = inTheWay.map((b) => {
+    const { checkIn, checkOut } = parseStay(b.stay);
+    const dates = `${checkIn} → ${checkOut}`;
+    // blockDates swept expired holds first, so a pending one with a hold is a
+    // guest at Stripe right now. Cancelling it wouldn't close their checkout —
+    // they could still pay, and a payment is let through a block — so the only
+    // safe advice is to wait.
+    if (b.status === "pending" && b.hold_expires_at)
+      return (
+        `${b.guest_name} is paying for ${dates} right now; their hold ends at ` +
+        `${holdEnds.format(new Date(b.hold_expires_at))} — try again after that.`
+      );
+    return (
+      `${b.guest_name}'s ${b.status} booking (${dates}) is on those dates — cancel or move ` +
+      "it first, or block the nights around it."
+    );
+  });
+  return `Nothing was blocked. ${reasons.join(" ")}`;
 }
 
 // Only the owner's own blocks can be lifted here. An imported one would be
@@ -124,6 +193,11 @@ export async function unblockDates(formData: FormData) {
   revalidatePath("/book");
 }
 
+/**
+ * A refused booking comes back as a redirect carrying the reason, as addIcalFeed
+ * does, rather than a thrown error that production would redact to a digest:
+ * "those dates are blocked" is the whole of what the owner needs to read.
+ */
 export async function createManualBooking(formData: FormData) {
   const db = await requireAdmin();
   const checkIn = String(formData.get("from"));
@@ -139,7 +213,9 @@ export async function createManualBooking(formData: FormData) {
 
   const holidays = await getHolidays();
   const quote = quoteStay(stay, holidays, pricing);
-  await db.from("bookings").insert({
+  // An expired hold not yet swept would otherwise be reported as an overlap.
+  await db.rpc("expire_stale_holds");
+  const { error } = await db.from("bookings").insert({
     guest_name: name,
     guest_email: email,
     stay: `[${checkIn},${checkOut})`,
@@ -150,8 +226,22 @@ export async function createManualBooking(formData: FormData) {
     status: "confirmed",
     notes: "manual booking (phone/walk-in)",
   });
+  // An overlap used to vanish here without a word: the page reloaded and the
+  // booking simply wasn't there.
+  if (error)
+    manualBookingError(
+      isDatesTaken(error.code)
+        ? "That booking wasn't added: those dates overlap another booking or blocked dates."
+        : `That booking wasn't added: ${error.message}`
+    );
   revalidatePath("/admin/calendar");
   revalidatePath("/book");
+  // Clear any error left in the URL from a previous attempt.
+  redirect("/admin/calendar");
+}
+
+function manualBookingError(message: string): never {
+  redirect(`/admin/calendar?manualError=${encodeURIComponent(message)}`);
 }
 
 export async function setBookingStatus(formData: FormData) {

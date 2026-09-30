@@ -1,8 +1,9 @@
-// Creates a pending booking (hard-blocked against double-booking by the DB's
-// exclusion constraint) and a Stripe Checkout session. The price is always
-// recomputed server-side — the client's quote is display-only.
+// Creates a pending booking (hard-blocked against double-booking and blocked
+// dates by the database — see 0001 and 0008) and a Stripe Checkout session. The
+// price is always recomputed server-side — the client's quote is display-only.
 
 import { NextResponse, type NextRequest } from "next/server";
+import { isDatesTaken } from "@/lib/availability";
 import { getHolidays, getPricing } from "@/lib/data";
 import { syncAllFeeds } from "@/lib/icalSync";
 import { quoteStay, toISODate, validateStay } from "@/lib/pricing";
@@ -11,6 +12,11 @@ import { withDeadline } from "@/lib/supabase/deadline";
 import { hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
 
 const HOLD_MINUTES = 30;
+
+// One answer whether a booking or a block holds the dates: to the guest they
+// are simply gone, and why is not their business.
+const DATES_TAKEN = "Sorry — those dates were just booked by someone else. Please pick different dates.";
+const BOOKING_FAILED = "Could not create the booking. Please try again.";
 
 /** How long the pre-checkout calendar refresh may hold up the guest. */
 const SYNC_DEADLINE_MS = 2500;
@@ -71,7 +77,25 @@ export async function POST(request: NextRequest) {
   // the same position we were in before any of this existed.
   await withDeadline(syncAllFeeds(db, { onlyStale: true }), SYNC_DEADLINE_MS, []);
 
-  // Insert the pending booking; the exclusion constraint rejects overlaps.
+  // Blocked nights are greyed out on the calendar, but a tab opened before the
+  // owner blocked them, or a POST that never saw a calendar, can still ask for
+  // them. Checked after the refresh above so a stay just imported counts, and
+  // against every block, the owner's and imported alike. The 0008 trigger would
+  // refuse the insert anyway; asking here means the refusal doesn't depend on
+  // that migration having reached this database. A failed read is not "no clash".
+  const { data: clash, error: clashError } = await db
+    .from("blocked_dates")
+    .select("id")
+    .overlaps("span", `[${checkIn},${checkOut})`)
+    .limit(1);
+  if (clashError) {
+    console.error("Checkout: couldn't read blocked dates:", clashError);
+    return NextResponse.json({ error: BOOKING_FAILED }, { status: 500 });
+  }
+  if (clash.length > 0) return NextResponse.json({ error: DATES_TAKEN }, { status: 409 });
+
+  // Insert the pending booking; the exclusion constraint rejects an overlap
+  // with another booking, the 0008 trigger one with a block.
   const { data: booking, error: insertError } = await db
     .from("bookings")
     .insert({
@@ -91,13 +115,9 @@ export async function POST(request: NextRequest) {
     .single();
 
   if (insertError || !booking) {
-    const conflict = insertError?.code === "23P01"; // exclusion constraint violation
+    const conflict = isDatesTaken(insertError?.code);
     return NextResponse.json(
-      {
-        error: conflict
-          ? "Sorry — those dates were just booked by someone else. Please pick different dates."
-          : "Could not create the booking. Please try again.",
-      },
+      { error: conflict ? DATES_TAKEN : BOOKING_FAILED },
       { status: conflict ? 409 : 500 }
     );
   }

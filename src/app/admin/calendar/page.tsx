@@ -10,7 +10,6 @@ import { SITE } from "@/lib/site";
 import { hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
 import {
   addIcalFeed,
-  blockDates,
   createManualBooking,
   removeIcalFeed,
   setBookingStatus,
@@ -18,6 +17,7 @@ import {
   syncIcalFeeds,
   unblockDates,
 } from "../actions";
+import BlockDatesForm from "./BlockDatesForm";
 import RefundControls from "./RefundControls";
 import SyncNotice, { SYNC_NOTICE_COOKIE } from "./SyncNotice";
 
@@ -46,7 +46,7 @@ function timeAgo(iso: string | null): string {
 export default async function AdminCalendarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ feedError?: string }>;
+  searchParams: Promise<{ feedError?: string; manualError?: string }>;
 }) {
   if (!hasServiceRole()) {
     return <p className="text-ink-muted">Set SUPABASE_SERVICE_ROLE_KEY to manage bookings.</p>;
@@ -71,7 +71,7 @@ export default async function AdminCalendarPage({
 
   const icalToken = process.env.ICAL_FEED_TOKEN;
   const today = propertyToday();
-  const feedError = (await searchParams).feedError;
+  const { feedError, manualError } = await searchParams;
 
   // Read server-side so a page the owner has already dismissed the notice on
   // never flashes the tall card up before hydration collapses it.
@@ -176,18 +176,7 @@ export default async function AdminCalendarPage({
       {/* Block dates */}
       <Card variant="flat" className="mt-6 p-4">
         <SectionTitle as="h2" className="text-lg">Block dates</SectionTitle>
-        <form action={blockDates} className="mt-3 flex flex-wrap items-end gap-3">
-          <Field label="First night" htmlFor="block-from" className="w-40">
-            <Input id="block-from" type="date" name="from" required />
-          </Field>
-          <Field label="Reopen on (checkout day)" htmlFor="block-to" className="w-40">
-            <Input id="block-to" type="date" name="to" required />
-          </Field>
-          <Field label="Reason (optional)" htmlFor="block-reason" className="w-48">
-            <Input id="block-reason" type="text" name="reason" placeholder="Family visit" />
-          </Field>
-          <Button type="submit" size="sm">Block</Button>
-        </form>
+        <BlockDatesForm />
         {(blocks ?? []).length > 0 && (
           <ul className="mt-4 space-y-2 text-sm">
             {(blocks ?? []).map((b) => {
@@ -242,6 +231,11 @@ export default async function AdminCalendarPage({
           </Field>
           <Button type="submit" size="sm">Add booking</Button>
         </form>
+        {manualError && (
+          <p role="alert" className="mt-2 text-sm text-clay">
+            {manualError}
+          </p>
+        )}
         <p className="mt-2 text-xs text-ink-subtle">
           Priced automatically from the current rates; marked as confirmed (collect payment
           yourself).

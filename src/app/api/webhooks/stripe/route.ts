@@ -158,7 +158,8 @@ async function confirm(db: SupabaseClient, session: Stripe.Checkout.Session): Pr
     .maybeSingle();
   // This write is what Stripe retries for. Any error — the overlap constraint,
   // if the hold lapsed and the dates were resold before payment landed, or a
-  // transient fault — has to reach Stripe as a 500.
+  // transient fault — has to reach Stripe as a 500. (A blocked date never
+  // refuses it: the 0008 trigger lets a landing payment through.)
   if (error) throw new Error(`Couldn't confirm booking ${bookingId}: ${error.message}`);
   if (!booking) {
     // No such booking, or one the guard refused. Look it up to say which.
