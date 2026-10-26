@@ -345,6 +345,20 @@ const BLOG_ID = `${SITE.url}/blog#blog`;
 const postUrl = (slug: string) => absoluteUrl(`/blog/${slug}`);
 
 /**
+ * A post's bare YYYY-MM-DD as midnight at the property, with its UTC offset —
+ * Google flags a date with no time or timezone as an invalid datetime. The
+ * offset is read at noon UTC so it follows daylight saving for that date.
+ */
+export function postDateTime(date: string) {
+  const offset =
+    new Intl.DateTimeFormat("en-US", { timeZone: SITE.location.timezone, timeZoneName: "longOffset" })
+      .formatToParts(new Date(`${date}T12:00:00Z`))
+      .find((p) => p.type === "timeZoneName")
+      ?.value.replace("GMT", "") || "+00:00";
+  return `${date}T00:00:00${offset}`;
+}
+
+/**
  * The /blog index: one Blog whose entries share @ids with the post pages, so the two
  * representations are understood as the same articles (§8.3).
  */
@@ -362,16 +376,17 @@ export function blogIndexSchema(posts: PostMeta[]) {
       headline: p.title,
       url: postUrl(p.slug),
       description: p.excerpt,
-      datePublished: p.publishedAt,
+      datePublished: postDateTime(p.publishedAt),
     })),
   };
 }
 
 // A byline that does not name anyone becomes the Organization, never an invented
-// person. Stage 08 adds the third case: a byline matching the site owner resolves
-// to the owner's Person @id.
+// person, and so does a byline naming the business itself. Stage 08 adds the
+// third case: a byline matching the site owner resolves to the owner's Person @id.
 function postAuthor(meta: PostMeta) {
-  return meta.author ? { "@type": "Person", name: meta.author } : { "@id": ORG_ID };
+  if (!meta.author || meta.author === SITE.name) return { "@id": ORG_ID };
+  return { "@type": "Person", name: meta.author };
 }
 
 /**
@@ -389,8 +404,8 @@ export function blogPostingSchema(meta: PostMeta) {
     url,
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
     description: meta.excerpt,
-    datePublished: meta.publishedAt,
-    dateModified: meta.updatedAt ?? meta.publishedAt,
+    datePublished: postDateTime(meta.publishedAt),
+    dateModified: postDateTime(meta.updatedAt ?? meta.publishedAt),
     // A cover is a static import, so .src is a site-relative /_next/static path.
     image: meta.cover ? absoluteUrl(meta.cover.src.src) : OG_IMAGE_URL,
     publisher: { "@id": ORG_ID },

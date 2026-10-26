@@ -90,7 +90,19 @@ describe("per-page schema (SEO_PLAN.md §8.3)", () => {
     const schema = blogPostingSchema(post);
     expect(schema.author).toEqual({ "@id": SCHEMA_IDS.org });
     expect(schema.image).toBe(OG_IMAGE_URL);
-    expect(schema.dateModified).toBe(post.publishedAt);
+    expect(schema.dateModified).toBe(schema.datePublished);
+  });
+
+  it("dates posts as midnight at the property, with the offset for that date", () => {
+    expect(blogPostingSchema(post).datePublished).toBe("2026-08-24T00:00:00-06:00");
+    expect(blogPostingSchema({ ...post, publishedAt: "2026-12-01" }).datePublished).toBe(
+      "2026-12-01T00:00:00-07:00",
+    );
+    expect(blogIndexSchema([post]).blogPost[0].datePublished).toBe("2026-08-24T00:00:00-06:00");
+  });
+
+  it("a byline naming the business resolves to the Organization", () => {
+    expect(blogPostingSchema({ ...post, author: SITE.name }).author).toEqual({ "@id": SCHEMA_IDS.org });
   });
 
   it("a bylined, covered, revised post uses its own data", () => {
@@ -102,7 +114,7 @@ describe("per-page schema (SEO_PLAN.md §8.3)", () => {
     });
     expect(schema.author).toEqual({ "@type": "Person", name: "Jane Doe" });
     expect(schema.image).toBe(`${SITE.url}/_next/static/media/c.jpg`);
-    expect(schema.dateModified).toBe("2026-10-01");
+    expect(schema.dateModified).toBe("2026-10-01T00:00:00-06:00");
   });
 
   it("caps the headline at 110 characters", () => {
