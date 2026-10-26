@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import GalleryGrid from "@/components/GalleryGrid";
 import { buttonClasses } from "@/components/ui/Button";
 import { PageTitle, SectionTitle } from "@/components/ui/Heading";
@@ -19,6 +20,7 @@ export default function GalleryPage() {
   const images = getGallery();
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
+      <Breadcrumbs crumbs={[{ name: "Photo Gallery" }]} />
       <PageTitle>Photo Gallery</PageTitle>
       <p className="mt-2 text-stone-600">Take a look around the house and the valley.</p>
       <div className="mt-8">

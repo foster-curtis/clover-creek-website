@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { PageTitle, SectionTitle } from "@/components/ui/Heading";
 import { describeRefund, REFUND_TIERS } from "@/lib/cancellation";
 import { pageMetadata } from "@/lib/seo";
@@ -10,6 +11,7 @@ export const metadata: Metadata = pageMetadata({ path: "/terms", title: "Terms o
 export default function TermsPage() {
   return (
     <div className="mx-auto max-w-[var(--w-prose)] px-4 py-10 leading-relaxed text-stone-600">
+      <Breadcrumbs crumbs={[{ name: "Terms of Service" }]} />
       <PageTitle>Terms of Service</PageTitle>
       <p className="mt-2 text-sm text-ink-subtle">Last updated: August 2026</p>
 

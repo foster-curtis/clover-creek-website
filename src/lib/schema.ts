@@ -13,6 +13,7 @@
 
 import { photoForRole } from "@/content/gallery";
 import type { Review } from "./data";
+import { absoluteUrl } from "./seo";
 import { SITE } from "./site";
 
 const ORG_ID = `${SITE.url}/#organization`;
@@ -287,5 +288,30 @@ export function homeGraph(opts: {
         aggregateRating: opts.aggregateRating,
       }),
     ],
+  };
+}
+
+export interface Crumb {
+  name: string;
+  /** Site-relative path. Omit on the final crumb — the current page. */
+  path?: string;
+}
+
+/**
+ * BreadcrumbList for a page (SEO_PLAN.md §10.3). "Home" is prepended automatically,
+ * so callers pass only the trail below it. The last item has no `item` URL — Google's
+ * documented pattern for the current page.
+ */
+export function breadcrumbListSchema(crumbs: Crumb[]) {
+  const all: Crumb[] = [{ name: "Home", path: "/" }, ...crumbs];
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: all.map((c, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: c.name,
+      ...(c.path ? { item: absoluteUrl(c.path) } : {}),
+    })),
   };
 }

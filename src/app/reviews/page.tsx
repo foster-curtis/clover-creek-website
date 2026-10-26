@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import ReviewForm from "@/components/ReviewForm";
 import ReviewsBrowser from "@/components/ReviewsBrowser";
 import RatingSummary from "@/components/RatingSummary";
@@ -24,6 +25,7 @@ export default async function ReviewsPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
+      <Breadcrumbs crumbs={[{ name: "Guest Reviews" }]} />
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <PageTitle>Guest Reviews</PageTitle>

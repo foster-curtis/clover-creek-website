@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import Card from "@/components/ui/Card";
 import { PageTitle, SectionTitle } from "@/components/ui/Heading";
 import { getSiteContent } from "@/lib/content";
@@ -31,6 +32,7 @@ export default async function HouseRulesPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
+      <Breadcrumbs crumbs={[{ name: "House Rules" }]} />
       <PageTitle>House Rules</PageTitle>
       <p className="mt-2 text-stone-600">
         A few simple rules keep the house comfortable for every guest. You&apos;ll be asked to

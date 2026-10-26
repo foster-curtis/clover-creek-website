@@ -116,6 +116,9 @@ container, immediately **above** the `<h1>`. Keep the existing container padding
 Crumb names should match the page's `<h1>`, not its `<title>` — that is what a reader
 expects and what Google's guidance describes.
 
+*(2026-10-26: three names in the table above are the `<title>`, not the `<h1>`. Following
+the rule, they shipped as `Book your stay`, `Frequently Asked Questions` and `Contact us`.)*
+
 **Do not** add breadcrumbs to `/`, `/login`, `/book/success`, `/account/*` or `/admin/*`.
 The home page is the root of the trail, and the rest are not indexable pages.
 
@@ -157,12 +160,15 @@ Breadcrumbs enhancement is detected.
 
 ## Acceptance criteria
 
-- [ ] All ten pages in the step-3 table render a visible trail and a `BreadcrumbList`.
-- [ ] The final crumb has no `item` URL and carries `aria-current="page"`.
-- [ ] Blog posts show `Home / Area Guide / <post title>` and the old `← Area Guide` link is
-      gone.
-- [ ] The home page has no breadcrumb.
-- [ ] `npm run lint && npm run typecheck && npm test && npm run build` all pass.
+- [x] All ten pages in the step-3 table render a visible trail and a `BreadcrumbList`.
+      *(2026-10-26: curl against `next start` — one `BreadcrumbList` on each of the nine
+      static pages. `/blog/[slug]` was 404 locally because Supabase was down; see below.)*
+- [x] The final crumb has no `item` URL and carries `aria-current="page"`.
+- [x] Blog posts show `Home / Area Guide / <post title>` and the old `← Area Guide` link is
+      gone. *(Verified in code and typecheck only — no post could be rendered locally.)*
+- [x] The home page has no breadcrumb.
+- [x] `npm run lint && npm run typecheck && npm test && npm run build` all pass.
+      *(2026-10-26: 188 tests.)*
 
 ## Commit
 

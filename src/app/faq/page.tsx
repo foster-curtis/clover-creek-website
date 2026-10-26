@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { PageTitle } from "@/components/ui/Heading";
 import { describeRefund, REFUND_TIERS } from "@/lib/cancellation";
 import { getSiteContent } from "@/lib/content";
@@ -68,6 +69,7 @@ export default async function FaqPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
+      <Breadcrumbs crumbs={[{ name: "Frequently Asked Questions" }]} />
       <PageTitle>Frequently Asked Questions</PageTitle>
       <div className="mt-8 space-y-3">
         {faqs.map(({ q, a }) => (

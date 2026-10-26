@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import { PageTitle, SectionTitle } from "@/components/ui/Heading";
 import { pageMetadata } from "@/lib/seo";
 import { SITE } from "@/lib/site";
@@ -8,6 +9,7 @@ export const metadata: Metadata = pageMetadata({ path: "/privacy", title: "Priva
 export default function PrivacyPage() {
   return (
     <div className="mx-auto max-w-[var(--w-prose)] px-4 py-10 leading-relaxed text-stone-600">
+      <Breadcrumbs crumbs={[{ name: "Privacy Policy" }]} />
       <PageTitle>Privacy Policy</PageTitle>
       <p className="mt-2 text-sm text-ink-subtle">Last updated: July 2026</p>
 

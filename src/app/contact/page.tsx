@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import ContactForm from "@/components/ContactForm";
 import { PageTitle } from "@/components/ui/Heading";
 import { pageMetadata } from "@/lib/seo";
@@ -13,6 +14,7 @@ export const metadata: Metadata = pageMetadata({
 export default function ContactPage() {
   return (
     <div className="mx-auto max-w-xl px-4 py-10">
+      <Breadcrumbs crumbs={[{ name: "Contact us" }]} />
       <PageTitle>Contact us</PageTitle>
       <p className="mt-2 text-stone-600">
         Questions about the house, your dates, or bringing your dog? Send a note and we&apos;ll get

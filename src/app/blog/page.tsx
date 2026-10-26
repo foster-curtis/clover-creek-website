@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Breadcrumbs from "@/components/Breadcrumbs";
 import Card from "@/components/ui/Card";
 import { PageTitle } from "@/components/ui/Heading";
 import { ArrowRightIcon } from "@/components/ui/icons";
@@ -20,6 +21,7 @@ export default async function BlogPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
+      <Breadcrumbs crumbs={[{ name: "Area Guide" }]} />
       <PageTitle>Area Guide</PageTitle>
       <p className="mt-2 text-stone-600">
         Ideas for your stay — from stargazing to day trips around Rush Valley.
