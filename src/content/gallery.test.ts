@@ -22,13 +22,24 @@ interface ExportRow {
   sort_order: number;
 }
 
-const exported: ExportRow[] = JSON.parse(
-  readFileSync(path.join(process.cwd(), "docs", "gallery-export.json"), "utf8")
-).rows;
+/**
+ * Photos taken off the site after the migration. The export and rename map stay
+ * as the historical record, so parity is checked against what remains.
+ */
+const REMOVED_SINCE_MIGRATION = new Set(["welcome-sign"]);
 
-const renameMap: Record<string, string> = JSON.parse(
+const allRenames: Record<string, string> = JSON.parse(
   readFileSync(path.join(process.cwd(), "docs", "gallery-rename-map.json"), "utf8")
 ).map;
+
+const renameMap: Record<string, string> = Object.fromEntries(
+  Object.entries(allRenames).filter(([, slug]) => !REMOVED_SINCE_MIGRATION.has(slug))
+);
+
+const exported: ExportRow[] = (
+  JSON.parse(readFileSync(path.join(process.cwd(), "docs", "gallery-export.json"), "utf8"))
+    .rows as ExportRow[]
+).filter((row) => !REMOVED_SINCE_MIGRATION.has(allRenames[row.storage_path]));
 
 /** Manifest order is what the pages render in, so assert against that, not source order. */
 const ordered = [...GALLERY].sort((a, b) => a.order - b.order);
@@ -142,7 +153,7 @@ describe("gallery manifest", () => {
 describe("parity with the retired Supabase gallery", () => {
   it("carries the same number of photos", () => {
     expect(ordered).toHaveLength(exported.length);
-    expect(ordered).toHaveLength(15);
+    expect(ordered).toHaveLength(14);
   });
 
   it("keeps the same photos in the same order, with copy transferred byte for byte", () => {
