@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 
-// Adds elevation to the sticky header once the page has scrolled, per
-// DESIGN_AUDIT.md's elevation ladder (shadow-2 on scroll only).
+// Adds elevation to the sticky header once the page has scrolled, per the
+// elevation ladder (shadow-2 on scroll only).
 export default function HeaderShell({ children }: { children: React.ReactNode }) {
   const [scrolled, setScrolled] = useState(false);
 

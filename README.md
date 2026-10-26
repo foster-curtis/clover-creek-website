@@ -8,8 +8,6 @@ on Vercel.
   and launch. Start here.
 - **[docs/LOCAL_DEV.md](docs/LOCAL_DEV.md)** — running the whole stack locally: Supabase in
   Docker, the local inbox, seed data, migrations, and Stripe webhook forwarding.
-- **[DEVELOPMENT_PLAN.md](DEVELOPMENT_PLAN.md)** — the original feature plan and
-  architecture decisions.
 - **[GIT_WORKFLOW.md](GIT_WORKFLOW.md)** — branches, CI/CD, and the `working` → `stg` →
   `master` promotion flow.
 - **[plans/](plans/)** — staged implementation plans, each one stage per commit:
