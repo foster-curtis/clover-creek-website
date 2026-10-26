@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import JsonLd from "@/components/JsonLd";
 import LocationMap from "@/components/LocationMap";
 import PhotoStrip from "@/components/PhotoStrip";
 import RatingSummary from "@/components/RatingSummary";
@@ -55,7 +56,6 @@ export default async function HomePage() {
   );
 
   const jsonLd = homeGraph({
-    description: content.home_intro.split("\n")[0],
     images: schemaImages,
     reviews,
     priceRange: `$${pricing.weekdayBase}-$${pricing.weekendBase}`,
@@ -64,10 +64,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd data={jsonLd} />
 
       {/* Hero */}
       <section className="relative">

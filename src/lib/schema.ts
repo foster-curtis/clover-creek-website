@@ -3,10 +3,13 @@
 // never drift between pages, which is the whole point of the entity-consistency
 // work in SEO_PLAN.md (§6.2, §8).
 //
-// Three entities are emitted on the home page as one `@graph`:
+// The root layout emits the site-wide entity graph on every page (siteGraph):
 //   - Organization  — the business behind the listing
 //   - LodgingBusiness — the "local business" entity Google resolves site-wide
-//   - VacationRental — the rentable unit itself (Rich Results Test target)
+//   - WebSite — the site itself, published by the Organization
+// The home page adds a second graph (homeGraph) with the VacationRental — the
+// rentable unit itself (Rich Results Test target) — plus a merge node carrying
+// the live price range and rating onto the LodgingBusiness @id.
 
 import { photoForRole } from "@/content/gallery";
 import type { Review } from "./data";
@@ -15,6 +18,15 @@ import { SITE } from "./site";
 const ORG_ID = `${SITE.url}/#organization`;
 const BUSINESS_ID = `${SITE.url}/#lodging`;
 const RENTAL_ID = `${SITE.url}/#vacation-rental`;
+const WEBSITE_ID = `${SITE.url}/#website`;
+
+/** The shared @ids, so any page can reference the site-wide entities. */
+export const SCHEMA_IDS = {
+  org: ORG_ID,
+  business: BUSINESS_ID,
+  rental: RENTAL_ID,
+  website: WEBSITE_ID,
+} as const;
 
 /**
  * The main exterior photo, used wherever a single representative image is wanted.
@@ -27,6 +39,11 @@ export const MAIN_IMAGE_URL = `${SITE.url}${photoForRole("hero").src}`;
 export const OG_IMAGE_URL = `${SITE.url}/og-default.jpg`;
 
 const TELEPHONE = SITE.phoneDisplay || undefined;
+
+// An empty array in JSON-LD is noise, so sameAs only appears once a listing is live.
+function sameAs() {
+  return SITE.sameAs.length > 0 ? { sameAs: [...SITE.sameAs] } : {};
+}
 
 // Byte-identical postal address for every schema block (SEO_PLAN.md §6.2).
 function postalAddress() {
@@ -99,38 +116,47 @@ function reviewNode(r: Review) {
   };
 }
 
-export function organizationSchema(opts: { description: string }) {
+// Descriptions default to SITE.description so schema text cannot drift from page
+// to page; the parameter is kept only for a deliberate future override.
+
+export function organizationSchema(opts: { description?: string } = {}) {
   return {
     "@type": "Organization",
     "@id": ORG_ID,
     name: SITE.name,
-    description: opts.description,
+    description: opts.description ?? SITE.description,
     url: SITE.url,
-    // No dedicated logo asset yet — the main exterior photo stands in for both.
-    logo: MAIN_IMAGE_URL,
+    // No dedicated logo asset yet — the share card reads better in a knowledge panel
+    // than a 2000px-wide photo.
+    logo: OG_IMAGE_URL,
     image: MAIN_IMAGE_URL,
     email: SITE.ownerEmail,
     ...(TELEPHONE ? { telephone: TELEPHONE } : {}),
     address: postalAddress(),
+    ...sameAs(),
   };
 }
 
-export function lodgingBusinessSchema(opts: {
-  description: string;
-  image: string[];
-  priceRange: string;
-  aggregateRating?: AggregateRatingInput | null;
-}) {
+// The root layout calls this with no arguments, so price range and rating are
+// optional — those are live values the home page attaches via businessRatingNode().
+export function lodgingBusinessSchema(
+  opts: {
+    description?: string;
+    image?: string[];
+    priceRange?: string;
+    aggregateRating?: AggregateRatingInput | null;
+  } = {}
+) {
   return {
     "@type": "LodgingBusiness",
     "@id": BUSINESS_ID,
     name: SITE.name,
-    description: opts.description,
+    description: opts.description ?? SITE.description,
     url: SITE.url,
-    image: opts.image,
+    image: opts.image ?? [MAIN_IMAGE_URL],
     email: SITE.ownerEmail,
     ...(TELEPHONE ? { telephone: TELEPHONE } : {}),
-    priceRange: opts.priceRange,
+    ...(opts.priceRange ? { priceRange: opts.priceRange } : {}),
     currenciesAccepted: "USD",
     paymentAccepted: "Credit Card",
     address: postalAddress(),
@@ -143,12 +169,27 @@ export function lodgingBusinessSchema(opts: {
     maximumAttendeeCapacity: 6,
     amenityFeature: amenityFeature(),
     parentOrganization: { "@id": ORG_ID },
+    ...sameAs(),
     ...(opts.aggregateRating ? { aggregateRating: aggregateRating(opts.aggregateRating) } : {}),
   };
 }
 
+// No SearchAction: the site has no search page, and a SearchAction pointing nowhere
+// is markup that lies about the site. Add one if and when a /search route exists.
+export function webSiteSchema() {
+  return {
+    "@type": "WebSite",
+    "@id": WEBSITE_ID,
+    url: SITE.url,
+    name: SITE.name,
+    description: SITE.description,
+    publisher: { "@id": ORG_ID },
+    inLanguage: "en-US",
+  };
+}
+
 export function vacationRentalSchema(opts: {
-  description: string;
+  description?: string;
   image: string[];
   reviews: Review[];
   aggregateRating?: AggregateRatingInput | null;
@@ -157,7 +198,7 @@ export function vacationRentalSchema(opts: {
     "@type": "VacationRental",
     "@id": RENTAL_ID,
     name: SITE.name,
-    description: opts.description,
+    description: opts.description ?? SITE.description,
     url: SITE.url,
     image: opts.image,
     additionalType: "EntirePlace",
@@ -198,9 +239,39 @@ export function vacationRentalSchema(opts: {
   };
 }
 
-/** The full `@graph` for the home page: Organization + LodgingBusiness + VacationRental. */
+/**
+ * The entity graph rendered on every page (SEO_PLAN.md §8.1). Static constants only —
+ * this runs in the root layout, so it must never touch the database.
+ */
+export function siteGraph() {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [organizationSchema(), lodgingBusinessSchema(), webSiteSchema()],
+  };
+}
+
+/**
+ * A partial LodgingBusiness carrying only live values. Consumers merge nodes that
+ * share an @id within a page, so this attaches the current rating and price range to
+ * the site-wide business entity without repeating it.
+ */
+export function businessRatingNode(opts: {
+  priceRange?: string;
+  aggregateRating?: AggregateRatingInput | null;
+}) {
+  return {
+    "@type": "LodgingBusiness",
+    "@id": BUSINESS_ID,
+    ...(opts.priceRange ? { priceRange: opts.priceRange } : {}),
+    ...(opts.aggregateRating ? { aggregateRating: aggregateRating(opts.aggregateRating) } : {}),
+  };
+}
+
+/**
+ * The home page's own `@graph`: the VacationRental plus the live-values merge node.
+ * Organization and LodgingBusiness come from the root layout's siteGraph().
+ */
 export function homeGraph(opts: {
-  description: string;
   images: string[];
   reviews: Review[];
   priceRange: string;
@@ -209,15 +280,8 @@ export function homeGraph(opts: {
   return {
     "@context": "https://schema.org",
     "@graph": [
-      organizationSchema({ description: opts.description }),
-      lodgingBusinessSchema({
-        description: opts.description,
-        image: [MAIN_IMAGE_URL],
-        priceRange: opts.priceRange,
-        aggregateRating: opts.aggregateRating,
-      }),
+      businessRatingNode({ priceRange: opts.priceRange, aggregateRating: opts.aggregateRating }),
       vacationRentalSchema({
-        description: opts.description,
         image: opts.images,
         reviews: opts.reviews,
         aggregateRating: opts.aggregateRating,

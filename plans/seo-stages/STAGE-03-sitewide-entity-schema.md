@@ -274,15 +274,17 @@ cannot run these — they fetch the deployed URL.
 
 ## Acceptance criteria
 
-- [ ] `Organization`, `LodgingBusiness` and `WebSite` render on every page including
+- [x] `Organization`, `LodgingBusiness` and `WebSite` render on every page including
       `/faq`, `/blog`, `/terms`.
-- [ ] The home page renders `VacationRental` plus a rating merge node, and does **not**
+- [x] The home page renders `VacationRental` plus a rating merge node, and does **not**
       repeat the full `Organization` or `LodgingBusiness`.
-- [ ] Schema description text comes from `SITE.description` everywhere.
-- [ ] `sameAs` is absent from the output while `SITE.sameAs` is empty.
+- [x] Schema description text comes from `SITE.description` everywhere.
+- [x] `sameAs` is absent from the output while `SITE.sameAs` is empty.
 - [x] The footer shows `Rush Valley, UT 84069`, and shows a phone number only when
       `NEXT_PUBLIC_PHONE` is set. *(2026-09-24, with step 6.)*
-- [ ] `npm run lint && npm run typecheck && npm test && npm run build` all pass.
+- [x] `npm run lint && npm run typecheck && npm test && npm run build` all pass.
+      *(2026-10-26: 188 tests; curl checks against `next start` — one ld+json tag on
+      `/faq`, `/blog`, `/terms`, two on `/`, `LodgingBusiness` ×2 on `/` being the merge node.)*
 - [ ] The site renders with no `.env.local` present.
 
 ## Commit

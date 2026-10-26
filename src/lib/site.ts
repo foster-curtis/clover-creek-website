@@ -26,6 +26,15 @@ function resolveSiteUrl(): string {
 export const SITE = {
   name: "Clover Creek Guest House",
   tagline: "A quiet, serene farmhouse cottage in Rush Valley, Utah",
+  // The canonical one-sentence description of the business. Used verbatim in every
+  // schema block, and it is the sentence the OTA listings and directory entries should
+  // match word for word — entity consistency is the whole mechanic (SEO_PLAN.md §6.2).
+  description:
+    "A farmhouse cottage in Rush Valley, Utah, sleeping six, one hour from Salt Lake City. Dog friendly, with a fire pit under some of the darkest skies in northern Utah.",
+  // Profiles and listings that are the same business. Populated as each listing goes
+  // live (SEO_PLAN.md §11.1) — this is the direct antidote to the branded-search
+  // failure. Only add URLs that are live and verified; a dead sameAs is worse than none.
+  sameAs: [] as readonly string[],
   url: resolveSiteUrl(),
   ownerEmail: process.env.OWNER_EMAIL || "clovercreekguesthouse@gmail.com",
   // Optional. When set it is shown verbatim wherever the phone appears (footer, contact,

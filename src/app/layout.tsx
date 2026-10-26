@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { Inter, Lora } from "next/font/google";
 import Footer from "@/components/Footer";
 import Header from "@/components/Header";
+import JsonLd from "@/components/JsonLd";
+import { siteGraph } from "@/lib/schema";
 import { DEFAULT_OG_IMAGE } from "@/lib/seo";
 import { SITE } from "@/lib/site";
 import "./globals.css";
@@ -44,6 +46,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className="scroll-smooth">
       <body className={`${lora.variable} ${inter.variable} bg-grain relative antialiased`}>
+        <JsonLd data={siteGraph()} />
         <Header />
         <main className="min-h-[70vh]">{children}</main>
         <Footer />
