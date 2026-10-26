@@ -494,53 +494,6 @@ export async function updateReview(formData: FormData) {
   revalidatePath("/admin/reviews");
 }
 
-// --- blog --------------------------------------------------------------------
-
-function slugify(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/\s+/g, "-")
-    .slice(0, 80);
-}
-
-export async function savePost(formData: FormData) {
-  const db = await requireAdmin();
-  const id = String(formData.get("id") ?? "");
-  const title = String(formData.get("title") ?? "").trim();
-  const body = String(formData.get("body") ?? "").trim();
-  const excerpt = String(formData.get("excerpt") ?? "").trim() || null;
-  const published = formData.get("published") === "on";
-  if (!title || !body) return;
-
-  const slug = String(formData.get("slug") ?? "").trim() || slugify(title);
-  const row = {
-    title,
-    slug,
-    excerpt,
-    body,
-    published,
-    published_at: published ? new Date().toISOString() : null,
-  };
-  if (id) {
-    await db.from("blog_posts").update(row).eq("id", id);
-  } else {
-    await db.from("blog_posts").insert(row);
-  }
-  revalidatePath("/blog");
-  revalidatePath(`/blog/${slug}`);
-  revalidatePath("/admin/blog");
-  redirect("/admin/blog");
-}
-
-export async function deletePost(formData: FormData) {
-  const db = await requireAdmin();
-  await db.from("blog_posts").delete().eq("id", String(formData.get("id")));
-  revalidatePath("/blog");
-  revalidatePath("/admin/blog");
-}
-
 // --- messages & inquiries -----------------------------------------------------
 
 export async function markMessagesRead(bookingId: string) {

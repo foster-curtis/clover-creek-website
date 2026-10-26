@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { activeNavHref, isActivePath } from "./nav";
 
 const HEADER = ["/", "/gallery", "/book", "/reviews", "/blog", "/faq", "/contact"];
-const ADMIN = ["/admin", "/admin/calendar", "/admin/messages", "/admin/blog"];
+const ADMIN = ["/admin", "/admin/calendar", "/admin/messages", "/admin/reviews"];
 
 describe("isActivePath", () => {
   it("matches the page itself", () => {
@@ -42,7 +42,7 @@ describe("activeNavHref", () => {
   });
 
   it("prefers the most specific link when several match", () => {
-    expect(activeNavHref("/admin/blog/7", ADMIN)).toBe("/admin/blog");
+    expect(activeNavHref("/admin/messages/42", ADMIN)).toBe("/admin/messages");
     expect(activeNavHref("/admin", ADMIN)).toBe("/admin");
   });
 

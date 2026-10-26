@@ -12,7 +12,8 @@ const ADMIN_LINKS = [
   { href: "/admin/content", label: "Site Content" },
   { href: "/admin/pricing", label: "Pricing & Holidays" },
   { href: "/admin/reviews", label: "Reviews" },
-  { href: "/admin/blog", label: "Blog" },
+  // No Blog entry: Area Guide posts are MDX files in src/content/blog now, and
+  // the dashboard says so for anyone looking for the old editor.
 ] as const;
 
 const ADMIN_HREFS = ADMIN_LINKS.map((l) => l.href);

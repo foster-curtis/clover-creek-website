@@ -5,7 +5,7 @@
 // A link matches when the current path is the link itself or a page nested
 // under it — /blog stays highlighted while reading /blog/some-post. When more
 // than one link matches, the most specific wins: otherwise "Dashboard"
-// (/admin) would light up next to "Blog" on every /admin/blog page.
+// (/admin) would light up next to "Reviews" on every /admin/reviews page.
 
 export interface NavLink {
   href: string;

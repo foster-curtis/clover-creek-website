@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import Card from "@/components/ui/Card";
@@ -13,8 +14,6 @@ export const metadata: Metadata = pageMetadata({
   description:
     "Things to do around Rush Valley, Utah — stargazing, trails, day trips and ideas for your stay at the Clover Creek Guest House.",
 });
-
-export const revalidate = 300;
 
 export default async function BlogPage() {
   const posts = await getPublishedPosts();
@@ -33,28 +32,50 @@ export default async function BlogPage() {
           </Card>
         )}
         {posts.map((post) => (
-          <Card key={post.id} variant="flat">
-            <h2 className="text-xl font-bold">
-              <Link href={`/blog/${post.slug}`} className="text-stone-800 hover:text-moss">
-                {post.title}
+          <Card key={post.slug} variant="flat" className="flex gap-5">
+            {/* A fixed box shorter than the text beside it, so a card is the same
+                height with or without a cover and the list never reflows on data. */}
+            {post.cover && (
+              // A duplicate of the title link, so it is hidden from keyboard and
+              // screen readers rather than announced twice.
+              <Link
+                href={`/blog/${post.slug}`}
+                className="hidden shrink-0 sm:block"
+                tabIndex={-1}
+                aria-hidden
+              >
+                <Image
+                  src={post.cover.src}
+                  alt=""
+                  placeholder="blur"
+                  sizes="128px"
+                  className="h-24 w-32 rounded-lg object-cover"
+                />
               </Link>
-            </h2>
-            {post.publishedAt && (
-              <time className="text-xs text-ink-subtle">
+            )}
+            <div className="min-w-0 flex-1">
+              <h2 className="text-xl font-bold">
+                <Link href={`/blog/${post.slug}`} className="text-stone-800 hover:text-moss">
+                  {post.title}
+                </Link>
+              </h2>
+              <time dateTime={post.publishedAt} className="text-xs text-ink-subtle">
+                {/* publishedAt is a bare date; read it as UTC or it slips a day west of Greenwich. */}
                 {new Date(post.publishedAt).toLocaleDateString("en-US", {
                   month: "long",
                   day: "numeric",
                   year: "numeric",
+                  timeZone: "UTC",
                 })}
               </time>
-            )}
-            {post.excerpt && <p className="mt-2 text-stone-600">{post.excerpt}</p>}
-            <Link
-              href={`/blog/${post.slug}`}
-              className="mt-3 inline-flex items-center gap-1 text-sm text-moss underline"
-            >
-              Read more <ArrowRightIcon className="h-3.5 w-3.5" />
-            </Link>
+              <p className="mt-2 text-stone-600">{post.excerpt}</p>
+              <Link
+                href={`/blog/${post.slug}`}
+                className="mt-3 inline-flex items-center gap-1 text-sm text-moss underline"
+              >
+                Read more <ArrowRightIcon className="h-3.5 w-3.5" />
+              </Link>
+            </div>
           </Card>
         ))}
       </div>

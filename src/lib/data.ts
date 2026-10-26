@@ -9,6 +9,9 @@ import {
   homeStripPhotos,
   photoForRole,
 } from "@/content/gallery";
+import { ALL_POSTS, type Post } from "@/content/blog";
+import type { PostMeta } from "@/content/blog/types";
+import type { MDXContent } from "mdx/types";
 import { holidayMap } from "./holidays";
 import { DEFAULT_PRICING, type PricingConfig, addDays } from "./pricing";
 import { hasServiceRole, hasSupabase, supabaseAdmin, supabaseServer } from "./supabase/server";
@@ -37,12 +40,16 @@ export interface Review {
 }
 
 export interface BlogPost {
-  id: string;
   slug: string;
   title: string;
-  excerpt: string | null;
-  body: string;
-  publishedAt: string | null;
+  excerpt: string;
+  /** YYYY-MM-DD */
+  publishedAt: string;
+  updatedAt?: string;
+  author?: string;
+  cover?: PostMeta["cover"];
+  /** The compiled MDX body. */
+  Content: MDXContent;
 }
 
 export interface DateRange {
@@ -216,49 +223,33 @@ export async function getApprovedReviews(): Promise<Review[]> {
 }
 
 // --- blog ---------------------------------------------------------------
+//
+// The Area Guide no longer touches Supabase: posts are MDX files in
+// src/content/blog, compiled at build time. That also retires a quiet failure
+// mode — a Supabase outage used to empty /blog and drop every post out of
+// sitemap.xml. The blog_posts table is left in place as the rollback path.
+//
+// Both functions are synchronous underneath but stay async so their callers
+// didn't have to change.
+
+function toBlogPost({ meta, Content }: Post): BlogPost {
+  return {
+    slug: meta.slug,
+    title: meta.title,
+    excerpt: meta.excerpt,
+    publishedAt: meta.publishedAt,
+    updatedAt: meta.updatedAt,
+    author: meta.author,
+    cover: meta.cover,
+    Content,
+  };
+}
 
 export async function getPublishedPosts(): Promise<BlogPost[]> {
-  if (!hasSupabase()) return [];
-  try {
-    const supabase = await supabaseServer();
-    const { data } = await supabase
-      .from("blog_posts")
-      .select("id, slug, title, excerpt, body, published_at")
-      .eq("published", true)
-      .order("published_at", { ascending: false });
-    return (data ?? []).map((p) => ({
-      id: p.id,
-      slug: p.slug,
-      title: p.title,
-      excerpt: p.excerpt,
-      body: p.body,
-      publishedAt: p.published_at,
-    }));
-  } catch {
-    return [];
-  }
+  return ALL_POSTS.map(toBlogPost);
 }
 
 export async function getPost(slug: string): Promise<BlogPost | null> {
-  if (!hasSupabase()) return null;
-  try {
-    const supabase = await supabaseServer();
-    const { data } = await supabase
-      .from("blog_posts")
-      .select("id, slug, title, excerpt, body, published_at")
-      .eq("slug", slug)
-      .eq("published", true)
-      .single();
-    if (!data) return null;
-    return {
-      id: data.id,
-      slug: data.slug,
-      title: data.title,
-      excerpt: data.excerpt,
-      body: data.body,
-      publishedAt: data.published_at,
-    };
-  } catch {
-    return null;
-  }
+  const post = ALL_POSTS.find((p) => p.meta.slug === slug);
+  return post ? toBlogPost(post) : null;
 }

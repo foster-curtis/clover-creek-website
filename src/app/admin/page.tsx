@@ -116,6 +116,20 @@ export default async function AdminDashboard() {
       </Card>
 
       <Card variant="flat" className="mt-10 p-5 text-sm text-ink-muted">
+        <h2 className="font-bold text-ink">Area Guide posts</h2>
+        <p className="mt-2">
+          The{" "}
+          <Link href="/blog" className="text-moss underline">
+            Area Guide
+          </Link>{" "}
+          posts now live with the website&apos;s code instead of in this dashboard, so they can
+          carry photos and links between guides. To add or change a post, send the
+          words (and any photos) to whoever maintains the site. Everything else here — home
+          page text, FAQ, house rules, pricing and reviews — is still edited as before.
+        </p>
+      </Card>
+
+      <Card variant="flat" className="mt-4 p-5 text-sm text-ink-muted">
         <h2 className="font-bold text-ink">Site traffic</h2>
         <p className="mt-2">
           Analytics are collected with Vercel Web Analytics.{" "}
