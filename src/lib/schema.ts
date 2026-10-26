@@ -10,9 +10,14 @@
 // The home page adds a second graph (homeGraph) with the VacationRental — the
 // rentable unit itself (Rich Results Test target) — plus a merge node carrying
 // the live price range and rating onto the LodgingBusiness @id.
+// Other pages add one block of their own (§8.3) that references those entities
+// by @id rather than re-declaring them.
 
-import { photoForRole } from "@/content/gallery";
-import type { Review } from "./data";
+// Relative rather than "@/": vitest has no path alias, and schema.test.ts loads this.
+import type { PostMeta } from "../content/blog/types";
+import { photoForRole } from "../content/gallery";
+import type { GalleryImage, Review } from "./data";
+import type { PricingConfig } from "./pricing";
 import { absoluteUrl } from "./seo";
 import { SITE } from "./site";
 
@@ -305,6 +310,157 @@ export function homeGraph(opts: {
         aggregateRating: opts.aggregateRating,
       }),
     ],
+  };
+}
+
+// --- Per-page blocks (SEO_PLAN.md §8.3) -----------------------------------
+
+/**
+ * Reviews attached to the site-wide business entity by @id, so the reviews page
+ * enriches the same node the layout emits rather than declaring a second business.
+ * Every approved review goes here; the home page caps at 12 deliberately.
+ *
+ * Reviews a business collects about itself are self-serving under Google policy and
+ * never render stars (§3.1, defect A6). This is for machine readability only.
+ */
+export function reviewsPageGraph(opts: {
+  reviews: Review[];
+  aggregateRating?: AggregateRatingInput | null;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "LodgingBusiness",
+        "@id": BUSINESS_ID,
+        ...(opts.aggregateRating ? { aggregateRating: aggregateRating(opts.aggregateRating) } : {}),
+        review: opts.reviews.map(reviewNode),
+      },
+    ],
+  };
+}
+
+const BLOG_ID = `${SITE.url}/blog#blog`;
+
+const postUrl = (slug: string) => absoluteUrl(`/blog/${slug}`);
+
+/**
+ * The /blog index: one Blog whose entries share @ids with the post pages, so the two
+ * representations are understood as the same articles (§8.3).
+ */
+export function blogIndexSchema(posts: PostMeta[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "@id": BLOG_ID,
+    name: "Rush Valley Area Guide",
+    url: absoluteUrl("/blog"),
+    publisher: { "@id": ORG_ID },
+    blogPost: posts.map((p) => ({
+      "@type": "BlogPosting",
+      "@id": `${postUrl(p.slug)}#post`,
+      headline: p.title,
+      url: postUrl(p.slug),
+      description: p.excerpt,
+      datePublished: p.publishedAt,
+    })),
+  };
+}
+
+// A byline that does not name anyone becomes the Organization, never an invented
+// person. Stage 08 adds the third case: a byline matching the site owner resolves
+// to the owner's Person @id.
+function postAuthor(meta: PostMeta) {
+  return meta.author ? { "@type": "Person", name: meta.author } : { "@id": ORG_ID };
+}
+
+/**
+ * One Area Guide post. dateModified mirrors datePublished unless the post records a
+ * genuine revision; it is never the build date, which would be a false freshness signal.
+ */
+export function blogPostingSchema(meta: PostMeta) {
+  const url = postUrl(meta.slug);
+  return {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "@id": `${url}#post`,
+    // Google truncates headlines beyond ~110 characters.
+    headline: meta.title.slice(0, 110),
+    url,
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+    description: meta.excerpt,
+    datePublished: meta.publishedAt,
+    dateModified: meta.updatedAt ?? meta.publishedAt,
+    // A cover is a static import, so .src is a site-relative /_next/static path.
+    image: meta.cover ? absoluteUrl(meta.cover.src.src) : OG_IMAGE_URL,
+    publisher: { "@id": ORG_ID },
+    author: postAuthor(meta),
+    isPartOf: { "@id": BLOG_ID },
+    inLanguage: "en-US",
+  };
+}
+
+/**
+ * The gallery as an ImageGallery about the business. Alt text and captions come
+ * straight from src/content/gallery.ts; an empty one is left out rather than
+ * emitted as "" (a decorative photo has `alt: ""` on purpose).
+ */
+export function imageGallerySchema(images: Array<Pick<GalleryImage, "src" | "alt" | "caption">>) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ImageGallery",
+    "@id": `${SITE.url}/gallery#gallery`,
+    name: `Photos of ${SITE.name}`,
+    url: absoluteUrl("/gallery"),
+    about: { "@id": BUSINESS_ID },
+    associatedMedia: images.map((img) => ({
+      "@type": "ImageObject",
+      contentUrl: absoluteUrl(img.src),
+      ...(img.caption ? { caption: img.caption } : {}),
+      ...(img.alt ? { description: img.alt } : {}),
+      creator: { "@id": ORG_ID },
+      copyrightNotice: SITE.name,
+    })),
+  };
+}
+
+/**
+ * A page that is about the business itself — house rules today, directions and
+ * stargazing later (Stage 09). Ties the page's facts (the pet policy, say) to the
+ * entity rather than leaving them as free-floating text.
+ */
+export function aboutBusinessPageSchema(opts: { path: string; name: string; description: string }) {
+  const url = absoluteUrl(opts.path);
+  return {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    "@id": `${url}#webpage`,
+    url,
+    name: opts.name,
+    description: opts.description,
+    about: { "@id": BUSINESS_ID },
+    isPartOf: { "@id": WEBSITE_ID },
+  };
+}
+
+/**
+ * The booking page's offer: the two-guest base rates from the live pricing config,
+ * exactly as the page shows them. Extra-guest and pet fees are not part of the
+ * base offer, and there is no priceValidUntil because rates have no end date.
+ */
+export function bookingOfferSchema(pricing: Pick<PricingConfig, "weekdayBase" | "weekendBase">) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "AggregateOffer",
+    "@id": `${SITE.url}/book#offer`,
+    url: absoluteUrl("/book"),
+    priceCurrency: "USD",
+    lowPrice: pricing.weekdayBase,
+    highPrice: pricing.weekendBase,
+    offerCount: 2,
+    availability: "https://schema.org/InStock",
+    itemOffered: { "@id": RENTAL_ID },
+    seller: { "@id": ORG_ID },
   };
 }
 

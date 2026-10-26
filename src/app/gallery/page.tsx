@@ -2,9 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import GalleryGrid from "@/components/GalleryGrid";
+import JsonLd from "@/components/JsonLd";
 import { buttonClasses } from "@/components/ui/Button";
 import { PageTitle, SectionTitle } from "@/components/ui/Heading";
 import { getGallery } from "@/lib/data";
+import { imageGallerySchema } from "@/lib/schema";
 import { pageMetadata } from "@/lib/seo";
 
 export const metadata: Metadata = pageMetadata({
@@ -20,6 +22,7 @@ export default function GalleryPage() {
   const images = getGallery();
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
+      <JsonLd data={imageGallerySchema(images)} />
       <Breadcrumbs crumbs={[{ name: "Photo Gallery" }]} />
       <PageTitle>Photo Gallery</PageTitle>
       <p className="mt-2 text-stone-600">Take a look around the house and the valley.</p>

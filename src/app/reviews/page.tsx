@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import JsonLd from "@/components/JsonLd";
 import ReviewForm from "@/components/ReviewForm";
 import ReviewsBrowser from "@/components/ReviewsBrowser";
 import RatingSummary from "@/components/RatingSummary";
 import { buttonClasses } from "@/components/ui/Button";
 import { PageTitle, SectionTitle } from "@/components/ui/Heading";
 import { getApprovedReviews } from "@/lib/data";
+import { reviewsPageGraph } from "@/lib/schema";
 import { pageMetadata } from "@/lib/seo";
 import { currentUser } from "@/lib/supabase/server";
 
@@ -25,6 +27,19 @@ export default async function ReviewsPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
+      {avgRating !== null && (
+        <JsonLd
+          data={reviewsPageGraph({
+            reviews,
+            // Rounded the way the home page rounds it, so both pages attach the same
+            // value to the business @id.
+            aggregateRating: {
+              ratingValue: Math.round(avgRating * 10) / 10,
+              reviewCount: reviews.length,
+            },
+          })}
+        />
+      )}
       <Breadcrumbs crumbs={[{ name: "Guest Reviews" }]} />
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>

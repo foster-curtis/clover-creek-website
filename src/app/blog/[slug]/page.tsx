@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import JsonLd from "@/components/JsonLd";
 import { PageTitle } from "@/components/ui/Heading";
 import { getPost, getPublishedPosts } from "@/lib/data";
+import { blogPostingSchema } from "@/lib/schema";
 import { pageMetadata } from "@/lib/seo";
 
 interface Props {
@@ -39,6 +41,7 @@ export default async function BlogPostPage({ params }: Props) {
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-10">
+      <JsonLd data={blogPostingSchema(post)} />
       <Breadcrumbs crumbs={[{ name: "Area Guide", path: "/blog" }, { name: post.title }]} />
       {post.cover && (
         // The LCP element whenever it's present.

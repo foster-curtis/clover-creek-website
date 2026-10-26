@@ -1,18 +1,27 @@
 import type { Metadata } from "next";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import JsonLd from "@/components/JsonLd";
 import Card from "@/components/ui/Card";
 import { PageTitle, SectionTitle } from "@/components/ui/Heading";
 import { getSiteContent } from "@/lib/content";
 import { getPricing } from "@/lib/data";
 import { formatUSD } from "@/lib/pricing";
+import { aboutBusinessPageSchema } from "@/lib/schema";
 import { pageMetadata } from "@/lib/seo";
 import { SITE } from "@/lib/site";
 
-export const metadata: Metadata = pageMetadata({
+// Shared by the page metadata and the WebPage schema so the two cannot drift.
+const PAGE = {
   path: "/house-rules",
-  title: "House Rules & Pet Policy",
+  name: "House Rules & Pet Policy",
   description:
     "House rules, checkout checklist and pet policy for the Clover Creek Guest House in Rush Valley, Utah.",
+};
+
+export const metadata: Metadata = pageMetadata({
+  path: PAGE.path,
+  title: PAGE.name,
+  description: PAGE.description,
 });
 
 export const revalidate = 3600;
@@ -32,6 +41,7 @@ export default async function HouseRulesPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
+      <JsonLd data={aboutBusinessPageSchema(PAGE)} />
       <Breadcrumbs crumbs={[{ name: "House Rules" }]} />
       <PageTitle>House Rules</PageTitle>
       <p className="mt-2 text-stone-600">

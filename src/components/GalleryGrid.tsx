@@ -28,20 +28,28 @@ export default function GalleryGrid({ images }: { images: GalleryImage[] }) {
             key={img.id}
             type="button"
             onClick={() => setLightbox(i)}
-            className="group relative aspect-[4/3] overflow-hidden rounded-lg bg-surface-sunken"
+            className="group block text-left"
             aria-label={`View photo: ${img.alt}`}
           >
-            {/* The 4:3 parent reserves the space, so no width/height needed here.
+            {/* The 4:3 box reserves the space, so no width/height needed here.
                 `priority` stays off — the LCP element is on the home page. */}
-            <Image
-              src={img.src}
-              alt={img.alt}
-              fill
-              placeholder="blur"
-              blurDataURL={img.blurDataURL}
-              sizes="(max-width: 768px) 50vw, 33vw"
-              className="object-cover transition group-hover:scale-105"
-            />
+            <span className="relative block aspect-[4/3] overflow-hidden rounded-lg bg-surface-sunken">
+              <Image
+                src={img.src}
+                alt={img.alt}
+                fill
+                placeholder="blur"
+                blurDataURL={img.blurDataURL}
+                sizes="(max-width: 768px) 50vw, 33vw"
+                className="object-cover transition group-hover:scale-105"
+              />
+            </span>
+            {/* Caption text is a ranking signal for Google Images (SEO_PLAN.md §9.6).
+                The line is always rendered, so a photo without a caption keeps
+                the same tile height as its neighbours. */}
+            <span className="mt-1.5 block min-h-5 truncate text-sm text-stone-600">
+              {img.caption}
+            </span>
           </button>
         ))}
       </div>

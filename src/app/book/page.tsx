@@ -3,10 +3,12 @@ import { after } from "next/server";
 import AnswerBlock from "@/components/AnswerBlock";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import BookingWidget from "@/components/BookingWidget";
+import JsonLd from "@/components/JsonLd";
 import { PageTitle } from "@/components/ui/Heading";
 import { bookAnswer } from "@/lib/answers";
 import { expandRanges, getHolidays, getPricing, getUnavailableRanges } from "@/lib/data";
 import { syncAllFeeds } from "@/lib/icalSync";
+import { bookingOfferSchema } from "@/lib/schema";
 import { pageMetadata } from "@/lib/seo";
 import { SITE } from "@/lib/site";
 import { currentUser, hasServiceRole, supabaseAdmin } from "@/lib/supabase/server";
@@ -48,6 +50,7 @@ export default async function BookPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
+      <JsonLd data={bookingOfferSchema(pricing)} />
       <Breadcrumbs crumbs={[{ name: "Book your stay" }]} />
       <PageTitle>Book your stay</PageTitle>
       <AnswerBlock text={bookAnswer(pricing)} className="mt-4" />
