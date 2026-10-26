@@ -241,6 +241,23 @@ export function vacationRentalSchema(opts: {
 }
 
 /**
+ * FAQPage for /faq (SEO_PLAN.md §8.3). Answers must be plain text — never JSX or HTML.
+ * Google retired FAQ rich results in May 2026, so this earns no SERP feature; it is
+ * here because AI answer engines parse explicit Q&A pairs well.
+ */
+export function faqPageSchema(items: Array<{ question: string; answer: string }>) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: items.map((i) => ({
+      "@type": "Question",
+      name: i.question,
+      acceptedAnswer: { "@type": "Answer", text: i.answer },
+    })),
+  };
+}
+
+/**
  * The entity graph rendered on every page (SEO_PLAN.md §8.1). Static constants only —
  * this runs in the root layout, so it must never touch the database.
  */

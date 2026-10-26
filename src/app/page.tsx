@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import AnswerBlock from "@/components/AnswerBlock";
 import JsonLd from "@/components/JsonLd";
 import LocationMap from "@/components/LocationMap";
 import PhotoStrip from "@/components/PhotoStrip";
@@ -9,6 +10,7 @@ import Card from "@/components/ui/Card";
 import { buttonClasses } from "@/components/ui/Button";
 import { PageTitle, SectionTitle } from "@/components/ui/Heading";
 import { ArrowRightIcon, CheckIcon } from "@/components/ui/icons";
+import { homeAnswer } from "@/lib/answers";
 import { getSiteContent } from "@/lib/content";
 import {
   getApprovedReviews,
@@ -102,6 +104,7 @@ export default async function HomePage() {
       {/* Intro — a full-width lede, so the hero is the only photograph up top */}
       <section className="bg-surface">
         <div className="mx-auto max-w-5xl px-4 py-14">
+          <AnswerBlock text={homeAnswer(pricing)} className="mb-10" />
           <SectionTitle rule>A cozy retreat on a working farm</SectionTitle>
           {content.home_intro.split("\n\n").map((para, i) => (
             <p key={i} className="mt-4 max-w-2xl leading-relaxed text-stone-600">

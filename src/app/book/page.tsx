@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { after } from "next/server";
+import AnswerBlock from "@/components/AnswerBlock";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import BookingWidget from "@/components/BookingWidget";
 import { PageTitle } from "@/components/ui/Heading";
+import { bookAnswer } from "@/lib/answers";
 import { expandRanges, getHolidays, getPricing, getUnavailableRanges } from "@/lib/data";
 import { syncAllFeeds } from "@/lib/icalSync";
 import { pageMetadata } from "@/lib/seo";
@@ -48,9 +50,10 @@ export default async function BookPage() {
     <div className="mx-auto max-w-6xl px-4 py-10">
       <Breadcrumbs crumbs={[{ name: "Book your stay" }]} />
       <PageTitle>Book your stay</PageTitle>
-      <p className="mt-2 max-w-2xl text-stone-600">
-        Pick your dates to see the exact price — cleaning fee and taxes are always included.
-        Check-in from {SITE.checkInTime}, check-out by {SITE.checkOutTime}.
+      <AnswerBlock text={bookAnswer(pricing)} className="mt-4" />
+      <p className="mt-3 max-w-2xl text-stone-600">
+        Pick your dates to see the exact price. Check-in from {SITE.checkInTime}, check-out by{" "}
+        {SITE.checkOutTime}.
       </p>
       <div className="mt-8">
         <BookingWidget

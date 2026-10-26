@@ -58,12 +58,17 @@ export const CONTENT_SLUGS = [
   {
     slug: "faq_pets",
     label: "FAQ — pets",
-    hint: 'Answer to "Can I bring my pet?" — a link to the pet policy is added automatically after this.',
+    hint: 'Answer to "Can I bring my dog?" — a link to the pet policy is added automatically after this.',
   },
   {
     slug: "faq_wifi",
-    label: "FAQ — Wi-Fi & cell service",
-    hint: 'Answer to "Is there Wi-Fi and cell service?"',
+    label: "FAQ — Wi-Fi",
+    hint: 'Answer to "Is there Wi-Fi at the guest house?" — cell service has its own answer below.',
+  },
+  {
+    slug: "faq_cell",
+    label: "FAQ — cell service",
+    hint: 'Answer to "Is there cell service in Rush Valley?"',
   },
   {
     slug: "faq_distance",
@@ -71,9 +76,34 @@ export const CONTENT_SLUGS = [
     hint: 'Answer to "How far is the house from Salt Lake City?"',
   },
   {
+    slug: "faq_airport",
+    label: "FAQ — distance from the airport",
+    hint: 'Answer to "How far is the house from Salt Lake City airport?"',
+  },
+  {
     slug: "faq_grocery",
     label: "FAQ — groceries & gas",
-    hint: 'Answer to "Where\'s the nearest grocery store and gas?"',
+    hint: 'Answer to "Where is the nearest grocery store and gas?"',
+  },
+  {
+    slug: "faq_stargazing",
+    label: "FAQ — stargazing",
+    hint: 'Answer to "Is the property good for stargazing?"',
+  },
+  {
+    slug: "faq_onaqui",
+    label: "FAQ — Onaqui wild horses",
+    hint: 'Answer to "Can I see the Onaqui wild horses from the guest house?"',
+  },
+  {
+    slug: "faq_things_nearby",
+    label: "FAQ — things to do nearby",
+    hint: 'Answer to "What is there to do nearby?" — plain text only; don\'t paste a link to a single blog post, it can break without warning.',
+  },
+  {
+    slug: "faq_winter",
+    label: "FAQ — winter",
+    hint: 'Answer to "What is there to do near Rush Valley in winter?"',
   },
   {
     slug: "faq_cancel",
@@ -136,11 +166,23 @@ No pets in beds. Crate pets at night.`,
 
   faq_pets: `Dogs are welcome — up to 2 dogs at 50 lbs each, $20 per dog per day. Cats aren't allowed.`,
 
-  faq_wifi: `Yes to both. Wi-Fi is available at the guest house — the network name and password are posted inside. Cell service in the area is reliable on essentially every carrier.`,
+  faq_wifi: `Yes. Wi-Fi is available at the guest house — the network name and password are posted inside.`,
+
+  faq_cell: `Yes. Cell service in the area is reliable on essentially every carrier, and there is Wi-Fi at the guest house.`,
 
   faq_distance: `About an hour's drive southwest, on the far side of the Oquirrh Mountains — close enough for a day trip, far enough for real dark skies.`,
 
+  faq_airport: `About an hour's drive from the airport, on the same route as downtown Salt Lake City — head southwest around the Oquirrh Mountains.`,
+
   faq_grocery: `Basic supplies are available in nearby Tooele (about 30 minutes). We recommend stocking up before you arrive — that's part of the charm out here.`,
+
+  faq_stargazing: `Yes — that is one of the main reasons people come. There is no town light nearby, so on a clear moonless night the sky is genuinely dark from the fire pit. Bring a red flashlight and let your eyes adjust for twenty minutes.`,
+
+  faq_onaqui: `Not from the porch — the Onaqui herd ranges in the hills west of the valley, so you drive out to find them. Sightings are common but never guaranteed; the herd moves with the season and the weather.`,
+
+  faq_things_nearby: `The valley sits near the Onaqui wild horse range, the Pony Express Trail, and day-trip drives out to the Bonneville Salt Flats. Our Area Guide covers each one in detail.`,
+
+  faq_winter: `Winter is the quiet season here, and the nights are the longest and clearest of the year for stargazing. Salt Lake City and its canyons are about an hour away, and Tooele is roughly half an hour for supplies.`,
 
   faq_cancel: `Yes — the refund depends on how far ahead of your check-in date you cancel:`,
 };

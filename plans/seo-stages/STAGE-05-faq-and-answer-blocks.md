@@ -239,15 +239,25 @@ with real ones. The defaults are safe, not good.
 
 ## Acceptance criteria
 
-- [ ] `/faq` renders 15 questions as `<h2>` elements with stable anchor ids and visible
+- [x] `/faq` renders 15 questions as `<h2>` elements with stable anchor ids and visible
       answers; no `<details>` remains.
-- [ ] The minimum-stay answer reflects `pricing.minStayNights`.
-- [ ] `FAQPage` markup is present, plain-text only, and matches the visible answers.
-- [ ] The six new answers are editable in Admin → Site Content.
-- [ ] `/`, `/book` and `/faq` each open with a distinct 40–60 word direct-answer paragraph
-      whose numbers come from live config.
-- [ ] `npm run lint && npm run typecheck && npm test && npm run build` all pass.
-- [ ] The site renders with no `.env.local` present (defaults supply every answer).
+- [x] The minimum-stay answer reflects `pricing.minStayNights`.
+- [x] `FAQPage` markup is present, plain-text only, and matches the visible answers.
+- [x] The six new answers are editable in Admin → Site Content.
+- [x] `/`, `/book` and `/faq` each open with a distinct 40–60 word direct-answer paragraph
+      whose numbers come from live config. *(54 / 52 / 55 words at default pricing;
+      `answers.test.ts` holds all three to 40–60 at a wordier config too.)*
+- [x] `npm run lint && npm run typecheck && npm test && npm run build` all pass.
+      *(2026-10-26: 199 tests; curl against `next start` — 0 `<details`, 15 `<h2 id=`,
+      15 `"@type":"Question"`.)*
+- [x] The site renders with no `.env.local` present (defaults supply every answer).
+      *(Built and served from a copy of the worktree with no `.env.local`.)*
+
+**As built, 2026-10-26:** `faq_wifi` now covers Wi-Fi only (its old default also
+answered cell service, which has its own question now). If the owner has a saved override
+reading "Yes to both…", it should be trimmed in Admin → Site Content. The `nearby` answer
+gets a third `extra`, `area-guide`, which renders a link to `/blog` (the plan's safe
+target); its plain-text form is empty, so the markup is unchanged by it.
 
 ## Commit
 
