@@ -33,7 +33,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.5.20",
+    "eslint-config-next": "16.4.3",
     "husky": "^9.1.7",
     "sharp": "^0.35.5",
     "supabase": "^2.122.0",
